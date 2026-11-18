@@ -1,0 +1,32 @@
+# Holidays and celebrations
+> This is a holiday or a celebration.
+CHRISTMAS | Santa brings presents down the chimney on December 25th. | 1 | XMAS
+HALLOWEEN | Costumes, pumpkins and trick or treat on October 31st. | 1
+NEW YEAR | Everyone counts down and watches fireworks at midnight. | 1 | NEW YEARS EVE
+BIRTHDAY | Cake, candles and one year older. | 1
+VALENTINES DAY | Roses and chocolate on February 14th. | 1 | VALENTINE
+EASTER | The bunny hides colorful eggs for kids to find. | 1
+LUNAR NEW YEAR | The biggest holiday in Asia, red envelopes with lucky money. | 2 | TET, CHINESE NEW YEAR
+THANKSGIVING | Americans eat turkey and give thanks in November. | 2
+MID AUTUMN | Kids carry lanterns and eat mooncakes under the full moon. | 2 | MOONCAKE FESTIVAL
+DIWALI | The Indian festival of lights. | 2
+WEDDING | A bride, a groom, rings and a big party. | 1
+GRADUATION | Caps fly in the air when students finish school. | 2
+MOTHERS DAY | A day to give mom flowers and do the dishes for once. | 1
+FATHERS DAY | A day to give dad another tie. | 1
+APRIL FOOLS | A whole day of pranks at the start of the fourth month. | 2 | APRIL FOOLS DAY
+CARNIVAL | A huge street party in Rio with samba and costumes. | 2
+RAMADAN | A holy month when Muslims fast from sunrise to sunset. | 3
+HANUKKAH | The Jewish festival of lights, eight nights of candles. | 3 | CHANUKAH
+FIREWORKS | Colorful explosions in the night sky at a celebration. | 1
+PRESENTS | Wrapped boxes with ribbons that you open on special days. | 1 | GIFTS, PRESENT
+LANTERN | A paper light carried at festivals. | 2
+SANTA CLAUS | Old man in a red suit with a white beard and reindeer. | 1 | SANTA
+REINDEER | They pull Santa's sleigh, one has a red nose. | 2
+CHRISTMAS TREE | A green pine decorated with lights and a star on top. | 1
+COSTUME | What you wear to dress up as a witch or a superhero. | 2
+CONFETTI | Tiny pieces of colored paper thrown at a party. | 2
+CANDLES | You blow them out and make a wish. | 1 | CANDLE
+TURKEY | The big bird on the table at Thanksgiving. | 2
+MOONCAKE | A round pastry eaten during the Mid-Autumn Festival. | 2
+ANNIVERSARY | Celebrating the same date every year, like a wedding date. | 3

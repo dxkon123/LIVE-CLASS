@@ -1,0 +1,40 @@
+# Office life and money
+> This is about office life.
+DEADLINE | The scariest word at work, it always comes sooner than you think. | 1
+MEETING | Could have been an email. | 1
+BOSS | The person who says "do you have a minute?" at 5:55 pm. | 1 | MANAGER
+SALARY | Arrives once a month, gone in three days. | 1 | PAY, WAGES
+PAYDAY | The happiest day of the month. | 1
+OVERTIME | Working late, usually unpaid. | 1
+EMAIL | "Per my last ___" is office language for "can you read?". | 1
+WEEKEND | Two days that pass in what feels like two hours. | 1
+MONDAY | The most hated day of the week. | 1
+FRIDAY | The best day of the week, everyone leaves early in spirit. | 1
+COFFEE | Office fuel, the first thing you look for in the morning. | 1
+LAPTOP | Your portable office, it always updates at the worst moment. | 1
+KEYBOARD | You type on it all day, crumbs live between the keys. | 1
+PRINTER | It jams every time you are in a hurry. | 1
+WIFI | When it drops, the whole office stands up and walks around. | 1 | INTERNET
+PROMOTION | Moving up to a better job title, maybe with more money. | 2
+BONUS | Extra money at the end of the year, smaller than you hoped. | 2
+RESUME | One page about how amazing you are, for a new job. | 2
+INTERVIEW | "Where do you see yourself in five years?" | 2
+INTERN | The newest, youngest person in the office, makes the coffee. | 2
+COLLEAGUE | The person who sits next to you at work. | 2 | COWORKER
+SPREADSHEET | Rows and columns of numbers, Excel is famous for it. | 2 | EXCEL
+PRESENTATION | Slides you show at a meeting while everyone checks their phone. | 2
+VIDEO CALL | "Can you hear me? You are on mute!" | 2 | ZOOM CALL, ZOOM
+TEAMWORK | When everyone works together, or one person does all the work. | 2
+DRESS CODE | Rules about what you can wear to work. | 2
+PASSWORD | You need a capital letter, a number, a symbol, and your first pet's name. | 2
+RESIGNATION | The letter you write in your head every Monday. | 3 | RESIGN, QUIT
+CUBICLE | A tiny office box made of short walls. | 3
+WORK FROM HOME | Doing your job in pajamas from your sofa. | 3 | WFH, REMOTE
+BUDGET | The plan for how money is spent, always too small. | 2
+TAXES | Money the government takes from your paycheck. | 2 | TAX
+SAVINGS | The money you keep for the future, if there is any left. | 2
+LOAN | Money you borrow from the bank and pay back with interest. | 2
+INVOICE | A bill you send to a client so they pay you. | 3
+RETIREMENT | When you finally stop working forever. | 3
+SICK DAY | A day off when you are ill, or say you are. | 3 | SICK LEAVE
+LUNCH BREAK | The best hour of the work day. | 2 | LUNCH

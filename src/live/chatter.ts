@@ -1,23 +1,23 @@
 /**
- * Mấy luật "nói chuyện" chung cho mọi game, lấy từ Đi Chùa Online (đã chạy thật trên live).
- * Hàm thuần, không React, không phát tiếng: chỉ quyết định CÓ đọc hay không. Câu đọc nằm ở game/config.ts.
+ * Shared "talking" rules for every game, taken from an earlier live game that ran for real.
+ * Pure functions, no React, no sound: they only decide WHETHER to speak. The lines live in game/config.ts.
  */
 
-// Bỏ dấu, thường hoá, 1 khoảng trắng, có khoảng trắng 2 đầu: "Cầu Bình An" -> " cau binh an "
+// No accents, lowercase, single spaces, padded with spaces: "Good Luck!" -> " good luck "
 export const plain = (text: string) =>
   ` ${text
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[đĐ]/g, 'd')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0111\u0110]/g, 'd')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()} `;
 
-// ---------- Cảm ơn quà ----------
+// ---------- Gift thanks ----------
 
 /**
- * Quà combo (x5, x10...) và quà tặng liên tục của cùng 1 người: chỉ cảm ơn 1 lần mỗi `cooldownMs`.
- * Quà to (>= bigCoins xu) luôn được cảm ơn. Quà nhỏ bị bỏ khi hàng câu quà đã dài (live đông).
+ * Combo gifts (x5, x10...) and back-to-back gifts from one person: thanked once per `cooldownMs`.
+ * Big gifts (>= bigCoins coins) are always thanked. Small ones are skipped when the gift queue is long (busy live).
  */
 export class GiftThanker {
   private last = new Map<string, number>();
@@ -39,11 +39,11 @@ export class GiftThanker {
   }
 }
 
-// ---------- Chỉ 1 lần mỗi người (cảm ơn follow, share...) ----------
+// ---------- Once per person (follow thanks, share thanks...) ----------
 
 export class OncePerPerson {
   private seen = new Set<string>();
-  /** true ở lần đầu của người đó, false các lần sau */
+  /** true the first time for that person, false after that */
   first(username: string) {
     const key = username.toLowerCase();
     if (this.seen.has(key)) return false;
@@ -55,16 +55,16 @@ export class OncePerPerson {
   }
 }
 
-// ---------- Người vừa tương tác (để nhắc tên khi kêu gọi chia sẻ) ----------
+// ---------- People who just interacted (named when asking for shares) ----------
 
 export class RecentPeople {
   private at = new Map<string, { name: string; at: number }>();
   note(username: string, name: string, now = Date.now()) {
-    this.at.delete(username); // đưa lên cuối = mới nhất
+    this.at.delete(username); // move to the end = newest
     this.at.set(username, { name, at: now });
     if (this.at.size > 200) this.at.delete(this.at.keys().next().value!);
   }
-  /** Tối đa `n` tên tương tác trong `withinMs` vừa qua, mới nhất trước */
+  /** At most `n` names that interacted within the last `withinMs`, newest first */
   latest(n: number, withinMs: number, now = Date.now()) {
     return [...this.at.values()]
       .filter((p) => now - p.at <= withinMs)
@@ -77,25 +77,25 @@ export class RecentPeople {
   }
 }
 
-// ---------- Comment có lời cầu chúc ----------
+// ---------- Comments with a wish ----------
 
 export type WishTopic = 'exam' | 'health' | 'love' | 'family' | 'work' | 'wealth' | 'peace';
 
-// Comment phải có 1 chữ "xin/mong/cầu..." mới tính là lời cầu chúc
-const WISH_WORDS = [' mong ', ' cau ', ' xin ', ' nguyen ', ' uoc ', ' muon ', ' chuc ', ' phu ho ', ' gia ho '];
+// A comment needs one of these words to count as a wish
+const WISH_WORDS = [' wish ', ' hope ', ' pray ', ' praying ', ' want ', ' please ', ' bless ', ' may i '];
 
-// Xét theo thứ tự, chủ đề nào khớp trước thì lấy
+// Checked in order, the first topic that matches wins
 const TOPICS: Array<[WishTopic, string[]]> = [
-  ['exam', [' thi ', ' diem ', ' dau dai hoc ', ' do dai hoc ', ' tot nghiep ', ' kiem tra ', ' hoc gioi ', ' hoc tot ', ' ielts ', ' bang lai ']],
-  ['health', [' suc khoe ', ' khoe ', ' khoe manh ', ' khoi benh ', ' benh ', ' om ', ' phau thuat ', ' nam vien ', ' het dau ', ' binh phuc ']],
-  ['love', [' nguoi yeu ', ' tinh duyen ', ' ny ', ' crush ', ' lay chong ', ' lay vo ', ' cuoi ', ' quay lai ', ' nguoi thuong ', ' duyen ']],
-  ['family', [' gia dinh ', ' gia dao ', ' con cai ', ' bo me ', ' cha me ', ' em be ', ' sinh con ', ' mang thai ', ' co con ', ' vo chong ']],
-  ['work', [' viec ', ' phong van ', ' thang chuc ', ' tang luong ', ' di lam ']],
-  ['wealth', [' tien ', ' tai loc ', ' lam an ', ' buon ban ', ' kinh doanh ', ' giau ', ' tra no ', ' het no ', ' trung so ', ' tai chinh ', ' ban hang ', ' don hang ']],
-  ['peace', [' binh an ', ' an lanh ', ' tai qua ', ' qua nan ', ' het xui ', ' giai han ', ' thuan loi ', ' may man ']],
+  ['exam', [' exam ', ' test ', ' grade ', ' grades ', ' pass ', ' graduate ', ' university ', ' college ', ' ielts ', ' driving test ']],
+  ['health', [' health ', ' healthy ', ' recover ', ' sick ', ' surgery ', ' hospital ', ' get well ', ' pain ']],
+  ['love', [' love ', ' boyfriend ', ' girlfriend ', ' crush ', ' marry ', ' wedding ', ' partner ', ' soulmate ']],
+  ['family', [' family ', ' kids ', ' children ', ' parents ', ' mom ', ' dad ', ' baby ', ' pregnant ']],
+  ['work', [' job ', ' work ', ' interview ', ' promotion ', ' raise ', ' career ']],
+  ['wealth', [' money ', ' rich ', ' business ', ' sales ', ' lottery ', ' debt ', ' orders ', ' customers ']],
+  ['peace', [' peace ', ' safe ', ' luck ', ' lucky ', ' smooth ', ' calm ']],
 ];
 
-/** "con mong tuần sau thi được 10 điểm" -> 'exam'. Không phải lời cầu chúc -> null */
+/** "I hope I pass my exam next week" -> 'exam'. Not a wish -> null */
 export function detectWish(comment: string): WishTopic | null {
   const t = plain(comment);
   if (!WISH_WORDS.some((w) => t.includes(w))) return null;
@@ -106,7 +106,7 @@ export function detectWish(comment: string): WishTopic | null {
 }
 
 /**
- * Chống spam trả lời: mỗi người 1 lần mỗi `perUserMs`, cả phòng tối đa 1 lần mỗi `globalMs`.
+ * Reply spam guard: each person once per `perUserMs`, the whole room at most once per `globalMs`.
  */
 export class WishLimiter {
   private byUser = new Map<string, number>();
@@ -129,7 +129,7 @@ export class WishLimiter {
   }
 }
 
-/** Chọn ngẫu nhiên, không lặp lại câu vừa đọc */
+/** Random pick that never repeats the line just read */
 export function makePicker() {
   const lastIndex = new Map<readonly unknown[], number>();
   return <T,>(list: readonly T[]): T | undefined => {

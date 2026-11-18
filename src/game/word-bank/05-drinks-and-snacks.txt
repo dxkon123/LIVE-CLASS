@@ -1,0 +1,32 @@
+# Drinks and snacks
+> This is a drink or a snack.
+BUBBLE TEA | Sweet milky drink with chewy tapioca pearls, I order mine with all the toppings. | 1 | BOBA, MILK TEA
+COFFEE | The drink that keeps office workers alive on Monday morning. | 1
+ORANGE JUICE | Squeezed from a citrus fruit, a breakfast classic. | 1 | JUICE
+LEMONADE | Lemons, water and sugar, kids sell it on the sidewalk in summer. | 1
+HOT CHOCOLATE | A warm cocoa drink for cold days, add marshmallows on top. | 1 | COCOA
+SMOOTHIE | Fruit blended with yogurt or ice into a thick drink. | 2
+MILKSHAKE | Ice cream and milk blended together, served with a straw. | 2
+GREEN TEA | A healthy drink from Japan and China, matcha is a powdered form. | 2 | MATCHA
+SODA | A fizzy sweet drink full of bubbles. | 1 | POP, SOFT DRINK
+COCONUT WATER | Clear sweet drink straight from a tropical nut, very refreshing. | 2
+CHIPS | Thin crunchy potato slices in a bag that is mostly air. | 1 | CRISPS
+CHOCOLATE | Made from cocoa beans, the cure for every bad day. | 1
+COOKIES | Sweet baked treats, best dunked in milk. | 1 | COOKIE, BISCUITS
+DONUT | A fried ring of dough with a hole in the middle and sprinkles on top. | 1 | DOUGHNUT
+ICE CREAM | A frozen sweet treat in a cone that melts down your hand. | 1
+CANDY | Sweet treats that are bad for your teeth. | 1 | SWEETS
+CUPCAKE | A tiny cake for one person, with frosting on top. | 1
+GUMMY BEARS | Chewy colorful candies shaped like tiny teddies. | 2
+PRETZEL | A twisted, salty baked snack shaped like a knot. | 2
+MARSHMALLOW | Soft white fluffy sweet you roast over a campfire. | 2
+CHEESECAKE | A rich creamy dessert made with cream cheese on a biscuit base. | 2
+BROWNIE | A square chocolate cake that is dense and fudgy. | 2
+NACHOS | Tortilla chips covered with melted cheese and toppings. | 2
+POPSICLE | Frozen juice on a stick for hot days. | 2 | ICE LOLLY
+WAFFLE | Crispy batter cooked in a grid pattern, perfect for holding syrup. | 2
+MOCHI | Chewy Japanese rice cake, sometimes filled with ice cream. | 3
+TIRAMISU | Italian dessert with coffee-soaked biscuits and mascarpone cream. | 3
+ESPRESSO | A tiny but super strong shot of coffee. | 3
+CAPPUCCINO | Espresso topped with lots of foamy milk, sometimes with latte art. | 3 | LATTE
+GRANOLA BAR | A chewy oat snack in a wrapper, eaten when you skip lunch. | 3

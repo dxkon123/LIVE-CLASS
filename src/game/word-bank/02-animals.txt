@@ -1,0 +1,34 @@
+# Animals
+> This is an animal.
+CAT | Meows, sleeps 16 hours a day, and still acts like it owns the house. | 1 | KITTEN
+DOG | Man's best friend, wags its tail and greets you like you were gone for ten years. | 1 | PUPPY
+ELEPHANT | The biggest land animal, with a long trunk and an amazing memory. | 1
+GIRAFFE | Super long neck, eats leaves from the top of the tree. | 1
+PENGUIN | A bird that cannot fly but wears a tuxedo all the time. | 1
+KANGAROO | Hops around Australia carrying its baby in a pouch. | 1
+TIGER | A big orange cat with black stripes. | 1
+MONKEY | Loves bananas, swings from tree to tree, very cheeky. | 1
+RABBIT | Long ears, fluffy tail, loves carrots. | 1 | BUNNY
+TURTLE | Carries its house on its back and is in no hurry at all. | 1 | TORTOISE
+DOLPHIN | A smart sea mammal that clicks, whistles and jumps out of the waves. | 1
+OCTOPUS | Eight arms and three hearts, but still no time for you. | 2
+BUTTERFLY | Starts life as a caterpillar, then grows colorful wings. | 1
+PEACOCK | A bird that shows off a huge fan of colorful tail feathers. | 2
+CROCODILE | A huge reptile with lots of teeth, cries fake tears. | 2 | ALLIGATOR
+CHAMELEON | A lizard that changes color to match where it is. | 3
+HEDGEHOG | Small and cute but covered in spikes, rolls into a ball when scared. | 2
+SQUIRREL | Hides nuts for the winter and forgets where it put most of them. | 2
+OWL | Wise-looking bird that stays awake all night, like office workers before a deadline. | 1
+BAT | The only mammal that can truly fly, sleeps upside down. | 2
+SLOTH | The slowest animal, moves like me on a Monday morning. | 2
+CAMEL | Has humps and can walk in the desert for days without water. | 1
+ZEBRA | A horse with black and white stripes. | 1
+PANDA | Black and white bear that eats bamboo all day. | 1
+KOALA | Sleepy Australian animal that hugs eucalyptus trees. | 2
+FLAMINGO | Pink bird that loves standing on one leg. | 2
+JELLYFISH | Floats in the sea, has no brain, but stings if you touch it. | 2
+SEAHORSE | A tiny fish shaped like a chess piece, and the dad carries the babies. | 3
+PLATYPUS | Has a duck bill, lays eggs, and is still a mammal. Nature was confused. | 3
+HIPPOPOTAMUS | Huge animal that lives in African rivers, its name means river horse. | 3 | HIPPO
+RHINOCEROS | Thick gray skin and one or two horns on its nose. | 3 | RHINO
+WOODPECKER | A bird that drums on trees with its beak to find bugs. | 3

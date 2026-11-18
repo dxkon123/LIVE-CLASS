@@ -1,10 +1,10 @@
-/* Chữ phấn trên bảng đen */
+/* Chalk letters on the blackboard */
 .chalk {
   font-family: 'Patrick Hand', 'Be Vietnam Pro', sans-serif;
   text-shadow: 0 0 1px rgba(255, 255, 255, 0.5), 1px 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Miếng chữ gỗ xáo trộn */
+/* Shuffled wooden letter tiles */
 .tile {
   font-family: 'Be Vietnam Pro', sans-serif;
   color: #5b3512;
@@ -13,7 +13,7 @@
   box-shadow: 0 5px 0 #a8742f, 0 8px 10px rgba(0, 0, 0, 0.35);
 }
 
-/* Bảng tên trên đầu học sinh */
+/* Name tag above each student */
 .nametag {
   position: absolute;
   bottom: calc(100% - 4px);
@@ -44,7 +44,7 @@
   justify-content: center;
 }
 
-/* Dấu đúng / sai cạnh đầu */
+/* Right / wrong mark next to the head */
 .badge {
   position: absolute;
   top: 18%;
@@ -73,7 +73,7 @@
   }
 }
 
-/* Bảng khẩu hiệu nền đỏ chữ vàng */
+/* Red banner with yellow letters */
 .motto {
   color: #ffd84a;
   background: linear-gradient(180deg, #c81e1e 0%, #a51515 100%);
@@ -84,7 +84,7 @@
   z-index: 2;
 }
 
-/* Câu hỏi vàng: viền vàng quanh vùng chữ trên bảng */
+/* Golden question: golden frame around the letters on the board */
 .golden-board {
   outline: 6px solid #ffd84a;
   outline-offset: 6px;
@@ -100,7 +100,7 @@
   }
 }
 
-/* Bạn bị gọi lên bảng kiểm tra miệng */
+/* Student called up to the board */
 .called-up {
   filter: drop-shadow(0 0 10px #ffd84a) drop-shadow(0 0 4px #ffd84a);
 }

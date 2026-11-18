@@ -1,0 +1,33 @@
+# Food and love
+> This is about food or love.
+CRUSH | Someone you secretly like, you check their profile ten times a day. | 1
+FIRST DATE | Nervous dinner where you both pretend to be very interesting. | 1
+CHOCOLATE | The classic Valentine's gift. | 1
+ROSES | Red flowers that say I love you. | 1 | ROSE
+LOVE LETTER | Written by hand and full of hearts. | 2
+HONEYMOON | The trip right after the wedding. | 2
+ENGAGEMENT | When you say yes to the ring. | 2
+SOULMATE | The one person meant for you. | 2
+BREAKUP | When a relationship ends and the ice cream comes out. | 2
+HEARTBREAK | The pain after love ends. | 2
+PICNIC | Eating outside on a blanket in the park. | 1
+DESSERT | The sweet course after dinner, there is always room for it. | 1
+BRUNCH | A late breakfast with eggs, pancakes and too many photos. | 2
+CANDLELIGHT | Dinner lit by small flames, very romantic. | 2 | CANDLES
+FORTUNE COOKIE | A crispy treat with a paper message inside. | 2
+HUG | Wrapping your arms around someone you care about. | 1
+KISS | Lips meet lips, at midnight on New Year's Eve. | 1
+WEDDING CAKE | A tall white dessert with many layers, cut by the bride and groom. | 2
+BOUQUET | A bunch of flowers, the bride throws it. | 2
+RING | Goes on your finger when you get married. | 1
+PIZZA | The answer to "what do you want for dinner?" when nobody can decide. | 1
+SPICY | Food with lots of chili, makes your eyes water. | 1 | HOT
+DIET | Starts every Monday and ends on Monday afternoon. | 1
+DELIVERY | Food that comes to your door, the driver knows you by name. | 2 | TAKEAWAY
+LEFTOVERS | Yesterday's dinner, tastes even better today. | 2
+SWEET TOOTH | Someone who loves sugar has one of these. | 2
+BLIND DATE | Meeting someone your friends set you up with. | 2
+VALENTINE | The person you give a card to on February 14th. | 2
+LONG DISTANCE | A relationship over video calls across time zones. | 3
+SERENADE | Singing a love song under someone's window. | 3
+DATE NIGHT | An evening out for a couple. | 2

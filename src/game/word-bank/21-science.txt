@@ -1,0 +1,32 @@
+# Science
+> This is a science word.
+GRAVITY | Why apples fall down, Newton thought about it under a tree. | 1
+OXYGEN | The gas we breathe in. | 1
+WATER | H two O. | 1
+PLANET | Earth, Mars and Jupiter are all one of these. | 1
+MAGNET | Sticks to the fridge and pulls iron toward it. | 1
+ATOM | The tiny building block of everything. | 2
+MOLECULE | Two or more atoms joined together. | 3
+MICROSCOPE | Makes tiny things look big in the lab. | 2
+TELESCOPE | Makes faraway stars look closer. | 2
+VOLCANO | Erupts with magma from deep inside the Earth. | 1
+FOSSIL | Remains of an ancient animal or plant turned to stone. | 2
+DINOSAUR | Huge reptile that lived millions of years ago. | 1
+ELECTRICITY | Flows through wires and powers your phone. | 2
+PHOTOSYNTHESIS | How plants make food from sunlight. | 3
+EVAPORATION | When water turns into vapor and rises into the air. | 3
+SKELETON | All the bones in a body. | 2
+BACTERIA | Tiny living things, some make you sick and some help you digest. | 3
+VACCINE | An injection that teaches your body to fight a disease. | 2
+DNA | The code inside your cells that makes you who you are. | 2
+GALAXY | A huge group of billions of stars, ours is the Milky Way. | 2
+ASTEROID | A space rock, one probably wiped out the dinosaurs. | 2 | METEOR
+BLACK HOLE | Its gravity is so strong that not even light can escape. | 2
+EXPERIMENT | A test scientists do to check an idea. | 2
+THERMOMETER | Measures how hot or cold something is. | 2
+CARBON | Diamonds and pencil lead are both made of it. | 3
+FRICTION | The force that slows things down when they rub together. | 3
+SATELLITE | Orbits the Earth and sends TV and GPS signals. | 3
+HYDROGEN | The lightest and most common element in the universe. | 3
+RECYCLING | Turning old bottles and paper into new things. | 2 | RECYCLE
+ECOSYSTEM | All the living things in an area and how they connect. | 3

@@ -1,0 +1,32 @@
+# Family
+> This is about family.
+MOTHER | She knows where everything is in the house. | 1 | MOM, MUM, MOMMY
+FATHER | Tells the same jokes every year and always says "ask your mom". | 1 | DAD, DADDY
+GRANDMA | Always says you look too thin and gives you more food. | 1 | GRANDMOTHER, GRANNY
+GRANDPA | Tells stories about walking to school uphill both ways. | 1 | GRANDFATHER
+BROTHER | A boy with the same parents as you, steals your snacks. | 1
+SISTER | A girl with the same parents as you, borrows your clothes. | 1
+BABY | Cries at 3 am and everyone thinks it is cute. | 1
+TWINS | Two siblings born at the same time, sometimes look identical. | 1 | TWIN
+COUSIN | Your aunt's or uncle's child, you only see them at holidays. | 2
+UNCLE | Your mom's or dad's brother, gives you money at the new year. | 1
+AUNT | Your mom's or dad's sister, asks when you will get married. | 1 | AUNTIE
+NEPHEW | Your brother's or sister's son. | 2
+NIECE | Your brother's or sister's daughter. | 2
+HUSBAND | A married man, the wife's partner. | 2
+WIFE | A married woman, the husband's partner. | 2
+WEDDING | The day two people get married. | 1
+FAMILY TREE | A chart showing all your relatives over generations. | 2
+SIBLINGS | Brothers and sisters together. | 2 | SIBLING
+IN LAWS | Your husband's or wife's family. | 3
+STEPMOTHER | Your father's new wife, cinderella had a famous one. | 3 | STEPMOM
+GODFATHER | A man chosen to look after a child's upbringing, also a famous movie. | 3
+ONLY CHILD | A kid with no brothers or sisters. | 2
+PET | The animal that is also part of the family. | 1
+HOME | Where the family lives, there is no place like it. | 1 | HOUSE
+DINNER | The family meal at the end of the day where you talk about school. | 1
+BABYSITTER | Looks after the kids when the parents go out. | 2 | NANNY
+ALLOWANCE | Pocket money parents give you every week. | 3 | POCKET MONEY
+REUNION | When the whole family gets together after a long time. | 3
+NEWBORN | A baby that was born just days ago. | 2
+GRANDCHILDREN | Your children's children. | 3 | GRANDKIDS

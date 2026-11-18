@@ -1,0 +1,32 @@
+# Childhood
+> This is something from childhood.
+TEDDY BEAR | A soft toy you hug to sleep at night. | 1 | TEDDY
+LEGO | Tiny plastic bricks that hurt so much when you step on them barefoot. | 1
+KITE | Flies high on a string on a windy day. | 1
+SANDCASTLE | Built on the beach, destroyed by the next wave. | 1
+SWING | Playground seat that goes back and forth, higher and higher. | 1
+SLIDE | Climb the ladder and whoosh down on your bottom. | 1
+CARTOONS | Saturday morning TV shows that kids watched in pajamas. | 1 | CARTOON
+CRAYON | Wax stick for coloring, one always ends up broken in half. | 1 | CRAYONS
+BUBBLES | Blow through the wand and watch them float and pop. | 1
+SNOWMAN | Three balls of snow with a carrot nose. | 1
+PIGGY BANK | A pink pig with a slot on its back for saving coins. | 2 | MONEY BOX
+TREEHOUSE | A secret hideout built up in the branches. | 2
+LULLABY | A soft song mom sings to put you to sleep. | 2
+BEDTIME STORY | Read to you before sleep, "once upon a time". | 2
+TOOTH FAIRY | A tiny magical visitor who swaps the baby teeth under your pillow for coins. | 2
+MARBLES | Little glass balls kids flick across the ground. | 2
+YOYO | A toy on a string that goes down and comes back up. | 2
+PLAYDOUGH | Colorful soft clay that dries out if you forget the lid. | 2 | PLAY DOH, CLAY
+TRICYCLE | A bike with three wheels for toddlers. | 2
+COLORING BOOK | Pages of outlines waiting for your crayons. | 2 | COLOURING BOOK
+LOLLIPOP | A big round candy on a stick. | 1
+PAJAMAS | What you wear to bed, sometimes with dinosaurs on them. | 2 | PYJAMAS
+NAP TIME | In kindergarten you had to sleep in the afternoon, now you would pay for it. | 2
+PILLOW FORT | Built from sofa cushions and blankets in the living room. | 2
+JUMP ROPE | Skip, skip, skip in the playground while friends chant. | 2
+SPINNING TOP | A toy that twirls on its point until it wobbles and falls. | 3 | TOP
+PAPER PLANE | Fold a sheet and throw it across the classroom. | 2 | PAPER AIRPLANE
+RUBBER DUCK | A yellow toy that floats in the bathtub. | 2
+FAIRY TALE | A story with princesses, dragons and happy endings. | 2
+TRAMPOLINE | Bounce, bounce, bounce in the backyard. | 3

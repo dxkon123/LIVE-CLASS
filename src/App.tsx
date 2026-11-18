@@ -8,7 +8,7 @@ import { GameControls } from './game/GameControls';
 export default function App() {
   const game = useGame();
 
-  // Trang cho TikTok LIVE Studio: chỉ có màn hình game
+  // Page for TikTok LIVE Studio: only the game screen
   if (IS_STAGE) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-black">
@@ -19,7 +19,7 @@ export default function App() {
     );
   }
 
-  // Trang điều khiển: đồng bộ giao diện với Ai Là Trạng Nguyên
+  // Control page
   return (
     <Dashboard
       status={game.status}

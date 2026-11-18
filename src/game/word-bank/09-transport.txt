@@ -1,0 +1,32 @@
+# Transport
+> This is a way to travel.
+BICYCLE | Two wheels and pedals, no fuel needed, just your legs. | 1 | BIKE
+MOTORBIKE | Two wheels with an engine, the king of the roads in Vietnam. | 1 | MOTORCYCLE, SCOOTER
+CAR | Four wheels, a steering wheel and a never-ending monthly loan. | 1
+BUS | A big vehicle that carries many people along a route, never on time when you are late. | 1
+TRAIN | Runs on tracks and says choo choo. | 1
+AIRPLANE | Flies people across the sky, serves tiny bags of peanuts. | 1 | PLANE, AEROPLANE
+HELICOPTER | Flies with spinning blades on top and can land on a roof. | 1
+BOAT | Floats on water and carries people across rivers. | 1 | SHIP
+SUBWAY | An underground train in the city. | 2 | METRO, UNDERGROUND
+TAXI | A car you pay to drive you somewhere, usually yellow in New York. | 1 | CAB
+TRUCK | A big vehicle that carries heavy cargo. | 1 | LORRY
+TRAM | A city train that runs on rails in the middle of the street. | 2
+SUBMARINE | A ship that travels under the sea. | 2
+ROCKET | Blasts off into space. | 1
+CANOE | A narrow boat you paddle yourself. | 2 | KAYAK
+SKATEBOARD | A board with four wheels for doing tricks. | 2
+HOT AIR BALLOON | A big colorful bag heated by a flame, with a basket underneath. | 2 | BALLOON
+CABLE CAR | Hangs from a wire and takes you up a mountain. | 2
+FERRY | A boat that carries people and cars across the water on a schedule. | 2
+AMBULANCE | Rushes sick people to the hospital with its siren on. | 2
+FIRE TRUCK | A red vehicle with a long ladder and hoses. | 2 | FIRE ENGINE
+TRACTOR | A farm vehicle with big back wheels. | 2
+SCOOTER | A small board with a handle that you push with one foot. | 2
+GONDOLA | A long boat rowed through the canals of Venice. | 3
+RICKSHAW | A small cart pulled by a person or a bicycle. | 3 | CYCLO, TUKTUK
+ESCALATOR | Moving stairs in a shopping mall. | 3
+ELEVATOR | A box that carries you up and down a building. | 2 | LIFT
+YACHT | A fancy boat for rich people on holiday. | 3
+SEGWAY | Two wheels side by side, you lean forward to move. | 3
+CARAVAN | A home on wheels pulled behind a car. | 3 | RV, CAMPER

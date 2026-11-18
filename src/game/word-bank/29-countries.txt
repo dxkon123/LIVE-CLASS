@@ -1,0 +1,34 @@
+# Countries
+> This is a country.
+JAPAN | Sushi, cherry blossoms and Mount Fuji. | 1
+FRANCE | Croissants, the Eiffel Tower and very long lunch breaks. | 1
+ITALY | Pizza, pasta, and a country shaped like a boot. | 1
+BRAZIL | Samba, carnival and five football World Cups. | 1
+EGYPT | Pyramids, pharaohs and the Nile. | 1
+INDIA | Curry, cricket, Bollywood and the Taj Mahal. | 1
+CHINA | The Great Wall, pandas and the most people in the world for ages. | 1
+MEXICO | Tacos, sombreros and the Day of the Dead. | 1
+CANADA | Maple syrup, moose, and people who say sorry a lot. | 1
+VIETNAM | Pho, Ha Long Bay and millions of motorbikes. | 1
+THAILAND | Pad thai, elephants and Bangkok. | 1
+KOREA | Kimchi, K-pop and K-dramas. | 1 | SOUTH KOREA
+GERMANY | Sausages, pretzels, Oktoberfest and very punctual trains. | 2
+SPAIN | Paella, flamenco and siestas. | 2
+GREECE | The Parthenon, white islands and the first Olympic Games. | 2
+AUSTRALIA | Kangaroos, koalas and the Sydney Opera House. | 1
+RUSSIA | The biggest country in the world, with matryoshka dolls. | 2
+ARGENTINA | Tango, steak and Messi. | 2
+PERU | Machu Picchu and llamas. | 2
+NETHERLANDS | Tulips, windmills, bikes and wooden clogs. | 2 | HOLLAND
+SWITZERLAND | Chocolate, watches, cheese with holes and the Alps. | 2
+TURKEY | Kebabs, Istanbul, and hot air balloons over Cappadocia. | 2 | TURKIYE
+NORWAY | Fjords, Vikings and the northern lights. | 3
+ICELAND | Volcanoes, glaciers and hot springs, despite the icy name. | 3
+KENYA | Safaris, lions and marathon champions. | 3
+NEW ZEALAND | Kiwis, rugby, and hobbit-like green hills. | 2
+PHILIPPINES | More than seven thousand islands, jeepneys and adobo. | 2
+SINGAPORE | A tiny rich city-country, famous for its Merlion statue. | 2
+MALAYSIA | Kuala Lumpur's twin towers and nasi lemak. | 2
+INDONESIA | Bali, Komodo dragons and thousands of islands. | 2
+PORTUGAL | Custard tarts, Lisbon trams and Cristiano Ronaldo. | 3
+MOROCCO | Colorful markets in Marrakech and the Sahara edge. | 3

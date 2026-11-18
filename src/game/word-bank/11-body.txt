@@ -1,0 +1,32 @@
+# The body
+> This is a part of the body.
+HEART | Beats about one hundred thousand times a day, and races when your crush walks by. | 1
+BRAIN | Thinks for you, except on Monday mornings. | 1
+NOSE | You smell with it, and it grows when Pinocchio lies. | 1
+EYES | You see with them, and roll them when the boss talks. | 1 | EYE
+EARS | You hear with them, and they turn off when mom asks you to do chores. | 1 | EAR
+TEETH | Brush them twice a day or the dentist will know. | 1 | TOOTH
+TONGUE | Tastes your food, and sometimes you bite it by accident. | 1
+LUNGS | You breathe with them, two of them in your chest. | 2 | LUNG
+STOMACH | Where your food goes, it growls at 11 am. | 1 | TUMMY, BELLY
+ELBOW | The joint in the middle of your arm, the funny bone is here. | 2
+KNEE | The joint in the middle of your leg, you scrape it when you fall. | 1
+SHOULDER | Where your arm joins your body, a friend lets you cry on it. | 2
+FINGER | You have ten of them, and point with one. | 1 | FINGERS
+THUMB | The short finger that gives a like. | 1
+SKELETON | All your bones together, it comes out on Halloween. | 2
+SKIN | The largest organ, covers your whole body. | 2
+EYEBROW | The hair above your eye, it goes up when you are surprised. | 2 | EYEBROWS
+EYELASHES | Tiny hairs on your eyelids, if one falls you make a wish. | 2 | EYELASH
+CHIN | The bottom of your face, people stroke it when thinking. | 2
+ANKLE | Joins your foot to your leg, easy to twist. | 2
+WRIST | Where you wear a watch. | 2
+LIVER | Cleans your blood, works overtime after a party. | 3
+KIDNEY | Bean-shaped organ that cleans your blood and makes urine. | 3 | KIDNEYS
+SPINE | The column of bones down your back, sit up straight to protect it. | 3 | BACKBONE
+NAVEL | The little button in the middle of your belly. | 3 | BELLY BUTTON
+HEEL | The back part of your foot. | 2
+FOREHEAD | The part of your face above your eyebrows. | 2
+EARLOBE | The soft bottom of your ear, where earrings go. | 3
+MUSCLE | Grows at the gym, aches the next day. | 2 | MUSCLES
+VEINS | Blue lines under your skin that carry blood to the heart. | 3 | VEIN

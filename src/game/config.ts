@@ -1,42 +1,42 @@
 // =====================================================
-//  CẤU HÌNH LỚP HỌC CHỮ: số liệu. Câu cô đọc nằm ở loi-thoai.ts, câu hỏi ở cau-hoi/*.txt
+//  LIVE-CLASS SETTINGS: numbers. Teacher lines live in lines.ts, questions in word-bank/*.txt
 // =====================================================
 
-/** Cài đặt lớp ở trang điều khiển (lưu settings.json): tên + giọng cô giáo, chữ bảng đỏ, bật tắt 2 game lớn, ảnh nền riêng */
+/** Class settings from the control panel (saved in settings.json): teacher name + voice, red banner, the 2 big shows, custom background */
 export interface RoomCfg {
   teacherName: string;
   teacherVoice: 'nu' | 'nam';
   motto: string;
   everest: boolean;
   chuong: boolean;
-  bg: string; // tên file ảnh nền riêng trong data/nen-lop/, rỗng = nền gốc
-  /** nhân vật đứng lớp: 'co' cô Ngân, 'thay' thầy giáo (ảnh nhan-vat/thay-giao, giọng nam hết, lời thoại đổi "cô" thành "thầy") */
+  bg: string; // custom background file in data/backgrounds/, empty = default classroom
+  /** who teaches: 'co' Ms. Ngan, 'thay' Mr. Minh (male voice everywhere, "Ms." becomes "Mr.") */
   teacher: 'co' | 'thay';
-  /** thầy giám thị: bạn ngồi im quá supervisorMin phút thì thầy tới đưa ra ngoài, bạn đang chờ tương tác nhiều nhất vào thay */
+  /** hall monitor: a student silent for supervisorMin minutes gets a break, the most active waiting student takes the seat */
   supervisor: boolean;
   supervisorMin: number;
-  /** giờ ra chơi nhảy múa thả tim: 'off' tắt, 'mix' xen với các trò khác, 'always' mọi giờ ra chơi */
+  /** dance & hearts recess: 'off', 'mix' (alternates with other games), 'always' (every recess) */
   dance: 'off' | 'mix' | 'always';
-  danceText: string; // dòng thông báo trên màn hình
-  danceSec: number; // thời gian nhảy (giây)
-  /** biểu ngữ sinh nhật: dòng tiêu đề; có {ten} thì thay bằng tên bạn đó (khi đó không hiện thêm dòng tên) */
+  danceText: string; // banner text on screen
+  danceSec: number; // dance time (seconds)
+  /** birthday banner title; "{ten}" is replaced by the student's name (then no extra name line is shown) */
   birthdayText: string;
-  /** gõ sai câu tiết học thì lên bục đứng phạt 3 câu (chủ kênh tắt 2026-11-07, bật lại được ở trang điều khiển) */
+  /** wrong answer in class = stand at the front for 3 questions (off by default, can be turned on in the panel) */
   standWrong: boolean;
 }
 
-/** tên hiện trên bảng tên / đọc trong lời thoại: đứng lớp là thầy mà tên còn "Cô ..." thì dùng tên thầy mặc định */
+/** name on the badge / in the lines: male teacher but the name still says "Ms ..." -> use the default male name */
 export function shownTeacherName(c: RoomCfg) {
-  return c.teacher === 'thay' && /^cô(\s|$)/i.test(c.teacherName) ? GAME.defaultThayName : c.teacherName;
+  return c.teacher === 'thay' && /^(ms|miss|mrs)\.?(\s|$)/i.test(c.teacherName) ? GAME.defaultThayName : c.teacherName;
 }
 
 export const GAME = {
-  // Tên lớp mặc định (hiện trên bảng hiệu). Chủ kênh đổi ở ô "Tên lớp" trang điều khiển.
-  defaultChannelName: 'Lớp Học Chữ',
+  // Default class name (on the sign at the top). Change it in the panel.
+  defaultChannelName: 'LIVE CLASS',
   defaultRoom: {
-    teacherName: 'Cô Ngân',
+    teacherName: 'Ms. Ngan',
     teacherVoice: 'nu',
-    motto: 'NGHE HẾT ĐỀ – GÕ MỚI ĂN ĐIỂM',
+    motto: 'LISTEN FIRST, THEN TYPE TO SCORE',
     everest: true,
     chuong: true,
     bg: '',
@@ -44,218 +44,206 @@ export const GAME = {
     supervisor: true,
     supervisorMin: 4,
     dance: 'mix',
-    danceText: 'Cả lớp cùng nhảy, thả tim tăng cường sức khoẻ nào! 💪❤️',
+    danceText: 'Everyone dance and send hearts to stay healthy! 💪❤️',
     danceSec: 30,
-    birthdayText: '🎉 Chúc mừng sinh nhật 🎂',
+    birthdayText: '🎉 Happy Birthday 🎂',
     standWrong: false,
   } as RoomCfg,
-  defaultThayName: 'Thầy Minh', // đổi sang thầy giáo mà tên vẫn là "Cô ..." thì dùng tên này
-  // ---------- Thầy giám thị (2026-11-07) ----------
-  escortMs: 9000, // thầy đi vào, đưa bạn ra cửa, bạn mới đi vào ghế
-  escortGapMs: 40_000, // 2 lần thầy vào lớp cách nhau ít nhất chừng này (tăng từ 25 giây, 2026-11-07)
-  escortSayEveryMs: 120_000, // tự động: cô báo "thầy giám thị tới" tối đa 2 phút 1 lần, các lần khác thầy làm im lặng
-  // ---------- Giờ ra chơi nhảy múa (2026-11-07) ----------
-  dancers: 10, // số bạn lên bảng nhảy (bạn đang ngồi, còn tương tác)
+  defaultThayName: 'Mr. Minh', // male teacher selected while the name still says "Ms ..."
+  // ---------- Hall monitor ----------
+  escortMs: 9000, // the monitor walks in, takes a student to the door, the new student walks to the seat
+  escortGapMs: 40_000, // at least this long between two visits
+  escortSayEveryMs: 120_000, // automatic visits: the teacher announces it at most every 2 minutes, other visits are silent
+  // ---------- Dance recess ----------
+  dancers: 10, // students who come up to dance (seated and still active)
 
-  // ---------- Một tiết học ----------
+  // ---------- One class ----------
   questionsPerRound: 20,
-  // 10 câu chữ (4 dễ, 2 vừa, 4 khó) + 4 câu toán nhẩm khó dần ở câu 5, 10, 15, 19
-  // + 2 câu tiếng Anh ở câu 3, 12 + 2 câu đố mẹo ở câu 7, 13 + 2 câu lịch sử ở câu 9, 17 (chủ kênh chốt 2026-11-04).
-  // Câu 20 là câu hỏi vàng nhân đôi điểm.
-  // bản riêng (2026-11-04): thêm 5 câu đuổi hình bắt chữ (emoji) -> còn 5 câu chữ thường
-  // 2026-11-05: đố mẹo thành tiết mục giữa tiết, 2 câu liền ở câu 11, 12 (ngay sau điểm danh câu 10), cô dẫn hài trước câu 11;
-  // vẫn là câu hỏi bình thường (tính điểm, phạt đứng), không phải giờ nghỉ.
-  // Đuổi hình ở câu 2, 6, 9, 14, 18; tiếng Anh 3, 13; lịch sử 8, 17
+  // 5 plain word questions (2 easy, 1 medium, 2 hard) + 5 emoji puzzles + 4 mental math (getting harder)
+  // + 2 spelling + 2 history + 2 riddles in a row (right after the mid-class shout-out). Question 20 is golden (double points).
   roundPlan: [
     'easy', 'dh', 'anh', 'easy', 'math1',
     'dh', 'medium', 'su', 'dh', 'math2',
     'meo', 'meo', 'anh', 'dh', 'math3',
     'hard', 'su', 'dh', 'math4', 'hard',
   ] as const,
-  introSec: 5, // cô giới thiệu đầu tiết (giảm từ 8, chế độ nhanh 2026-11-04)
-  // ---------- Chế độ nhanh (chủ kênh duyệt 2026-11-04): khách vào chơi giờ nghỉ, cần câu nối câu ----------
-  // true: cô đọc ngắn ("Câu 3. Một món ăn. <gợi ý>"), không hô bắt đầu; đọc XONG là hiện bảng chữ, nhận đáp án, chạy giờ.
-  // false: như cũ (đọc đề xong, hô bắt đầu mới hiện chữ, đồng hồ dừng lúc cô đọc)
+  introSec: 5, // teacher's intro at the start of a class
+  // ---------- Quick mode: viewers drop in on a break, keep questions flowing ----------
+  // true: short reading ("Question 3. Food. <clue>"), no "go!"; when the teacher finishes reading the board appears and the clock runs.
+  // false: classic (read, then "go!" shows the letters, clock stopped while she talks)
   quickRead: true,
-  closeAfterTopN: 5, // đủ chừng này bạn đúng (top có điểm cao) thì chốt câu sau closeAfterTopSec giây. 0 = tắt
+  closeAfterTopN: 5, // when this many got it right, close the question closeAfterTopSec later. 0 = off
   closeAfterTopSec: 3,
-  earlySendGraceMs: 500, // đáp án gửi sớm hơn lúc bảng hiện quá chừng này ms (theo giờ gửi TikTok) thì không tính
-  earlyCheckWindowMs: 3000, // ...nhưng chỉ xét bình luận tới trong chừng này ms đầu sau khi bảng hiện; tới sau đó luôn tính (2026-11-07)
-  dhFirstLetters: true, // đuổi hình bắt chữ: hiện sẵn chữ cái đầu mỗi chữ trong ô đáp án (hình emoji đôi khi trừu tượng)
-  praiseShort: true, // điểm danh giữa tiết chỉ 1 câu đọc top 3
-  questionSec: 20, // thời gian trả lời (chủ kênh chốt 20 giây, 2026-11-04)
-  endAfterFirstSec: 0, // 0 = luôn đủ giờ cho cả lớp. Đặt vd 10: có người đúng thì 10 giây sau chốt luôn (hợp lúc phòng vắng)
-  // Tự đổi nhịp: dưới 5 bạn đang chơi (bình luận trong 2 phút) thì có người đúng là 8 giây sau chốt câu
+  earlySendGraceMs: 500, // answers sent this much earlier than the board appeared (by send time) do not count
+  earlyCheckWindowMs: 3000, // ...but only for comments arriving in the first few seconds after the board appears
+  dhFirstLetters: true, // emoji puzzles: show the first letter of each word in the answer boxes
+  praiseShort: true, // mid-class shout-out in one line (top 3)
+  questionSec: 20, // answer time
+  endAfterFirstSec: 0, // 0 = always the full time. e.g. 10: close 10 s after the first correct answer
+  // Auto pace: fewer than 5 active players (commented in the last 2 minutes) -> close 8 s after the first correct answer
   smallRoomPlayers: 5,
   smallRoomEndAfterSec: 8,
   activeWindowMs: 120_000,
-  // Lớp vắng: 5 phút không ai bình luận / tặng quà / thả tim thì tiết sau là "ôn bài" (hỏi lại câu cũ, để dành câu mới).
-  // Có bạn vào lại thì từ câu kế tiếp đổi sang câu mới.
+  // Empty class: 5 minutes with no comment / gift / heart -> next class is "review" (old questions, saves the new ones).
   emptyRoomMs: 5 * 60_000,
-  timeGreetEvery: 4, // ngoài lúc đổi buổi, cứ chừng này tiết cô chào theo giờ một lần
-  // Lấp khoảng im lặng lúc chờ trả lời câu chữ: cứ chừng này cô làm 1 việc, xoay vòng
-  // rủ "ai yêu cô gõ số 1" -> kể chuyện vui / mẹo tiếng Anh -> hỏi bình chọn (miền Bắc gõ B...) -> kể chuyện
-  engageEveryMs: 180_000, // giảm từ 100 giây (chủ kênh thấy cô nói quá nhiều, 2026-11-04)
-  engageOrder: ['love', 'story', 'poll', 'sleep'] as const, // 'sleep': gọi 1 bạn ngủ gật dậy (không ai ngủ thì kể chuyện)
-  loveWindowMs: 15_000, // đếm ai gõ trong chừng này rồi cảm ơn / đọc kết quả
+  timeGreetEvery: 4, // besides when the time of day changes, greet by time of day every this many classes
+  // Filling silence while waiting for word answers: every this often the teacher does something, in turn
+  engageEveryMs: 180_000,
+  engageOrder: ['love', 'story', 'poll', 'sleep'] as const, // 'sleep': wake up a dozing student (nobody asleep -> a fun fact)
+  loveWindowMs: 15_000, // count who types in this window, then thank / read the result
 
-  // ---------- Học sinh tương tác trên màn hình ----------
-  walkMs: 6000, // tặng hoa: bạn nhỏ đi lên bục đưa hoa cho cô rồi về chỗ
-  bubbleMs: 5000, // bong bóng chat trên đầu (không hiện câu trả lời, không hiện câu có từ cấm)
-  sleepAfterMs: 5 * 60_000, // ngồi im chừng này thì ngủ gật 💤, thỉnh thoảng cô gọi dậy
-  // gõ sai: lên đứng cạnh cô (học sinh cá biệt) chừng này câu rồi về chỗ; tối đa standMax bạn cùng lúc, ai sai trước lên trước
-  standWrong: false, // mặc định của lớp mới tạo; trên live lấy theo công tắc "Đứng phạt" ở Cài đặt lớp (RoomCfg.standWrong)
+  // ---------- Students on screen ----------
+  walkMs: 6000, // flower gift: the student walks up to give it to the teacher, then back
+  bubbleMs: 5000, // chat bubble over the head (never shows answers or banned words)
+  sleepAfterMs: 5 * 60_000, // silent this long -> dozing 💤, sometimes the teacher wakes them up
+  // wrong answer: stand at the front for standQuestions questions; at most standMax students at once
+  standWrong: false, // default for a new class; live it follows the "Stand at the front" switch (RoomCfg.standWrong)
   standQuestions: 3,
-  standMax: 6, // 6 chỗ đứng trên sàn giữa cô và dãy bàn đầu
-  bonusSec: 10, // hết giờ chưa ai đúng: mở 1 chữ, thêm chừng này giây
-  praiseEvery: 10, // cứ chừng này câu cô dừng lại điểm danh top 3, tặng quà (chế độ nhanh: chỉ sau câu 10; trước là 5)
-  praiseSec: 3, // đọc xong còn dừng chừng này giây để các bạn nhỏ chào cô, thả tim rồi mới ra câu tiếp
-  giftChance: 0.4, // tỉ lệ cô thưởng quà cho bạn đúng đầu tiên / đạt mốc chuỗi câu liền
-  deskGifts: 4, // mỗi bàn bày tối đa chừng này món quà (mới nhất)
-  warnLeftSec: 5, // còn chừng này giây thì cô nhắc "chuẩn bị hết giờ" (đồng hồ không dừng)
+  standMax: 6,
+  bonusSec: 10, // time up and nobody right: reveal 1 letter, add this many seconds
+  praiseEvery: 10, // every this many questions: mid-class shout-out for the top 3 with prizes
+  praiseSec: 3, // pause after the shout-out
+  giftChance: 0.4, // chance the teacher gives a prize to the first correct student / a streak milestone
+  deskGifts: 4, // prizes shown per desk (newest)
+  warnLeftSec: 5, // "almost out of time" at this many seconds left (clock keeps running)
   revealSec: 5,
   resultsSec: 8,
-  superFastSec: 4, // đúng trong 4 giây đầu: cô nghi "quay cóp"
+  superFastSec: 4, // correct within the first 4 seconds: "genius!"
 
-  // ---------- Điểm ----------
-  // top 5 nhanh nhất: 10, 7, 5, 3, 3; chậm hơn top 5 đều +1 (chủ kênh chốt 2026-11-04). Câu hỏi vàng x2
+  // ---------- Points ----------
+  // fastest 5: 10, 7, 5, 3, 3; later correct answers +1. Golden question x2
   rankPoints: [10, 7, 5, 3, 3],
-  latePoints: 1, // đúng sau top 5 (thường là chép đáp án trên khung chat)
-  fastestShown: 5, // bảng Top nhanh nhất lúc hiện đáp án
-  // khen + thưởng khi đúng liền đủ 5, 12, 17 câu (chủ kênh chốt 2026-11-04, trước cứ 3 câu là khen, dễ quá)
+  latePoints: 1, // correct after the top 5 (often copied from the chat)
+  fastestShown: 5, // "Top fastest" board on the answer screen
+  // streak praise + bonus at 5, 12, 17 correct in a row
   streakMilestones: [5, 12, 17],
-  streakBonus: 5, // thưởng thêm
-  streakNamesRead: 3, // nhiều bạn cùng đủ chuỗi 1 lúc: cô gộp 1 câu, đọc tối đa chừng này tên (còn lại "và N bạn nữa")
-  requireDiacritics: true, // phải gõ đủ dấu mới tính đúng ("phan" không ăn "phấn"); dấu kiểu cũ/mới đều được
-  keepHiddenLetters: 2, // gợi ý không bao giờ mở quá (số chữ - 2)
-  roastChance: 0.2, // tỉ lệ cô cà khịa 1 bạn trả lời sai lúc hiện đáp án (giảm từ 0.6, 2026-11-04)
-  monitorEveryQ: 4, // lớp trưởng đổi người: cách ít nhất chừng này câu cô mới báo lại
+  streakBonus: 5,
+  streakNamesRead: 3, // several players hit a streak at once: one line, at most this many names ("and N others")
+  requireDiacritics: true, // (Vietnamese edition setting; English answers have no accents so it changes nothing)
+  keepHiddenLetters: 2, // hints never reveal more than (letters - 2)
+  roastChance: 0.2, // chance the teacher teases one wrong answer when revealing
+  monitorEveryQ: 4, // new class monitor: announce at most every this many questions
 
-  // ---------- Giờ ra chơi (sau mỗi tiết) ----------
-  recessPlaySec: { rps: 15, callup: 12, pick: 15, roll: 10, heart: 20, dance: 30 }, // dance: lấy theo cài đặt lớp (danceSec) // chế độ nhanh: ra chơi + bình chọn ~35 giây
+  // ---------- Recess (after every class) ----------
+  recessPlaySec: { rps: 15, callup: 12, pick: 15, roll: 10, heart: 20, dance: 30 }, // dance: from the class settings (danceSec)
   recessResultSec: 5,
-  recessBoardSec: 5, // bảng "học sinh giỏi hôm nay"
-  rpsPoints: 2, // oẳn tù tì thắng cô
-  callUpPoints: 5, // kiểm tra miệng trả lời đúng
-  rollPoints: 3, // điểm danh nhanh
+  recessBoardSec: 5, // "Top students today" board
+  rpsPoints: 2, // beat the teacher at rock-paper-scissors
+  callUpPoints: 5, // pop quiz answered right
+  rollPoints: 3, // speed roll call
   rollWinners: 10,
-  heartTarget: 300, // thử thách thả tim trong 30 giây
-  heartBoost: 5, // mỗi tim thật tính thành 5 tim (300 tim chỉ cần 60 tim thật) cho cả lớp dễ thắng; cũng áp cho vỗ tay
+  heartTarget: 300, // heart challenge
+  heartBoost: 5, // every real heart counts as 5 (300 hearts = 60 real taps) so the class can win; also used for applause
 
-  // ---------- Sau giờ ra chơi: cả lớp chọn chủ đề tiết sau ----------
-  voteSec: 10, // gõ 1 hoặc 2
-  voteTopicQuestions: 5, // chủ đề thắng chiếm chừng này câu chữ thường của tiết sau
-  // bản riêng (2026-11-04): khán giả Gen Z + người đi làm, nên phần lớn câu chữ thường lấy từ các bộ này
-  hotTopics: ['16-gen-z', '32-cong-so', '33-gen-z-trend', '34-an-uong-tinh-yeu'],
-  hotShare: 0.5, // tỉ lệ câu chữ thường bốc từ hotTopics (giảm từ 0.75, 2026-11-05: trộn thêm chủ đề đời thường gần gũi); chủ đề cả lớp bình chọn vẫn ưu tiên trước
+  // ---------- After recess: the class votes for the next topic ----------
+  voteSec: 10, // type 1 or 2
+  voteTopicQuestions: 5, // the winning topic fills this many plain questions of the next class
+  // audience is Gen Z + office workers: a share of plain questions comes from these sets
+  hotTopics: ['16-gen-z', '32-office-life', '33-trends', '34-food-and-love'],
+  hotShare: 0.5, // share of plain questions drawn from hotTopics; a topic the class voted for still comes first
 
-  // ---------- Chia tổ (bản riêng cô Ngân) ----------
-  // Trước mỗi tiết có chừng này giây chọn tổ (gõ "tổ 1".."tổ 4", "t2", "3", "tổ ba"). Ai chưa chọn thì máy xếp vào tổ ít người nhất.
-  // Bạn vào lớp giữa tiết cũng được xếp ngay. 0 = tắt phần chọn tổ (test cũ dùng).
+  // ---------- Teams ----------
+  // Before a class: this many seconds to pick a team ("team 1".."team 4", "t2", "3", "team three"). Others get the smallest team.
+  // Students who join mid-class are placed right away. 0 = no team picking.
   teamPickSec: 20,
-  teamPickEvery: 4, // chỉ tiết 1, 5, 9... mới có pha chọn tổ (giữ tổ qua các tiết, bạn mới vào tự xếp)
+  teamPickEvery: 4, // only classes 1, 5, 9... have team picking (teams are kept between classes)
   teamCount: 4,
-  teamRemindLeftSec: 15, // còn chừng này giây thì cô nhắc chọn tổ
+  teamRemindLeftSec: 15, // reminder at this many seconds left
 
-  // ---------- Trang phục cô Ngân (bản riêng 2026-11-04) ----------
-  // hết 20 câu (tổng kết tiết) thì cô thay 1 bộ khác, bốc ngẫu nhiên; ảnh ở public/assets/nv/co-ngan/<bộ>/
+  // ---------- Ms. Ngan's outfits ----------
+  // after 20 questions (class summary) she changes into another outfit; images in public/assets/nv/co-ngan/<outfit>/
   outfits: ['trang', 'so-mi', 'ao-dai-xanh-ngoc'] as const,
 
-  // ---------- 2 game lớn (bản riêng 2026-11-04): Đường lên đỉnh Everest, Rung Chuông Đồng ----------
-  // cứ chừng này tiết thì thay giờ ra chơi bằng 1 game (xen kẽ 2 game), xong game thì bình chọn chủ đề như thường.
-  // Gõ A/B/C/D; ai đúng trong giờ đều được điểm, không xét nhanh chậm. Câu ở src/game/cau-hoi-show/.
-  showEvery: 4, // chế độ nhanh: 4 tiết mới có 1 game lớn (trước 2)
+  // ---------- The 2 big shows: Road to Everest, Golden Bell ----------
+  // every this many classes a show replaces recess (they alternate), then the topic vote as usual.
+  // Type A/B/C/D; everyone right within the time scores, speed does not matter. Questions in src/game/show-bank/.
+  showEvery: 4,
   show: {
-    gatherSec: 30, // tập hợp / mời vào sàn
-    revealSec: 5, // hiện đáp án mỗi câu
-    tieSec: 10, // câu phụ phân định khi top đầu đồng điểm
-    honorSec: 30, // vinh danh
+    gatherSec: 30, // gather / invite into the arena
+    revealSec: 5, // answer screen per question
+    tieSec: 10, // tiebreaker when the top players are tied
+    honorSec: 30, // award ceremony
     topShown: 10,
     everest: {
-      warm: { n: 4, sec: 8, pts: 10 }, // Bước chân đầu tiên
-      code: { hintSec: 15, pts: [30, 20, 10], rescueSec: 10, rescuePts: 5 }, // Mật mã trạm: 3 gợi ý + 10 giây cứu trợ
-      storm: { n: 4, sec: 8, pts: 15 }, // Bão tốc độ
-      peak: { n: 3, stakeSec: 8, sec: 12, stakes: [10, 20] }, // Chạm đỉnh: chọn mức điểm trước khi xem câu
+      warm: { n: 4, sec: 8, pts: 10 }, // First Steps
+      code: { hintSec: 15, pts: [30, 20, 10], rescueSec: 10, rescuePts: 5 }, // Base Camp Password: 3 clues + 10 s rescue
+      storm: { n: 4, sec: 8, pts: 15 }, // Speed Storm
+      peak: { n: 3, stakeSec: 8, sec: 12, stakes: [10, 20] }, // Summit: pick your points before seeing the question
     },
     chuong: {
-      warm: { n: 4, sec: 8, pts: 10 }, // Làm nóng
-      hold: { n: 6, sec: 10, pts: 10 }, // Trụ vững
-      rescue: { sec: 10 }, // Cứu trợ cả phòng: đúng thì có 1 phiếu gợi ý
-      final: { n: 3, sec: 15, pts: 20 }, // Thử thách cuối: gõ "gợi ý" dùng phiếu, bỏ 2 đáp án sai cho cả phòng
-      bell: { sec: 15, pts: 30 }, // Câu Chuông Đồng
+      warm: { n: 4, sec: 8, pts: 10 }, // Warm-up
+      hold: { n: 6, sec: 10, pts: 10 }, // Hold Steady
+      rescue: { sec: 10 }, // Rescue: right answer = 1 hint ticket
+      final: { n: 3, sec: 15, pts: 20 }, // Final Challenge: type "hint" to remove 2 wrong answers for everyone
+      bell: { sec: 15, pts: 30 }, // Golden Bell question
     },
   },
 
-  // ---------- Chuyên cần, sinh nhật ----------
-  attendMilestones: [3, 5, 7, 10, 14, 21, 30], // đi học liền đủ chừng này ngày thì cô khen to + tặng quà
-  birthdayCooldownMs: 60_000, // 2 lần chúc sinh nhật cách nhau ít nhất 1 phút (chống spam)
+  // ---------- Attendance, birthdays ----------
+  attendMilestones: [3, 5, 7, 10, 14, 21, 30], // days in a row -> big praise + prize
+  birthdayCooldownMs: 60_000, // at least 1 minute between two birthday wishes (anti-spam)
   birthdayBannerSec: 10,
-  goodbyeBannerSec: 25, // nút "Chào tạm biệt": biểu ngữ tan lớp hiện chừng này giây
+  goodbyeBannerSec: 25, // "Goodbye" button: the end-of-class banner stays this long
 
-  championsKept: 50, // nhớ lớp trưởng của chừng này tiết gần nhất (đếm ai làm lớp trưởng nhiều lần)
+  championsKept: 50, // remember the class monitor of this many recent classes
 
-  seatActiveMs: 10 * 60_000, // cùng điểm: bạn im quá chừng này (thường đã rời live) nhường ghế cho bạn đang tương tác
+  seatActiveMs: 10 * 60_000, // same score: a student silent longer than this gives the seat to an active one
 
-  // ---------- Học bạ cả đời: điểm cộng dồn mãi mãi -> lên lớp ----------
-  // điểm cần để lên lớp 1, 2, ... 12, rồi tốt nghiệp (13). Người chơi giỏi được khoảng 150-250 điểm mỗi tiết.
+  // ---------- Lifetime report card: points add up forever -> move up a grade ----------
+  // points needed for grade 1, 2, ... 12, then graduation (13). A good player earns about 150-250 points per class.
   gradePoints: [0, 200, 500, 1000, 1700, 2600, 3700, 5000, 6500, 8200, 10000, 12000, 15000],
-  // bảng Top tương tác hôm nay: 1 bình luận = 1 (mỗi bạn tối đa 1 lần / 2 giây), 1 món quà = 10. Không hiện cách tính trên màn hình.
+  // "Top chatters" today: 1 comment = 1 (at most once per 2 s per person), 1 gift = 10. The formula is never shown.
   talkGapMs: 2000,
   talkPerGift: 10,
-  // chịu tải: bạn im quá chừng này thì xoá khỏi lớp lúc sang tiết mới (điểm đã lưu server)
+  // big rooms: students silent this long are removed when a new class starts (their points are already saved)
   forgetAfterMs: 2 * 60 * 60_000,
 
-  // ---------- Lớp ----------
-  seats: 30, // 4 dãy bàn dài trên cùng (7, 7, 8, 8 bạn); dãy cuối nằm dưới giao diện TikTok nên để trống
-  // số bạn mỗi dãy, cộng lại = seats (chủ kênh chốt 2026-11-04: bàn dài, các bạn nhỏ lại). 2026-11-07 thử 45 ghế rồi quay lại 30
+  // ---------- Classroom ----------
+  seats: 30, // 4 long desks (7, 7, 8, 8 students)
   rowSeats: [7, 7, 8, 8],
-  // hết ghế: không vẽ đám đông đứng 2 bên cửa nữa (chủ kênh bỏ 2026-11-04), các bạn vẫn chơi, tính điểm,
-  // hiện ở bảng "Sĩ số · Đang chờ vào lớp"
+  // no seat left: they still play and score, shown in the "In class · Waiting" box
   standing: 0,
-  joinKeywords: ['vaolop'],
+  joinKeywords: ['joinclass', 'join'],
 
-  // ---------- Quà: chia bậc bó hoa + quỹ hoa của cô (bản riêng, chủ kênh chốt 2026-11-04) ----------
-  // bậc theo số xu của món quà (kim cương x số lượng). Mỗi xu = 1 bông vào quỹ hoa.
-  // Bảng "🎁 Gửi tặng cô Ngân" (chủ kênh 2026-11-05): vài món quà TikTok hay gặp, viết kiểu gửi tặng, KHÔNG giục, KHÔNG hứa
-  // lợi thế (TikTok cấm khuyến khích tặng quà, nhất là với trẻ em). match = tên quà TikTok (không phân biệt hoa thường),
-  // say = tên món cô đọc ("... tặng cô chiếc bánh donut"), icon = món bạn nhỏ cầm lên bục và bày sau lưng cô,
-  // thanks = nhóm lời đáp riêng của món trong loi-thoai.ts (bắn tim: "Uii bắn trúng tim cô rồi...").
+  // ---------- Gifts: bouquet tiers + the class flower fund ----------
+  // tier by the coins of the gift (diamonds x count). Every coin = 1 flower in the fund.
+  // "Gifts for Teacher" board: a few common TikTok gifts, written as gifts — no begging, no promised advantage
+  // (TikTok forbids encouraging gifts, especially from kids). match = TikTok gift name (any case),
+  // say = what the teacher reads, icon = what the student carries up, thanks = its own thank-you group in lines.ts.
   giftMenu: [
-    { match: ['rose'], icon: '🌹', label: 'Hoa hồng', say: 'bông hồng', caption: 'Tặng cô hoa', thanks: 'thankRose' as const },
-    { match: ['finger heart'], icon: '🫰', label: 'Bắn tim', say: 'cái bắn tim', caption: 'Bắn tim cho cô', thanks: 'thankHeart' as const },
-    { match: ['doughnut', 'donut'], icon: '🍩', label: 'Bánh donut', say: 'chiếc bánh donut', caption: 'Mời cô ăn bánh', thanks: 'thankDonut' as const },
+    { match: ['rose'], icon: '🌹', label: 'Rose', say: 'a rose', caption: 'Give a rose', thanks: 'thankRose' as const },
+    { match: ['finger heart'], icon: '🫰', label: 'Finger heart', say: 'a finger heart', caption: 'Shoot a heart', thanks: 'thankHeart' as const },
+    { match: ['doughnut', 'donut'], icon: '🍩', label: 'Donut', say: 'a donut', caption: 'Share a donut', thanks: 'thankDonut' as const },
   ],
   giftTiers: [
-    { min: 1, name: 'một bông hoa', label: '🌹 1 bông hoa', icon: '🌹', size: 1 },
-    { min: 10, name: 'một bó hoa nhỏ', label: '💐 Bó hoa nhỏ', icon: '💐', size: 1.4 },
-    { min: 99, name: 'một bó hoa thật to', label: '💐 Bó hoa lớn', icon: '💐', size: 2 },
-    { min: 500, name: 'cả một xe hoa', label: '🌸 Xe hoa', icon: '🌸', size: 2.6 },
+    { min: 1, name: 'a flower', label: '🌹 1 flower', icon: '🌹', size: 1 },
+    { min: 10, name: 'a small bouquet', label: '💐 Small bouquet', icon: '💐', size: 1.4 },
+    { min: 99, name: 'a huge bouquet', label: '💐 Big bouquet', icon: '💐', size: 2 },
+    { min: 500, name: 'a whole flower cart', label: '🌸 Flower cart', icon: '🌸', size: 2.6 },
   ],
-  // mục tiêu quỹ hoa trong ngày (số bông), đạt mốc nào thì cô cảm ơn cả lớp + pháo hoa, rồi tới mốc kế
+  // daily flower fund goals; each goal reached = teacher thanks the class + fireworks
   flowerGoals: [50, 100, 200, 500, 1000, 2000, 5000, 10000],
-  giftPileMax: 18, // bàn quà sau lưng cô bày tối đa chừng này món (mới nhất)
+  giftPileMax: 18, // gifts piled behind the teacher (newest)
 
-  // ---------- Quà / tim ----------
-  // 0 = quà KHÔNG cho lợi thế trong game (chủ kênh chốt 2026-11-04): TikTok cấm khuyến khích trẻ em tặng quà,
-  // quà chỉ để cảm ơn. Đặt vd 30 thì quà từ 30 xu lúc chưa ai đúng sẽ mở thêm 1 chữ như trước.
+  // ---------- Gifts / hearts ----------
+  // 0 = gifts give NO advantage in the game (TikTok forbids encouraging kids to gift). e.g. 30: a 30-coin gift reveals a letter.
   hintGiftCoins: 0,
-  likesPerClap: 300, // đủ 300 tim: cả lớp vỗ tay
+  likesPerClap: 300, // 300 hearts: the whole class claps
   clapSec: 5,
   giftThanksCooldownMs: 30_000,
   bigGiftCoins: 99,
 
-  // ---------- Nói chuyện ----------
+  // ---------- Talking ----------
   greetEveryMs: 8000,
   namesPerGreeting: 3,
   shareReminderEveryMs: 6 * 60_000,
-  idleAfterSec: 75, // không ai comment chừng này giây thì cô nhắc
-  // Nhịp giọng: câu chính (đề, đáp án, tổng kết) đọc theo chương trình, đồng hồ dừng trong lúc cô đọc.
-  // Câu nói thêm (chào, cảm ơn, cà khịa) chỉ nói lúc đang chờ học sinh trả lời và còn hơn 5 giây.
+  idleAfterSec: 75, // nobody comments for this long: the teacher nudges
+  // Voice rhythm: main lines (question, answer, summary) follow the show, the clock stops while she reads.
+  // Extra lines (greetings, thanks, teasing) only while waiting for answers with more than 5 s left.
   chatterMinLeftMs: 5000,
-  // trần câu nói thêm thường (chào, khen người đúng đầu, nhận ra bạn đi học lại, rủ tương tác...) mỗi câu hỏi / mỗi phần.
-  // Cảm ơn quà, sinh nhật, lên lớp không tính trần. Chủ kênh thấy cô nói quá nhiều (2026-11-04).
+  // max extra lines per question / segment (gift thanks, birthdays, grade-ups do not count)
   chatterPerPhase: 1,
-  chatterMaxWaitMs: 35_000, // câu chào chờ được qua 1 vòng câu hỏi, quá thì bỏ
-  giftLineMaxWaitMs: 45_000, // cảm ơn quà chờ lâu hơn
-  maxHoldMs: 25_000, // mỗi phần dừng đồng hồ tối đa chừng này (phòng giọng bị kẹt)
+  chatterMaxWaitMs: 35_000, // a greeting can wait about one question, then it is dropped
+  giftLineMaxWaitMs: 45_000, // gift thanks wait longer
+  maxHoldMs: 25_000, // a segment holds the clock at most this long (in case the voice gets stuck)
 };

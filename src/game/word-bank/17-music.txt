@@ -1,0 +1,32 @@
+# Music
+> This is something about music.
+GUITAR | Six strings, every boy learns one song on it to impress someone. | 1
+PIANO | Black and white keys, 88 of them. | 1
+DRUMS | You hit them with sticks, the neighbors hate them. | 1 | DRUM
+VIOLIN | A small string instrument played with a bow under your chin. | 1
+TRUMPET | A brass instrument you blow into, very loud. | 2
+FLUTE | A thin silver pipe you blow across the side of. | 2
+MICROPHONE | Makes your voice louder, everyone grabs it at karaoke. | 1 | MIC
+KARAOKE | Singing along to the lyrics on a screen with friends, the more off-key the better. | 1
+CONCERT | A live music show where you scream with thousands of fans. | 1
+ORCHESTRA | A big group of musicians led by a conductor. | 2
+CHOIR | A group of people who sing together. | 2
+RAP | Rhyming lyrics spoken fast over a beat. | 1 | HIP HOP
+ROCK | Loud guitars, long hair and big concerts. | 2
+JAZZ | Music with saxophones and lots of improvising. | 2
+OPERA | Classical singing on stage, the songs are often in Italian. | 2
+HEADPHONES | You wear them to listen to music without bothering anyone. | 1 | EARPHONES
+SAXOPHONE | A curved brass instrument with a smooth sound, popular in jazz. | 3 | SAX
+HARMONICA | A small instrument you blow and suck, often played in folk music. | 3
+UKULELE | A tiny four-string guitar from Hawaii. | 2
+ACCORDION | You squeeze it in and out while pressing buttons. | 3
+TAMBOURINE | A small drum with jingles around the edge that you shake. | 3
+XYLOPHONE | Wooden bars you hit with little hammers. | 3
+CONDUCTOR | Waves a stick in front of the orchestra. | 3
+LYRICS | The words of a song. | 2
+MELODY | The tune you hum in the shower. | 2
+CHORUS | The part of a song that repeats and everyone sings along. | 2
+ALBUM | A collection of songs released together. | 2
+SINGER | The person holding the microphone on stage. | 1 | VOCALIST
+BAND | A group of musicians that play together. | 1
+DANCE | What you do when your favorite song plays. | 1

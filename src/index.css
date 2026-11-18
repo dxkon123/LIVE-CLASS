@@ -11,12 +11,12 @@ body,
   height: 100%;
 }
 
-/* Nền stage. Đổi ảnh: bỏ ảnh vào public/assets/bg/ rồi thay dòng background */
+/* Stage background. To change it: put the image in public/assets/bg/ and change the background line */
 .stage-bg {
   background: #c8642a url('/assets/bg/lop.webp?v=goc') top center / 1080px auto no-repeat;
 }
 
-/* Hiệu ứng khi đủ tim */
+/* Effect when the heart goal is reached */
 .stage-boost {
   animation: boost-glow 1.2s ease-in-out infinite alternate;
 }

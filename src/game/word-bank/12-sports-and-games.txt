@@ -1,0 +1,32 @@
+# Sports and games
+> This is a sport or a game.
+FOOTBALL | Twenty-two players chase one ball, the whole world watches the World Cup. | 1 | SOCCER
+BASKETBALL | You throw a ball through a high hoop. | 1
+TENNIS | Hit a ball over a net with a racket, the score goes love, fifteen, thirty. | 1
+SWIMMING | You move through the pool with strokes like butterfly and freestyle. | 1
+CHESS | A board game with kings, queens and knights, checkmate wins. | 1
+VOLLEYBALL | Hit the ball over a high net with your hands, often played on the beach. | 2
+BADMINTON | You hit a feathered shuttlecock over a net. | 2
+BASEBALL | Hit the ball with a bat and run around the bases. | 2
+GOLF | Hit a tiny ball into a hole with as few shots as possible. | 1
+BOXING | Two fighters wearing big gloves in a ring. | 1
+SKIING | Sliding down snowy mountains on two long boards. | 2
+SURFING | Riding big waves on a board. | 2
+CYCLING | A race on two wheels, the Tour de France is the most famous one. | 2
+MARATHON | A running race of about forty-two kilometers. | 2
+KARATE | A Japanese martial art with chops and kicks, and colored belts. | 2 | TAEKWONDO, JUDO
+ARCHERY | Shooting arrows at a target. | 2
+TABLE TENNIS | A small light ball bounces back and forth between paddles over a low net. | 2 | PING PONG
+BOWLING | Roll a heavy ball to knock down ten pins. | 2
+HIDE AND SEEK | One person counts to ten, everyone else finds a secret spot. | 1
+TAG | Playground game where you chase and touch someone, and now they are it. | 2
+JUMP ROPE | Skip over a cord that swings under your feet. | 2 | SKIPPING
+HOPSCOTCH | Hop through numbered squares drawn in chalk on the ground. | 3
+TUG OF WAR | Two teams pull a rope, and to win you have to walk backwards. | 2
+CARDS | Fifty-two of them in a deck, used for poker and solitaire. | 2 | POKER
+PUZZLE | You fit hundreds of pieces together to make a picture. | 1 | JIGSAW
+DOMINOES | Black tiles with dots, line them up and knock them all down. | 3 | DOMINO
+CRICKET | A bat and ball game popular in India and England, a match can last five days. | 3
+RUGBY | Players carry an oval ball and tackle each other. | 2
+GYMNASTICS | Flips, balance beams and rings at the Olympics. | 3
+SUDOKU | A number puzzle where each row, column and box has one to nine. | 3

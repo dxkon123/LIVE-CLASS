@@ -1,0 +1,29 @@
+# Nursery rhymes and children's songs
+> This is from a classic nursery rhyme.
+HUMPTY DUMPTY | An egg sat on a wall, had a great fall, and nobody could put him together again. | 1
+LAMB | Mary had a little one, its fleece was white as snow. | 1
+STAR | Twinkle, twinkle, little one, how I wonder what you are. | 1
+SPIDER | The itsy bitsy one climbed up the water spout. | 1
+BOAT | Row, row, row your one of these, gently down the stream. | 1
+BRIDGE | The one in London is falling down, falling down. | 1 | LONDON BRIDGE
+MOUSE | Hickory dickory dock, this little animal ran up the clock. | 1
+SHEEP | Baa baa, this black animal has three bags full of wool. | 1
+JACK AND JILL | Two kids who went up the hill to fetch a pail of water. | 2
+BO PEEP | The little girl who lost her sheep and did not know where to find them. | 2 | LITTLE BO PEEP
+MACDONALD | The old man who had a farm, E-I-E-I-O. | 2 | OLD MACDONALD
+MICE | Three blind ones ran after the farmer's wife. | 2
+MOON | In "Hey Diddle Diddle", the cow jumped over it. | 2
+MUFFET | Little Miss ___ sat on a tuffet until a spider came along. | 3
+KING COLE | Old ___ was a merry old soul who called for his pipe and his fiddlers three. | 3 | OLD KING COLE
+MITTENS | Three little kittens lost these and began to cry. | 2 | MITTEN
+JINGLE BELLS | The winter song about dashing through the snow in a one-horse open sleigh. | 1
+BUNS | Hot cross ___, one a penny, two a penny. | 2
+WEASEL | Round and round the mulberry bush, pop goes the ___. | 3
+CRADLE | In "Rock-a-bye Baby", when the bough breaks this will fall. | 3
+PLUM | Little Jack Horner stuck in his thumb and pulled out one of these. | 3
+BROTHER JOHN | Are you sleeping, are you sleeping, morning bells are ringing for him. | 3 | FRERE JACQUES
+ROSES | Ring a ring o' these, a pocket full of posies. | 2 | ROSIE
+BLACKBIRDS | Four and twenty of them were baked in a pie. | 3
+YANKEE DOODLE | He went to town riding on a pony, stuck a feather in his cap. | 3
+CLOCK | The mouse ran up it and it struck one. | 2
+BAKER | Pat-a-cake, pat-a-cake, ___'s man, bake me a cake as fast as you can. | 2

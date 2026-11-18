@@ -1,0 +1,34 @@
+# Fruits and plants
+> This is a fruit or a plant.
+APPLE | Red or green fruit, one a day keeps the doctor away. | 1
+BANANA | Yellow fruit you peel, monkeys love it. | 1
+ORANGE | A round citrus fruit and also the name of its color. | 1
+GRAPES | Small round fruits that grow in bunches, also used to make wine. | 1 | GRAPE
+WATERMELON | Green outside, red inside with black seeds, perfect on a hot summer day. | 1
+PINEAPPLE | Spiky outside, sweet yellow inside, and a big debate about pizza. | 1
+STRAWBERRY | Red, heart-shaped, with its seeds on the outside. | 1
+COCONUT | Hard brown shell with sweet water inside, grows on palm trees. | 1
+MANGO | Sweet yellow tropical fruit with a big flat seed in the middle. | 1
+LEMON | Yellow and very sour, makes your face scrunch up. | 1
+CHERRY | Small red fruit with a stem, goes on top of the ice cream sundae. | 1
+AVOCADO | Green fruit with a huge seed, millennials spend all their money on it on toast. | 2
+DURIAN | The king of fruits in Southeast Asia, spiky and so smelly hotels ban it. | 2
+KIWI | Fuzzy brown outside, bright green inside with tiny black seeds. | 2
+POMEGRANATE | Cut it open and find hundreds of juicy red seeds. | 3
+BLUEBERRY | Tiny dark blue berry that goes in muffins. | 2
+PEACH | Soft fuzzy skin, sweet juicy fruit with a big stone inside. | 2
+SUNFLOWER | A tall yellow flower that turns to face the sun. | 1
+ROSE | A flower that means love, beautiful but watch out for the thorns. | 1
+TULIP | Cup-shaped spring flower, the Netherlands is famous for it. | 2
+CACTUS | A desert plant full of spikes that almost never needs water. Perfect for lazy plant parents. | 1
+BAMBOO | The fastest growing plant, pandas eat it all day. | 2
+LAVENDER | A purple flower that smells calming, often used in soap. | 2
+OAK | A big strong tree that grows from an acorn. | 2
+PALM TREE | Tall and thin, sways on tropical beaches, coconuts fall from it. | 1
+DANDELION | Yellow flower that turns into a white puff, you blow it and make a wish. | 3
+LOTUS | A beautiful flower that grows out of muddy water. | 2
+MUSHROOM | Not really a plant, grows in damp places, some are delicious and some are dangerous. | 2
+PUMPKIN | Big orange vegetable, carved with a scary face for Halloween. | 1
+CARROT | Orange vegetable that rabbits love. | 1
+BROCCOLI | Looks like a tiny green tree, kids push it to the side of the plate. | 2
+CUCUMBER | Long green vegetable, slices go on your eyes at the spa. | 2

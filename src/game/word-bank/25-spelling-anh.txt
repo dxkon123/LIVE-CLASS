@@ -1,0 +1,81 @@
+# Spelling
+# Spelling questions are only asked at the spelling spots of a class (GAME.roundPlan 'anh').
+# The teacher reads a definition, viewers type the word. When revealing, the word is read with the English-word voice.
+# Each line: ANSWER | definition | difficulty (1 easy, 2 medium, 3 hard) | other accepted spellings
+> Spelling question.
+NECESSARY | Needed, essential. One collar, two sleeves helps you remember it. | 3
+RHYTHM | The beat of music, a word with no normal vowels. | 3
+BEAUTIFUL | Very pretty, lovely to look at. | 2
+FRIEND | A person you like and trust. | 1
+BECAUSE | For the reason that. "I am late ___ of traffic." | 1
+WEDNESDAY | The day in the middle of the work week. | 2
+FEBRUARY | The shortest month of the year. | 2
+BUSINESS | A company, or work that makes money. | 2
+CALENDAR | A chart of the days, weeks and months of the year. | 2
+SEPARATE | To divide or keep apart. There is a rat in it! | 3
+DEFINITELY | Without any doubt, for sure. | 3
+TOMORROW | The day after today. | 1
+ACCOMMODATE | To provide a room or space for someone. | 3
+EMBARRASS | To make someone feel awkward or ashamed. | 3
+RESTAURANT | A place where you pay to eat a meal. | 2
+CHOCOLATE | A sweet brown treat made from cocoa. | 1
+LIBRARY | A building full of books to borrow. | 1
+DIFFERENT | Not the same. | 1
+ENVIRONMENT | The natural world around us. | 3
+GOVERNMENT | The group of people who run a country. | 3
+KNOWLEDGE | Information and skills you have learned. | 2
+QUEUE | A line of people waiting their turn. | 3 | LINE
+NEIGHBOUR | A person who lives next door. | 2 | NEIGHBOR
+COLOUR | Red, blue or green is one of these. | 1 | COLOR
+FAVOURITE | The one you like best. | 2 | FAVORITE
+THROUGH | From one side to the other. "Walk ___ the door." | 2
+THOUGHT | An idea in your mind. | 2
+ISLAND | Land with water all around it, with a silent S. | 2
+KNIFE | A tool for cutting food, with a silent K. | 1
+WRITE | To put words on paper, it starts with a silent W. | 1
+ANSWER | A reply to a question, with a silent W in the middle. | 1
+SCISSORS | A tool with two blades for cutting paper. | 2
+VEGETABLE | Carrots, peas and broccoli are each one of these. | 2
+TEMPERATURE | How hot or cold something is. | 3
+PRONUNCIATION | The way a word is said out loud. | 3
+OCCASION | A special event or time. | 3
+PARALLEL | Lines that run side by side and never meet. | 3
+RECEIVE | To get something that is given to you. I before E, except after C! | 3
+BELIEVE | To think something is true. | 2
+WEIRD | Strange and unusual. A rule breaker: E before I! | 3
+SURPRISE | Something you did not expect. | 2
+DICTIONARY | A book that lists words and their meanings. | 2
+IMMEDIATELY | Right now, without any delay. | 3
+MISSPELL | To write a word wrong, and ironically people often get this one wrong. | 3
+CEMETERY | A place where people are buried. | 3 | GRAVEYARD
+EXAGGERATE | To make something sound bigger than it really is. | 3
+PHARMACY | A shop where you get medicine. | 2 | CHEMIST
+PSYCHOLOGY | The study of the mind, it starts with a silent P. | 3
+MOSQUITO | A small flying insect that bites and buzzes in your ear at night. | 2
+BANANA | A long yellow fruit that monkeys love. | 1
+ELEPHANT | A huge gray animal with a trunk. | 1
+HOSPITAL | Where doctors and nurses look after sick people. | 1
+SANDWICH | Food between two slices of bread. | 1
+BICYCLE | A two-wheeled vehicle you pedal. | 2
+ADDRESS | Where you live: street, number and city. | 2
+APPARENTLY | As far as anyone knows, it seems that. | 3
+CONSCIOUS | Awake and aware of what is happening. | 3
+GUARANTEE | A promise that something will work. | 3
+HAPPINESS | The feeling of being happy. | 2
+INTERESTING | Holding your attention, not boring. | 2
+JEALOUS | Wanting what someone else has. | 2
+LEISURE | Free time for relaxing. | 3
+MILLENNIUM | A period of one thousand years. | 3
+NUISANCE | Something annoying. | 3
+OPPORTUNITY | A chance to do something. | 3
+POSSESSION | Something you own. | 3
+QUESTIONNAIRE | A list of questions in a survey. | 3
+RECOMMEND | To suggest something is good. | 3
+SUCCESSFUL | Achieving what you wanted. | 3
+TRULY | Sincerely, really. It drops the E from true. | 3
+UMBRELLA | Keeps you dry in the rain. | 1
+VACUUM | A cleaner that sucks up dust, with a double U. | 3
+YACHT | A fancy boat, a very strange spelling. | 3
+ZUCCHINI | A long green vegetable, also called a courgette. | 3 | COURGETTE
+GIRAFFE | The animal with the longest neck. | 1
+PURPLE | The color you get by mixing red and blue. | 1

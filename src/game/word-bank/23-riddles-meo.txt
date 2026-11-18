@@ -1,0 +1,78 @@
+# Riddles
+# Riddles are only asked at the riddle spots of a class (GAME.roundPlan 'meo'), never mixed into plain questions.
+# Each line: ANSWER | riddle | difficulty (keep 2) | other accepted answers (comma separated)
+> Riddle time, careful, I might trick you.
+PIANO | What has many keys but cannot open a single lock? | 2 | KEYBOARD
+TOWEL | What gets wetter the more it dries? | 2
+CANDLE | I am tall when I am young and short when I am old. What am I? | 2
+FUTURE | What is always coming but never arrives? | 2 | TOMORROW
+SECRET | If you share me, you do not have me anymore. What am I? | 2
+ECHO | I speak without a mouth and hear without ears. What am I? | 2
+SILENCE | What breaks as soon as you say its name? | 2
+EGG | What has to be broken before you can use it? | 2
+HOLE | The more you take away from me, the bigger I get. What am I? | 2
+SHADOW | I follow you all day but disappear in the dark. What am I? | 2
+MAP | I have cities but no houses, forests but no trees, and water but no fish. What am I? | 2
+STAMP | What can travel around the world while staying in a corner? | 2
+SPONGE | What is full of holes but still holds water? | 2
+CLOCK | What has hands but cannot clap? | 2 | WATCH
+NEEDLE | What has one eye but cannot see? | 2
+COMB | What has teeth but cannot bite? | 2 | ZIPPER, SAW
+BOTTLE | What has a neck but no head? | 2 | SHIRT
+RIVER | What has a mouth and a bed but never eats or sleeps? | 2
+TABLE | What has legs but cannot walk? | 2 | CHAIR
+POTATO | What has eyes but cannot see, and grows underground? | 2
+CORN | What has ears but cannot hear, and grows in a field? | 2
+STAIRS | What goes up and down but never moves? | 2 | STAIRCASE
+FIRE | Feed me and I live, give me water and I die. What am I? | 2
+NAME | What belongs to you, but other people use it more than you do? | 2
+BREATH | What is so light a feather weighs more, yet the strongest person cannot hold it for long? | 2
+FOOTSTEPS | The more you take, the more you leave behind. What are they? | 2 | STEPS
+NOTHING | The rich need it, the poor have it, and if you eat it you will die. What is it? | 2
+KEYBOARD | What has keys and a space, and lets you enter, but you can never go inside? | 2
+ICICLE | I grow downward in winter and disappear in spring. What am I? | 2
+COIN | What has a head and a tail but no body? | 2
+ENVELOPE | What word starts with E, ends with E, and usually contains one letter? | 2
+DICTIONARY | What book has all the answers, from A to Z? | 2
+TEAPOT | What starts with T, ends with T, and has T in it? | 2
+AGE | What goes up but never comes down? | 2
+GLOVE | What has a thumb and four fingers but is not alive? | 2
+YARDSTICK | What has three feet but cannot walk? | 2 | RULER
+DOOR | What gets answered but never asks a question? | 2 | PHONE
+ARTICHOKE | What has a heart that never beats? | 2
+TIME | What flies without wings? | 2
+CLOUD | What has no wings but flies, has no eyes but cries? | 2
+GARBAGE TRUCK | What has four wheels and flies? | 2 | GARBAGE
+BALLOON | What gets bigger when you blow into it and pops when you squeeze it? | 2
+CABBAGE | What vegetable has a head but no brain? | 2 | LETTUCE
+MUSHROOM | What kind of room has no walls, no doors and no windows? | 2
+SEVEN | Which number becomes even when you take away one letter? | 2
+LIGHT | What can fill a room but takes up no space? | 2 | AIR
+SNOWMAN | What has a carrot nose and coal eyes but cannot smell or see? | 2
+BED | What has one head, one foot and four legs? | 2
+JOKE | What can you tell, crack and play? | 2
+QUEUE | What word sounds the same even after you remove four of its five letters? | 2
+BOOKKEEPER | What English word has three double letters in a row? | 2
+BRAIN | What gets sharper the more you use it, but is never cut? | 2 | MIND
+SHORT | What word becomes shorter when you add two letters to it? | 2
+ALPHABET | What has twenty-six letters but only three syllables? | 2
+LEGS | What has a bottom at the top? | 2
+COLD | What can you catch but never throw? | 2 | FLU
+ROAD | What goes through cities and fields but never moves? | 2 | STREET
+PHONE | What has a ring but no finger? | 2 | TELEPHONE, BELL
+BOOK | What has words but never speaks, and pages but no voice? | 2
+CHARCOAL | Black when you buy it, red when you use it, gray when you throw it away. What is it? | 2 | COAL
+PALM | What kind of tree can you carry in your hand? | 2
+WINDOW | What invention lets you look right through a wall? | 2
+WATER | What can run but never gets tired, and has no legs? | 2 | TAP
+TON | Forward I am heavy, backward I am not. What am I? | 2
+TWELVE | How many months of the year have twenty-eight days? | 2 | ALL
+NOWHERE | A rooster lays an egg on top of a roof. Which way does the egg roll? | 2 | NONE, NO EGG
+NEITHER | Which is heavier: a kilo of feathers or a kilo of bricks? | 2 | SAME, EQUAL
+LUNCH AND DINNER | What two things can you never eat for breakfast? | 2 | LUNCH DINNER, DINNER AND LUNCH
+UMBRELLA | What goes up when the rain comes down? | 2
+GUMMY BEAR | What do you call a bear with no teeth? | 2
+PROMISE | What can you break without ever touching it? | 2 | HEART, WORD
+DARKNESS | The more of me there is, the less you see. What am I? | 2 | DARK
+MONDAY | What day of the week does everyone hate, even though it never did anything wrong? | 2
+SPELLING | Which subject do bees love most? Hint: they have a whole competition called a ___ bee. | 2

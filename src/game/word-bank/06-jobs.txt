@@ -1,0 +1,34 @@
+# Jobs
+> This is a job.
+TEACHER | Grades your homework, and is broke at the end of every month. | 1
+DOCTOR | Works in a hospital, writes prescriptions nobody can read. | 1
+NURSE | Takes care of patients and gives the injections. | 1
+CHEF | Cooks in a restaurant kitchen and wears a tall white hat. | 1 | COOK
+PILOT | Flies the plane and says "this is your captain speaking". | 1
+FIREFIGHTER | Puts out fires and rescues cats from trees. | 1 | FIREMAN
+FARMER | Grows crops and raises animals, wakes up before the rooster. | 1
+POLICE OFFICER | Directs traffic and catches thieves. | 2 | POLICEMAN, POLICE
+DENTIST | Looks inside your mouth and asks you questions while your mouth is full of tools. | 1
+ENGINEER | Designs bridges, machines or software, solves problems with math. | 2
+ARCHITECT | Draws the plans for houses and buildings. | 2
+LAWYER | Defends you in court, charges by the hour. | 2 | ATTORNEY
+ACCOUNTANT | Counts the company's money, busiest at tax time. | 2
+BAKER | Wakes up at 3 am to make bread and pastries. | 1
+MECHANIC | Fixes cars and is always covered in grease. | 2
+PLUMBER | Fixes leaking pipes and clogged toilets. | 2
+ELECTRICIAN | Fixes wires and lights, the one who is shocking in a good way. | 2
+JOURNALIST | Writes news stories and interviews people. | 2 | REPORTER
+PHOTOGRAPHER | Says "say cheese" all day long. | 2
+ASTRONAUT | Travels to space and floats around the space station. | 2
+SCIENTIST | Wears a lab coat and does experiments. | 1
+VETERINARIAN | A doctor for pets and animals. | 3 | VET
+PHARMACIST | Hands you your medicine and explains when to take it. | 3
+HAIRDRESSER | Cuts and styles your hair, and knows all the neighborhood gossip. | 2 | BARBER
+LIBRARIAN | Takes care of the books and says shhh. | 2
+CASHIER | Scans your groceries and asks if you need a bag. | 2
+DELIVERY DRIVER | Brings your online orders to the door, faster than your crush replies. | 2 | COURIER
+INFLUENCER | Gets paid to post photos and videos online. | 2 | CONTENT CREATOR
+TRANSLATOR | Turns words from one language into another. | 3 | INTERPRETER
+ARCHAEOLOGIST | Digs in the ground to find ancient bones and treasures. | 3
+CABIN CREW | They serve drinks on a plane and show you the safety exits. | 3 | STEWARDESS, FLIGHT ATTENDANT
+LIFEGUARD | Watches the swimmers at the beach or the pool. | 2

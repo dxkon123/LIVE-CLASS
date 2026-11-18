@@ -1,0 +1,32 @@
+# Food
+> This is a food.
+PIZZA | Round flat bread with cheese and toppings, cut into triangles. | 1
+HAMBURGER | A beef patty inside a bun, with lettuce, tomato and sauce. | 1 | BURGER
+SUSHI | Japanese rice rolls, often with raw fish. | 1
+SPAGHETTI | Long thin Italian pasta, often with tomato sauce and meatballs. | 1 | PASTA
+PANCAKES | Flat and round, stacked high for breakfast with syrup on top. | 1 | PANCAKE
+SANDWICH | Two slices of bread with something tasty in between. | 1
+NOODLES | Long strips you slurp from a bowl, the instant kind saves you at the end of the month. | 1
+FRIED RICE | Yesterday's leftover grains tossed in a hot wok with egg and vegetables. | 1
+DUMPLINGS | Little pockets of dough filled with meat or vegetables, steamed or fried. | 2 | DUMPLING
+TACO | A folded tortilla filled with meat, cheese and salsa, from Mexico. | 1
+SOUP | A hot liquid meal you eat with a spoon when you feel sick. | 1
+SALAD | A bowl of lettuce and vegetables, what people order when they are on a diet. | 1
+OMELETTE | Beaten eggs cooked flat in a pan and folded over. | 2 | OMELET
+STEAK | A thick slice of beef, rare, medium or well done. | 2
+CURRY | A spicy sauce dish from India, eaten with rice or naan. | 2
+LASAGNA | Layers of pasta sheets, meat sauce and cheese, baked in the oven. | 2 | LASAGNE
+BURRITO | A big tortilla wrapped around rice, beans and meat. | 2
+CROISSANT | A buttery, flaky, crescent-shaped pastry from France. | 3
+PHO | A Vietnamese noodle soup with beef and fresh herbs. | 2
+RAMEN | Japanese noodle soup, the expensive version of the instant noodles you eat at 2 am. | 2
+HOT DOG | A sausage in a long bun, sold at baseball games. | 1
+FRENCH FRIES | Thin fried potato sticks, served with ketchup. | 1 | FRIES, CHIPS
+POPCORN | Corn kernels that pop in heat, the official movie snack. | 1
+KEBAB | Grilled meat on a stick, or shaved meat in bread late at night. | 2
+DIM SUM | Small dishes served in bamboo baskets with tea, a Cantonese brunch. | 3
+PAELLA | A Spanish rice dish cooked in a huge flat pan with seafood. | 3
+FONDUE | Swiss dish where you dip bread into a pot of melted cheese. | 3
+BIBIMBAP | Korean rice bowl topped with vegetables, egg and spicy sauce. | 3
+RISOTTO | Creamy Italian rice dish you have to keep stirring. | 3
+MEATBALLS | Little balls of ground meat, sometimes served with Swedish furniture. | 2 | MEATBALL

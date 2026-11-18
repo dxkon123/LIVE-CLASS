@@ -1,0 +1,30 @@
+# School subjects
+> This is a school subject.
+MATH | Numbers, equations, and asking "when will I ever use this?". | 1 | MATHS, MATHEMATICS
+ENGLISH | Grammar, spelling, and reading novels. | 1
+HISTORY | Kings, wars and dates you memorize the night before the test. | 1
+GEOGRAPHY | Maps, countries, rivers and mountains. | 1
+SCIENCE | Experiments in the lab, wearing goggles. | 1
+ART | Painting, drawing and getting paint everywhere. | 1
+MUSIC | Singing and playing instruments in class. | 1
+GYM | Running laps and playing sports, my secret crush teaches it. | 1 | PE CLASS, PHYSICAL ED
+BIOLOGY | The study of living things. | 2
+CHEMISTRY | Mixing chemicals, the periodic table and small explosions. | 2
+PHYSICS | Forces, energy, light and gravity. | 2
+ALGEBRA | Math with letters like x and y. | 2
+GEOMETRY | Math with shapes, angles and triangles. | 2
+LITERATURE | Reading poems, plays and novels. | 2
+ECONOMICS | The study of money, markets and trade. | 3
+PHILOSOPHY | Asking big questions like "why are we here?". | 3
+PSYCHOLOGY | The study of the mind and behavior. | 3
+CODING | Writing programs and algorithms on a computer. | 3 | COMPUTING, PROGRAMMING
+DRAMA | Acting on stage in school plays. | 2 | THEATER, THEATRE
+SPANISH | A language class: hola, gracias, adios. | 2
+FRENCH | A language class: bonjour, merci, au revoir. | 2
+ASTRONOMY | The study of stars, planets and space. | 3
+ASSEMBLY | When the whole school gathers in the hall for announcements. | 3
+SPELLING | Getting every letter of a word right, there are bees for it. | 2
+READING | The class where you curl up with a book. | 1
+CIVICS | Learning about government and being a good citizen. | 3
+STATISTICS | Math about data, averages and charts. | 3
+HOME ECONOMICS | Cooking and sewing class. | 3 | HOME EC

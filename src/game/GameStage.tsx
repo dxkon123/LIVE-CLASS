@@ -2,19 +2,20 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { GameState, StageView } from './useGame';
 import { GAME, shownTeacherName } from './config';
-import { thayHoa } from './xung-ho';
+import { thayHoa } from './teacher-swap';
 import { Hair } from './Hair';
 import { giftOf } from './quiz';
 import './stage.css';
+import { asset, roomBgSrc } from '../live/asset';
 
 /**
- * Màn hình lớp học 1080x1920. Nền là ảnh public/assets/bg/lop.webp (941x1672 phóng lên 1080 ngang),
- * nên mọi toạ độ dưới đây = toạ độ trên ảnh gốc x K.
+ * Classroom screen, 1080x1920. The background is public/assets/bg/lop.webp (941x1672 scaled up to 1080 wide),
+ * so every coordinate below = coordinate on the original image x K.
  */
 const K = 1080 / 941;
 
-// Bàn dài + ghế băng vẽ đè lên dãy bàn lẻ trong ảnh nền (đo trên ảnh gốc): mép trên mặt bàn y, mép dưới b, 2 đầu bàn x1..x2.
-// n = số bạn ngồi mỗi dãy (chủ kênh chốt 2026-11-04: 7–8 bạn một dãy, các bạn nhỏ lại một chút). Dãy cuối nằm dưới giao diện TikTok nên để trống.
+// Long desks + benches drawn over the single desks of the background (measured on the original): top edge y, bottom edge b, ends x1..x2.
+// n = students per row (owner's call 2026-11-04: 7–8 per row, students a bit smaller). The last row sits under the TikTok UI so it stays empty.
 const ROWS = [
   { y: 812, b: 922, x1: 100, x2: 838, n: GAME.rowSeats[0], s: 0.92 },
   { y: 942, b: 1069, x1: 72, x2: 870, n: GAME.rowSeats[1], s: 0.98 },
@@ -22,13 +23,13 @@ const ROWS = [
   { y: 1253, b: 1414, x1: 28, x2: 922, n: GAME.rowSeats[3], s: 1.1 },
   { y: 1458, b: 1646, x1: 5, x2: 938, n: 0, s: 1.16 },
 ];
-const KID = 0.82; // các bạn nhỏ hơn bản ghế lẻ để ngồi vừa bàn dài (2026-11-07 thử 45 ghế KID 0.7 rồi quay lại)
+const KID = 0.82; // students are smaller than in the single-desk version so they fit the long desks (2026-11-07 tried 45 seats at KID 0.7, then went back)
 const SEAT_ROW: number[] = ROWS.flatMap((r, ri) => Array.from({ length: r.n }, () => ri));
-const SPRITE_H = 250; // chiều cao cả người
-const SHOW = 0.5; // ngồi ghế: chỉ hiện phần trên (đầu tới hông)
-// khung đầu đã xoá khỏi ảnh thân sau lưng, tính theo tỉ lệ ảnh (tools/tach-nen.py ghi ra public/assets/nv/*/head.json)
+const SPRITE_H = 250; // full body height
+const SHOW = 0.5; // seated: only the upper body shows (head to hips)
+// head box removed from the back-view body, as a fraction of the image (tools/remove-bg.py writes public/assets/nv/*/head.json)
 const HEAD = { nam: { x: 0.136, y: 0, w: 0.682, h: 0.284 }, nu: { x: 0.174, y: 0, w: 0.668, h: 0.248 } };
-// màu 4 tổ (bản riêng cô Ngân): tổ 1 đỏ, tổ 2 xanh dương, tổ 3 xanh lá, tổ 4 vàng
+// team colours: team 1 red, team 2 blue, team 3 green, team 4 yellow
 const TEAM_COLOR = ['#ef4444', '#3b82f6', '#16a34a', '#f59e0b'];
 const TEAM_ICON = ['🔴', '🔵', '🟢', '🟡'];
 
@@ -38,12 +39,12 @@ const POSE = {
 };
 type PoseKey = keyof typeof POSE.nam;
 
-// Trang phục cô Ngân (bản riêng): bộ trắng dùng tên tư thế gốc; sơ mi và áo dài xanh ngọc có bộ 16 tư thế khác tên,
-// đổi sang tư thế gần nghĩa nhất. 2 game lớn có bộ đồ + tư thế riêng (showPose).
+// Ms. Ngan's outfits: the white set uses the original pose names; the shirt and jade ao dai sets have 16 poses with other names,
+// so each pose maps to the closest one. The 2 big shows have their own outfit + poses (showPose).
 const OUTFIT_POSE: Record<string, string> = {
   '01-dung': '01-dung',
   '02-gioi-thieu': '02-giang-bai',
-  '03-chi-bang': '04-chi-phai', // bảng đen ở bên phải cô
+  '03-chi-bang': '04-chi-phai', // the blackboard is to her right
   '04-vay-chao': '13-vay-chao',
   '05-dang-tay': '15-chao-don',
   '06-cuoi': '06-cuoi-che-mieng',
@@ -68,25 +69,25 @@ const CHUONG_POSES = [
   '11-bat-ngo-nghe-chuong', '12-moi-thi-sinh', '13-vay-chao-cam-chuong', '14-tu-hao-gio-chuong', '15-chuan-bi-rung', '16-nghi-thang-tran',
 ];
 
-// tải trước mọi tư thế để đổi tư thế không bị nháy trắng
+// preload every pose so switching poses never flashes white
 const ALL_IMGS = [
-  ...Object.values(POSE.nam).map((p) => `/assets/nv/nam/${p}.webp`),
-  ...Object.values(POSE.nu).map((p) => `/assets/nv/nu/${p}.webp`),
+  ...Object.values(POSE.nam).map((p) => asset(`/assets/nv/nam/${p}.webp`)),
+  ...Object.values(POSE.nu).map((p) => asset(`/assets/nv/nu/${p}.webp`)),
   ...[
     '01-dung', '02-gioi-thieu', '03-chi-bang', '04-vay-chao', '05-dang-tay', '06-cuoi', '07-tay-nguc', '08-ngon-cai',
     '09-mung', '10-vo-tay', '11-nhun-vai', '12-gai-dau', '13-ngac-nhien', '14-ngon-tro', '15-chong-hong', '16-chi-trai',
-  ].map((p) => `/assets/nv/co-ngan/${p}.webp`),
-  ...['so-mi', 'ao-dai-xanh-ngoc'].flatMap((o) => Object.values(OUTFIT_POSE).map((p) => `/assets/nv/co-ngan/${o}/${p}.webp`)),
-  ...EVEREST_POSES.map((p) => `/assets/nv/co-ngan/everest/${p}.webp`),
-  ...CHUONG_POSES.map((p) => `/assets/nv/co-ngan/chuong/${p}.webp`),
+  ].map((p) => asset(`/assets/nv/co-ngan/${p}.webp`)),
+  ...['so-mi', 'ao-dai-xanh-ngoc'].flatMap((o) => Object.values(OUTFIT_POSE).map((p) => asset(`/assets/nv/co-ngan/${o}/${p}.webp`))),
+  ...EVEREST_POSES.map((p) => asset(`/assets/nv/co-ngan/everest/${p}.webp`)),
+  ...CHUONG_POSES.map((p) => asset(`/assets/nv/co-ngan/chuong/${p}.webp`)),
 ];
 
-// Đứng lớp là thầy giáo (cài đặt lớp): chữ trên màn hình đổi "cô" thành "thầy". GameStage đặt cờ này mỗi lần vẽ, trước các khung con
+// A male teacher is teaching (class settings): on-screen text says "Mr." instead of "Ms.". GameStage sets this flag on every render, before the child panels
 let THAY = false;
 const X = (s: string) => (THAY ? thayHoa(s) : s);
 
-// Thầy giáo (2026-11-07): 8 tư thế, ảnh gốc nhan-vat/thay-giao, tách nền ra public/assets/nv/thay (tools/tach-nen.mjs).
-// Tư thế cô Ngân (16 kiểu) đổi sang tư thế thầy gần nghĩa nhất. Bảng đen ở bên phải nên chỉ bảng = chỉ phải.
+// Male teacher (2026-11-07): 8 poses, art in characters/thay-giao, background removed into public/assets/nv/thay (tools/remove-bg.mjs).
+// Ms. Ngan's 16 poses map to the closest male-teacher pose. The board is to his right, so pointing at the board = pointing right.
 const THAY_POSE: Record<string, string> = {
   '01-dung': '01-dung',
   '02-gioi-thieu': '02-giang-bai',
@@ -105,8 +106,8 @@ const THAY_POSE: Record<string, string> = {
   '15-chong-hong': '01-dung',
   '16-chi-trai': '03-chi-trai',
 };
-const THAY_IMGS = [...new Set(Object.values(THAY_POSE))].map((p) => `/assets/nv/thay/${p}.webp`);
-/** 2 game lớn khi thầy đứng lớp: thầy chỉ có 1 bộ đồ, chọn tư thế theo bước */
+const THAY_IMGS = [...new Set(Object.values(THAY_POSE))].map((p) => asset(`/assets/nv/thay/${p}.webp`));
+/** The 2 big shows with the male teacher: he only has one outfit, the pose follows the step */
 function thayShowPose(v: StageView, now: number): string {
   const sh = v.show!;
   const alt = now % 6000 < 3000;
@@ -137,19 +138,19 @@ export function GameStage({ game }: { game: GameState }) {
   if (!v) {
     return (
       <div className="flex h-full items-center justify-center bg-black/60 p-20 text-center text-[48px] text-white">
-        Chưa mở trang stage (lvh.me:3000/?view=stage) nên chưa có gì để xem trước
+        Opening the classroom…
       </div>
     );
   }
   return (
     <div className={`relative h-full w-full overflow-hidden ${v.clapping ? 'class-clap' : ''}`}>
-      {/* nền riêng tải lên ở trang điều khiển phủ lên nền gốc; ảnh riêng không có bảng đen nên game tự vẽ 1 tấm ở đúng chỗ */}
-      {v.cfg.bg && <img src={`/room-bg/${v.cfg.bg}`} className="absolute inset-0 h-full w-full object-cover" />}
+      {/* custom background uploaded on the control page covers the default one; it has no blackboard, so the game draws one in the right place */}
+      {v.cfg.bg && <img src={roomBgSrc(v.cfg.bg)} className="absolute inset-0 h-full w-full object-cover" />}
       {v.cfg.bg && <div className="absolute left-[332px] top-[244px] h-[384px] w-[592px] rounded-[10px] border-[12px] border-[#7a4a1d] bg-[#1d4a38] shadow-[0_8px_14px_rgba(0,0,0,0.4)]" />}
-      {/* tặng hoa: chỉ có bạn nhỏ đi lên bục đưa cô (FlowerWalk), không zoom, không khung cận cảnh (chủ kênh bỏ 2026-11-04).
-          Giữ motion.div như cũ (scale luôn 1): đổi sang div thường thì hình trên live khác đi */}
+      {/* flowers: only the student walking up to give them (FlowerWalk); no zoom, no close-up frame (owner removed them 2026-11-04).
+          Keep motion.div as before (scale always 1): a plain div makes the picture on the live look different */}
       <motion.div className="absolute inset-0" style={{ transformOrigin: '330px 700px' }} animate={{ scale: 1 }}>
-        {/* sàn lớp trong ảnh nền hơi chói: phủ 1 lớp tối nhẹ từ chân bảng trở xuống (chủ kênh chỉnh 2026-11-04) */}
+        {/* the classroom floor in the background is a bit bright: a light dark layer from the foot of the board down (owner's tweak 2026-11-04) */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[600px] bg-gradient-to-b from-[#3b1d07]/0 via-[#3b1d07]/20 to-[#3b1d07]/28 mix-blend-multiply" />
         <StageBackdrop v={v} />
         <Header v={v} name={game.channelName} />
@@ -184,7 +185,7 @@ export function GameStage({ game }: { game: GameState }) {
   );
 }
 
-// Quà cô nhận trong buổi: xếp thẳng ra chỗ cửa lớp bên trái (sau lưng cô), bó càng to icon càng to, chồng dần lên
+// Gifts the teacher got this session: lined up at the classroom door on the left (behind her), bigger bunches get bigger icons, stacking up
 const PILE_PER_ROW = 5;
 function GiftPile({ v }: { v: StageView }) {
   const pile = v.gifts;
@@ -212,13 +213,13 @@ function GiftPile({ v }: { v: StageView }) {
   );
 }
 
-// Bảng "Gửi tặng cô Ngân" giữa Quỹ lớp và Top tương tác (chủ kênh 2026-11-05): viết kiểu gửi tặng, không giục,
-// không hứa điểm hay lợi thế (TikTok cấm khuyến khích tặng quà). Món và câu mô tả ở GAME.giftMenu
+// "For Teacher" board between the Class fund and Top chatters (owner 2026-11-05): written as a gift list, no pushing,
+// no promise of points or advantages (TikTok forbids encouraging gifts). Items and captions are in GAME.giftMenu
 function GiftMenu() {
   return (
-    // cột hẹp bên phải bảng đen (như Quỹ lớp), mỗi món 1 dòng: không đè lên câu hỏi
+    // narrow column to the right of the board (like the Class fund), one item per line: never covers the question
     <div className="absolute right-[8px] top-[484px] z-[8] w-[168px] rotate-1 rounded-[14px] border-[3px] border-[#c9a45c] bg-[#fff8e1]/95 px-2 pb-1 pt-[2px] text-[#4a2c0e] shadow-[0_6px_10px_rgba(0,0,0,0.3)]">
-      <div className="whitespace-nowrap text-center text-[16px] font-extrabold leading-tight text-[#be185d]">{X('🎁 Gửi tặng cô 💕')}</div>
+      <div className="whitespace-nowrap text-center text-[16px] font-extrabold leading-tight text-[#be185d]">{X('🎁 For Teacher 💕')}</div>
       {GAME.giftMenu.map((g) => (
         <div key={g.label} className="flex items-center gap-[2px] whitespace-nowrap text-[15px] font-semibold leading-[24px]">
           <span className="w-6 text-center text-[19px]">{g.icon}</span>
@@ -229,20 +230,20 @@ function GiftMenu() {
   );
 }
 
-// Quỹ lớp: cột phải, giữa bảng Thi đua tổ và Top tương tác. Mỗi xu quà = 1 bông hoa vào quỹ, có mốc trong ngày
+// Class fund: right column, between Team race and Top chatters. Every gift coin = one flower in the fund, with daily milestones
 function ClassFund({ v }: { v: StageView }) {
   const f = v.fund;
   return (
-    // chỉ ghi "Quỹ lớp" + số bông (chủ kênh bỏ mục tiêu 2026-11-05), nằm trong cột hẹp bên phải bảng đen, không đè câu hỏi
+    // only "Class fund" + the flower count (owner removed the goal 2026-11-05), in the narrow column right of the board, never over the question
     <div className="absolute right-[8px] top-[428px] z-20 flex w-[168px] -rotate-1 items-baseline justify-between rounded-[14px] border-[3px] border-[#c9a45c] bg-[#fff8e1]/95 px-2 pb-1 pt-2 text-[#be185d] shadow-[0_6px_10px_rgba(0,0,0,0.3)]">
       <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 text-[28px]">📌</div>
-      <span className="whitespace-nowrap text-[19px] font-extrabold leading-tight">💝 Quỹ lớp</span>
+      <span className="whitespace-nowrap text-[17px] font-extrabold leading-tight">💝 Class fund</span>
       <span className="text-[28px] font-extrabold leading-tight">{f.today}</span>
     </div>
   );
 }
 
-// Quỹ hoa đạt mốc: biểu ngữ + pháo hoa (vỗ tay) 8 giây
+// Flower fund milestone: banner + fireworks (applause) for 8 seconds
 function FundParty({ v }: { v: StageView }) {
   return (
     <AnimatePresence>
@@ -254,15 +255,15 @@ function FundParty({ v }: { v: StageView }) {
           exit={{ opacity: 0 }}
           className="absolute left-1/2 top-[650px] z-[70] w-[880px] -translate-x-1/2 rounded-[30px] border-4 border-white bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 px-6 py-4 text-center font-extrabold text-white shadow-2xl"
         >
-          <div className="text-[44px] leading-tight">🎆 Quỹ lớp đủ {v.fund.party} bông hoa! 🎆</div>
-          <div className="text-[30px]">{X('Cô cảm ơn cả lớp nhiều lắm 💕')}</div>
+          <div className="text-[44px] leading-tight">🎆 Class fund hit {v.fund.party} flowers! 🎆</div>
+          <div className="text-[30px]">{X('Thank you so much, class 💕')}</div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
 
-// Xác định kỳ thi hiện tại (0: Cấp 1 [Câu 1-5], 1: Cấp 2 [Câu 6-10], 2: Cấp 3 [Câu 11-15], 3: Tú Tài [Câu 16-20])
+// Current term (0: Term 1 [Q1-5], 1: Term 2 [Q6-10], 2: Term 3 [Q11-15], 3: Term 4 Finals [Q16-20])
 function stageIdxOf(v: StageView): 0 | 1 | 2 | 3 {
   if (v.qNo >= 16) return 3;
   if (v.qNo >= 11) return 2;
@@ -272,7 +273,7 @@ function stageIdxOf(v: StageView): 0 | 1 | 2 | 3 {
 
 const STAGE_THEMES = [
   {
-    badge: '🌱 CẤP 1 · KHỞI ĐỘNG',
+    badge: '🌱 TERM 1 · WARM-UP',
     roomFilter: '',
     floorOverlay: 'linear-gradient(180deg, rgba(59, 29, 7, 0) 0%, rgba(59, 29, 7, 0.18) 55%, rgba(59, 29, 7, 0.28) 100%)',
     boardBg: 'radial-gradient(ellipse at 50% 42%, #245c44 0%, #194432 70%, #133627 100%)',
@@ -293,7 +294,7 @@ const STAGE_THEMES = [
     thayIcon: '📘',
   },
   {
-    badge: '⚡ CẤP 2 · TĂNG TỐC',
+    badge: '⚡ TERM 2 · SPEED UP',
     roomFilter: 'hue-rotate(-14deg) saturate(1.12) brightness(1.02)',
     floorOverlay: 'linear-gradient(180deg, rgba(12, 74, 110, 0) 0%, rgba(12, 74, 110, 0.20) 55%, rgba(7, 45, 72, 0.34) 100%)',
     boardBg: 'radial-gradient(ellipse at 50% 40%, #134e7a 0%, #0c3559 68%, #08243f 100%)',
@@ -314,7 +315,7 @@ const STAGE_THEMES = [
     thayIcon: '⚡',
   },
   {
-    badge: '🔥 CẤP 3 · BỨT PHÁ',
+    badge: '🔥 TERM 3 · LEVEL UP',
     roomFilter: 'hue-rotate(12deg) saturate(1.18) contrast(1.04)',
     floorOverlay: 'linear-gradient(180deg, rgba(76, 17, 48, 0) 0%, rgba(88, 28, 135, 0.22) 50%, rgba(59, 7, 100, 0.38) 100%)',
     boardBg: 'radial-gradient(ellipse at 50% 40%, #581c68 0%, #3b1048 70%, #260830 100%)',
@@ -335,7 +336,7 @@ const STAGE_THEMES = [
     thayIcon: '🔥',
   },
   {
-    badge: '👑 TÚ TÀI · VỀ ĐÍCH',
+    badge: '👑 TERM 4 · FINALS',
     roomFilter: 'saturate(1.25) contrast(1.06) brightness(1.02)',
     floorOverlay: 'linear-gradient(180deg, rgba(127, 29, 29, 0.05) 0%, rgba(127, 29, 29, 0.28) 50%, rgba(69, 10, 10, 0.44) 100%)',
     boardBg: 'radial-gradient(ellipse at 50% 40%, #7f1d1d 0%, #551111 68%, #380808 100%)',
@@ -363,24 +364,24 @@ function StageBackdrop({ v }: { v: StageView }) {
   const t = STAGE_THEMES[idx];
   return (
     <>
-      {/* 1. Nền phòng học biến đổi màu sắc & ánh sáng theo từng cấp học (nếu không dùng ảnh nền riêng) */}
+      {/* 1. Classroom colours and light change with each term (unless a custom background is used) */}
       {!v.cfg.bg && idx > 0 && (
         <img
-          src="/assets/bg/lop.webp"
+          src={asset('/assets/bg/lop.webp')}
           alt=""
           className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-all duration-700"
           style={{ filter: t.roomFilter }}
         />
       )}
-      {/* Phủ màu sàn và ánh sáng môi trường của từng vòng */}
+      {/* Floor tint and ambient light of each term */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[600px] transition-all duration-700" style={{ background: t.floorOverlay }} />
       {t.ambient && <div className="pointer-events-none absolute inset-0 transition-all duration-700" style={{ background: t.ambient }} />}
 
-      {/* 2. Kiến trúc trang trí phòng học riêng cho từng Cấp (Cờ dây Cấp 2, Rèm nhung & Thảm Hội trường Cấp 3, Đèn Spotlight & Rèm Hoàng Gia Kỳ 4) */}
+      {/* 2. Decorations for each term (bunting in Term 2, velvet curtains & hall carpet in Term 3, spotlights & royal curtains in Term 4) */}
       <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1080 1920">
         {idx === 1 && (
           <g opacity="0.9">
-            {/* Dây cờ tam giác năng động treo trần lớp Cấp 2 */}
+            {/* Colourful triangle bunting across the ceiling in Term 2 */}
             <path d="M 0,68 Q 270,130 540,78 Q 810,130 1080,68" stroke="#0284c7" strokeWidth="3" fill="none" />
             {[40, 110, 180, 250, 320, 760, 830, 900, 970, 1035].map((cx, i) => {
               const colors = ['#38bdf8', '#facc15', '#4ade80', '#f472b6', '#fb923c'];
@@ -392,7 +393,7 @@ function StageBackdrop({ v }: { v: StageView }) {
 
         {idx === 2 && (
           <g>
-            {/* Thảm lụa tím-đỏ trải dọc lối đi Hội Trường THPT */}
+            {/* Purple-red silk carpet down the aisle of the Term 3 hall */}
             <polygon points="360,760 720,760 920,1920 160,1920" fill="url(#hallCarpet2)" opacity="0.26" />
             <defs>
               <linearGradient id="hallCarpet2" x1="0" y1="0" x2="0" y2="1">
@@ -400,12 +401,12 @@ function StageBackdrop({ v }: { v: StageView }) {
                 <stop offset="100%" stopColor="#4c1d95" />
               </linearGradient>
             </defs>
-            {/* Rèm nhung Hội trường THPT 2 bên mép tường */}
+            {/* Velvet hall curtains on both side walls (Term 3) */}
             <path d="M 0,0 L 95,0 Q 75,320 52,620 L 0,660 Z" fill="#6b21a8" opacity="0.78" />
             <path d="M 0,0 L 65,0 Q 50,300 32,600 L 0,630 Z" fill="#9333ea" opacity="0.65" />
             <path d="M 1080,0 L 985,0 Q 1005,320 1028,620 L 1080,660 Z" fill="#6b21a8" opacity="0.78" />
             <path d="M 1080,0 L 1015,0 Q 1030,300 1048,600 L 1080,630 Z" fill="#9333ea" opacity="0.65" />
-            {/* Viền tua rua vàng trên trần */}
+            {/* Gold fringe along the ceiling */}
             <path d="M 0,0 Q 140,70 280,0 M 800,0 Q 940,70 1080,0" fill="#581c87" stroke="#fbbf24" strokeWidth="5" opacity="0.85" />
           </g>
         )}
@@ -423,26 +424,26 @@ function StageBackdrop({ v }: { v: StageView }) {
                 <stop offset="100%" stopColor="#7f1d1d" />
               </linearGradient>
             </defs>
-            {/* 3 Luồng đèn Spotlight Đấu Trường Chung Kết chiếu rực xuống Bảng & Bục Giảng */}
+            {/* 3 spotlights of the finals arena shining down on the board & teacher's stand */}
             <polygon points="220,0 310,0 520,760 90,760" fill="url(#spotBeam)" />
             <polygon points="500,0 590,0 790,760 320,760" fill="url(#spotBeam)" />
             <polygon points="780,0 870,0 1040,760 580,760" fill="url(#spotBeam)" />
-            {/* Thảm đỏ Hoàng Gia viền vàng */}
+            {/* Royal red carpet with gold trim */}
             <polygon points="330,755 750,755 960,1920 120,1920" fill="url(#royalCarpet)" opacity="0.34" />
             <line x1="330" y1="755" x2="120" y2="1920" stroke="#fbbf24" strokeWidth="4" opacity="0.45" />
             <line x1="750" y1="755" x2="960" y2="1920" stroke="#fbbf24" strokeWidth="4" opacity="0.45" />
-            {/* Rèm nhung Đỏ Hoàng Gia viền Vàng Kim hai bên */}
+            {/* Royal red velvet curtains with gold trim on both sides */}
             <path d="M 0,0 L 118,0 Q 92,340 64,680 L 0,720 Z" fill="#991b1b" stroke="#fbbf24" strokeWidth="4" opacity="0.9" />
             <path d="M 0,0 L 76,0 Q 58,320 36,640 L 0,680 Z" fill="#dc2626" opacity="0.75" />
             <path d="M 1080,0 L 962,0 Q 988,340 1016,680 L 1080,720 Z" fill="#991b1b" stroke="#fbbf24" strokeWidth="4" opacity="0.9" />
             <path d="M 1080,0 L 1004,0 Q 1022,320 1044,640 L 1080,680 Z" fill="#dc2626" opacity="0.75" />
-            {/* Diềm nhung vàng-đỏ trên đỉnh sân khấu */}
+            {/* Gold-red velvet valance across the top of the stage */}
             <path d="M 0,0 Q 135,88 270,0 Q 405,64 540,0 Q 675,64 810,0 Q 945,88 1080,0 Z" fill="#991b1b" stroke="#fde047" strokeWidth="5" opacity="0.92" />
           </g>
         )}
       </svg>
 
-      {/* 3. Khung bảng & Mặt bảng biến hình theo 4 Cấp (giữ đúng toạ độ pixel left:332 top:244 w:592 h:384) */}
+      {/* 3. Board frame & board surface change with the 4 terms (keeps the exact pixels left:332 top:244 w:592 h:384) */}
       <div
         className="pointer-events-none absolute left-[332px] top-[244px] h-[384px] w-[592px] rounded-[12px] transition-all duration-700"
         style={{
@@ -451,7 +452,7 @@ function StageBackdrop({ v }: { v: StageView }) {
           boxShadow: `0 10px 24px rgba(0,0,0,0.45), 0 0 28px ${t.boardGlow}`,
         }}
       >
-        {/* Lòng bảng (nơi hiện chữ phấn ở left:350 top:262 w:555 h:348) */}
+        {/* Board surface (where the chalk text shows at left:350 top:262 w:555 h:348) */}
         <div
           className="absolute inset-[10px] rounded-[7px] transition-all duration-700"
           style={{
@@ -461,10 +462,10 @@ function StageBackdrop({ v }: { v: StageView }) {
           }}
         />
 
-        {/* Chi tiết trang trí góc bảng & khay phấn theo từng vòng */}
+        {/* Corner decorations & chalk tray for each term */}
         {idx === 0 && (
           <>
-            {/* Khay gỗ đựng phấn trắng/vàng/hồng truyền thống Cấp 1 */}
+            {/* Classic wooden tray with white/yellow/pink chalk (Term 1) */}
             <div className="absolute -bottom-[10px] left-[28px] right-[28px] h-[12px] rounded-b-[6px] border-2 border-[#47270b] bg-[#8c5320] shadow-md" />
             <div className="absolute bottom-[2px] left-[120px] h-[6px] w-[26px] rounded-full bg-white shadow-sm" />
             <div className="absolute bottom-[2px] left-[154px] h-[6px] w-[22px] rounded-full bg-[#fde047] shadow-sm" />
@@ -474,13 +475,13 @@ function StageBackdrop({ v }: { v: StageView }) {
 
         {idx === 1 && (
           <>
-            {/* 4 Góc bọc thép hợp kim xanh & khay bút dạ từ tính Cấp 2 */}
+            {/* 4 blue metal corner guards & magnetic marker tray (Term 2) */}
             <div className="absolute -left-[3px] -top-[3px] h-[22px] w-[22px] rounded-tl-[10px] border-l-4 border-t-4 border-[#0284c7]" />
             <div className="absolute -right-[3px] -top-[3px] h-[22px] w-[22px] rounded-tr-[10px] border-r-4 border-t-4 border-[#0284c7]" />
             <div className="absolute -bottom-[3px] -left-[3px] h-[22px] w-[22px] rounded-bl-[10px] border-b-4 border-l-4 border-[#0284c7]" />
             <div className="absolute -bottom-[3px] -right-[3px] h-[22px] w-[22px] rounded-br-[10px] border-b-4 border-r-4 border-[#0284c7]" />
             <div className="absolute -bottom-[9px] left-[40px] right-[40px] h-[10px] rounded-b-[5px] border border-[#334155] bg-gradient-to-r from-[#cbd5e1] via-[#f8fafc] to-[#cbd5e1]" />
-            {/* Nam châm tròn đính góc bảng từ */}
+            {/* Round magnets on the corners of the whiteboard */}
             <div className="absolute left-[22px] top-[20px] h-[14px] w-[14px] rounded-full border-2 border-white bg-[#ef4444] shadow" />
             <div className="absolute right-[22px] top-[20px] h-[14px] w-[14px] rounded-full border-2 border-white bg-[#38bdf8] shadow" />
           </>
@@ -488,23 +489,23 @@ function StageBackdrop({ v }: { v: StageView }) {
 
         {idx === 2 && (
           <>
-            {/* Hoa văn đồng mạ vàng 4 góc bảng Hội trường Cấp 3 */}
+            {/* Gold-plated brass ornaments on the 4 corners (Term 3 hall) */}
             <div className="absolute left-[4px] top-[4px] h-[20px] w-[20px] border-l-[4px] border-t-[4px] border-[#fde047]" />
             <div className="absolute right-[4px] top-[4px] h-[20px] w-[20px] border-r-[4px] border-t-[4px] border-[#fde047]" />
             <div className="absolute bottom-[4px] left-[4px] h-[20px] w-[20px] border-b-[4px] border-l-[4px] border-[#fde047]" />
             <div className="absolute bottom-[4px] right-[4px] h-[20px] w-[20px] border-b-[4px] border-r-[4px] border-[#fde047]" />
             <div className="absolute -top-[14px] left-1/2 -translate-x-1/2 rounded-full border-2 border-[#fde047] bg-[#581c87] px-4 py-[1px] text-[13px] font-black tracking-widest text-[#fde047] shadow">
-              ★ BẢNG DANH DỰ THPT ★
+              ★ HIGH SCHOOL HONOR BOARD ★
             </div>
           </>
         )}
 
         {idx === 3 && (
           <>
-            {/* Phù điêu Vương Miện Vinh Quang trên đỉnh Bảng Đấu Trường Tú Tài */}
+            {/* Crown of Glory relief above the board of the finals arena */}
             <div className="absolute -top-[18px] left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border-[3px] border-[#fde047] bg-gradient-to-r from-[#7f1d1d] via-[#b91c1c] to-[#7f1d1d] px-5 py-[2px] text-[14px] font-black tracking-wider text-[#fef08a] shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
               <span>👑</span>
-              <span>ĐẤU TRƯỜNG TÚ TÀI</span>
+              <span>GRADUATION ARENA</span>
               <span>👑</span>
             </div>
             <div className="absolute left-[4px] top-[4px] h-[24px] w-[24px] rounded-tl-[6px] border-l-[5px] border-t-[5px] border-[#7f1d1d]" />
@@ -523,49 +524,52 @@ function Header({ v, name }: { v: StageView; name: string }) {
   const t = STAGE_THEMES[idx];
   const sub =
     v.phase === 'team'
-      ? `Chọn tổ · Tiết ${v.round}`
+      ? `Pick a team · Class ${v.round}`
       : v.phase === 'show' && v.show
-      ? v.show.kind === 'everest' ? '🏔️ Đường lên đỉnh Everest' : '🔔 Rung Chuông Đồng'
+      ? v.show.kind === 'everest' ? '🏔️ Road to Everest' : '🔔 Golden Bell'
       : v.phase === 'recess'
-      ? 'Giờ ra chơi'
+      ? 'Recess'
       : v.phase === 'vote'
-        ? 'Chọn chủ đề tiết sau'
+        ? 'Vote: next topic'
         : v.qNo > 0 && v.phase !== 'results'
-          ? `${t.badge} · Câu ${v.qNo}/${v.total}`
-          : `Tiết ${v.round}`;
+          ? `${t.badge} · Q${v.qNo}/${v.total}`
+          : `Class ${v.round}`;
   return (
     <div className={`absolute left-1/2 top-[14px] flex w-[520px] -translate-x-1/2 flex-col items-center rounded-[28px] border-[5px] px-6 py-3 transition-colors duration-500 ${t.headerBg}`}>
       <div className={`max-w-full truncate font-extrabold leading-none tracking-wide ${t.headerTitle}`} style={{ fontSize: name.length > 14 ? 34 : 46 }}>
         {name.toUpperCase()}
       </div>
-      {/* sĩ số trong lớp / số bạn đang chờ vào (chỗ bảng sĩ số cũ ở cửa trái giờ là bàn quà của cô) */}
+      {/* students in class / students waiting for a seat (the old head-count board at the left door is now the teacher's gift table) */}
       <div className={`mt-1 whitespace-nowrap text-[22px] font-bold ${t.headerSub}`}>
         {sub} · 👥 {v.roster.seated}/{v.roster.seats}
-        {v.roster.waiting > 0 && ` · ⏳ chờ ${v.roster.waiting}`}
+        {v.roster.waiting > 0 && ` · ⏳ ${v.roster.waiting} waiting`}
       </div>
     </div>
   );
 }
 
-// ---------- Bảng đen ----------
+// ---------- Blackboard ----------
 function Board({ v, now }: { v: StageView; now: number }) {
-  const left = Math.max(0, Math.ceil((v.endsAt - now) / 1000));
+  // The engine moves endsAt forward while the teacher reads (clock on hold). The screen clock (useNow) can be
+  // up to 250 ms older than the snapshot, which used to show 21 for a moment: 20, 21, 20, 21. Never count from
+  // a time earlier than the snapshot.
+  const left = Math.max(0, Math.ceil((v.endsAt - Math.max(now, v.at ?? 0)) / 1000));
   return (
     <div className={`chalk absolute left-[350px] top-[262px] h-[348px] w-[555px] text-[#f4f1e6] ${v.golden && v.phase !== 'recess' ? 'golden-board' : ''}`}>
       {v.phase === 'intro' && v.round % 2 === 0 && v.weekTop.length > 0 && <WeekBoard v={v} left={left} />}
       {v.phase === 'intro' && !(v.round % 2 === 0 && v.weekTop.length > 0) && (
         <div className="flex h-full flex-col items-center justify-center text-center">
-          <div className="text-[64px] leading-none">Sắp vào học!</div>
+          <div className="text-[64px] leading-none">Class starts soon!</div>
           <div className="mt-6 text-[36px] leading-snug">
-            {X('Cô xáo chữ, cả lớp đoán từ.')}
+            {X('I scramble the letters, you guess the word.')}
             <br />
-            Gõ đáp án vào <b className="text-[#ffe680]">bình luận</b>
+            Type your answer in the <b className="text-[#ffe680]">comments</b>
             <br />
-            Nhanh nhất <b className="text-[#ffe680]">+10 điểm</b>
+            Fastest gets <b className="text-[#ffe680]">+10 points</b>
           </div>
-          {v.topic && <div className="mt-3 text-[32px] text-[#ffe680]">🗳️ Cả lớp chọn: {v.topic}</div>}
-          {v.review && <div className="mt-3 text-[32px] text-[#ffe680]">📖 Giờ ôn bài · gõ "vào lớp" để học bài mới</div>}
-          <div className="mt-4 text-[30px] opacity-80">Bắt đầu sau {left} giây</div>
+          {v.topic && <div className="mt-3 text-[32px] text-[#ffe680]">🗳️ Class topic: {v.topic}</div>}
+          {v.review && <div className="mt-3 text-[32px] text-[#ffe680]">📖 Review time · type "join class" for new questions</div>}
+          <div className="mt-4 text-[30px] opacity-80">Starting in {left} seconds</div>
         </div>
       )}
 
@@ -573,28 +577,28 @@ function Board({ v, now }: { v: StageView; now: number }) {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between">
             {v.golden ? (
-              <span className="rounded-full bg-[#ffd84a] px-4 text-[28px] font-bold text-[#7a2e0e]">⭐ CÂU HỎI VÀNG x2</span>
+              <span className="rounded-full bg-[#ffd84a] px-4 text-[28px] font-bold text-[#7a2e0e]">⭐ GOLDEN QUESTION x2</span>
             ) : !v.slot && !v.boardShown ? (
-              // câu chữ thường đang đọc đề: ẩn nhãn chủ đề (cũng là gợi ý), chỉ hiện "Câu N"
+              // ordinary word question being read: hide the topic label (it is a clue too), only show "Question N"
               <span />
             ) : (
               <span className={`rounded-full border-2 px-4 text-[26px] ${v.slot ? 'border-[#ffe680] text-[#ffe680]' : 'border-[#f4f1e6]/60'}`}>
                 {v.slot === 'meo'
-                  ? `🤪 Đố mẹo ${v.riddleNo}/2`
+                  ? `🤪 Riddle ${v.riddleNo}/2`
                   : v.slot === 'su'
-                    ? '📜 Lịch sử'
+                    ? '📜 History'
                     : v.slot === 'anh'
-                      ? '🔤 Tiếng Anh'
+                      ? '🔤 Spelling'
                       : v.slot === 'dh'
-                        ? '🖼️ Đuổi hình bắt chữ'
+                        ? '🖼️ Emoji puzzle'
                         : v.category}
               </span>
             )}
-            {v.phase !== 'reveal' ? <Timer left={left} /> : <span className="text-[34px] text-[#9df29d]">Đáp án</span>}
+            {v.phase !== 'reveal' ? <Timer left={left} /> : <span className="text-[34px] text-[#9df29d]">Answer</span>}
           </div>
           {!v.boardShown ? (
             v.riddleNo === 1 ? (
-              // mở màn phần đố mẹo: cô đang dẫn, bảng báo trước để cả lớp chuẩn bị
+              // start of the riddle segment: the teacher is introducing it, the board warns the class to get ready
               <motion.div
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -604,27 +608,27 @@ function Board({ v, now }: { v: StageView; now: number }) {
                 <motion.div animate={{ rotate: [-8, 8, -8] }} transition={{ duration: 1.2, repeat: Infinity }} className="text-[90px] leading-none">
                   🤪
                 </motion.div>
-                <div className="mt-2 text-[58px] font-bold leading-none text-[#ffe680]">PHẦN ĐỐ MẸO</div>
-                <div className="mt-3 text-[36px]">2 câu liền · vẫn tính điểm</div>
-                <div className="mt-2 text-[32px] opacity-90">Chuẩn bị tinh thần, nghĩ xéo mới thắng!</div>
+                <div className="mt-2 text-[58px] font-bold leading-none text-[#ffe680]">RIDDLE TIME</div>
+                <div className="mt-3 text-[36px]">2 in a row · points count</div>
+                <div className="mt-2 text-[32px] opacity-90">Get ready: think sideways to win!</div>
               </motion.div>
             ) : (
-            // cô đang đọc đề: chưa hiện chữ xáo / phép tính, hô bắt đầu mới hiện
+            // the teacher is reading the question: no shuffled letters / sum yet, they appear when she says go
             <div className="flex flex-1 flex-col items-center justify-center text-center">
-              {/* cô đang đọc: chỉ hiện "Câu N", KHÔNG hiện gợi ý (chủ kênh 2026-11-05: hiện gợi ý thì người đọc nhanh đoán trước, không công bằng).
-                  Đọc xong mới hiện gợi ý + chữ xáo + ô đáp án cùng lúc */}
-              <div className="text-[72px] font-bold leading-none text-[#ffe680]">Câu {v.qNo}</div>
+              {/* while she reads: only "Question N", NO clue (owner 2026-11-05: showing the clue lets fast readers guess early, which is unfair).
+                  After reading, the clue + shuffled letters + answer boxes appear together */}
+              <div className="text-[72px] font-bold leading-none text-[#ffe680]">Question {v.qNo}</div>
               <motion.div
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 1.4, repeat: Infinity }}
                 className="mt-6 text-[40px] text-[#ffe680]"
               >
-                {X('👂 Nghe cô đọc đề nè…')}
+                {X('👂 Listen to the question…')}
               </motion.div>
             </div>
             )
           ) : v.slot === 'dh' ? (
-            // đuổi hình bắt chữ: hình ghép bằng emoji thật to, bên dưới là ô đáp án
+            // emoji puzzle: big emoji picture, answer boxes below
             <motion.div
               key={v.clue}
               initial={{ scale: 0.5, opacity: 0 }}
@@ -635,7 +639,7 @@ function Board({ v, now }: { v: StageView; now: number }) {
               {v.clue}
             </motion.div>
           ) : v.math ? (
-            // câu toán: phép tính viết to bằng phấn, người xem gõ số
+            // math question: the sum in big chalk letters, viewers type the number
             <motion.div
               key={v.math}
               initial={{ scale: 0.6, opacity: 0 }}
@@ -651,9 +655,9 @@ function Board({ v, now }: { v: StageView; now: number }) {
             </>
           )}
           {v.boardShown && <Slots slots={v.slots} reveal={v.phase === 'reveal'} />}
-          {v.boardShown && v.math && v.phase !== 'reveal' && <div className="mt-2 text-center text-[28px] opacity-80">Gõ số vào bình luận</div>}
+          {v.boardShown && v.math && v.phase !== 'reveal' && <div className="mt-2 text-center text-[28px] opacity-80">Type the number in the comments</div>}
           {v.phase === 'bonus' && (
-            <div className="mt-auto text-center text-[28px] text-[#ffe680]">{v.math ? 'Thêm 10 giây, nhẩm lẹ lên!' : X('Cô mở thêm 1 chữ, thêm 10 giây!')}</div>
+            <div className="mt-auto text-center text-[28px] text-[#ffe680]">{v.math ? '10 more seconds, think fast!' : X('One more letter, 10 more seconds!')}</div>
           )}
         </div>
       )}
@@ -725,17 +729,17 @@ function Slots({ slots, reveal }: { slots: (string | null)[]; reveal: boolean })
   );
 }
 
-// Cả lớp chọn chủ đề tiết sau: gõ 1 hoặc 2
+// The class picks the next class's topic: type 1 or 2
 function Vote({ v, left }: { v: StageView; left: number }) {
   const r = v.vote!;
   const total = r.counts[0] + r.counts[1] || 1;
   return (
     <div className="flex h-full flex-col items-center text-center">
       <div className="flex w-full items-center justify-between">
-        <span className="rounded-full bg-[#ffd84a] px-4 text-[26px] font-bold text-[#7a2e0e]">🗳️ Cả lớp quyết định</span>
+        <span className="rounded-full bg-[#ffd84a] px-4 text-[26px] font-bold text-[#7a2e0e]">🗳️ The class decides</span>
         <Timer left={left} />
       </div>
-      <div className="mt-1 text-[44px] leading-tight text-[#ffe680]">Tiết sau học gì?</div>
+      <div className="mt-1 text-[44px] leading-tight text-[#ffe680]">What should we study next?</div>
       <div className="mt-3 w-full space-y-4 px-4">
         {r.topics.map((label, i) => {
           const pct = Math.round((r.counts[i] / total) * 100);
@@ -744,7 +748,7 @@ function Vote({ v, left }: { v: StageView; left: number }) {
               <div className="absolute inset-y-0 left-0 bg-[#ffd84a]/35 transition-all duration-500" style={{ width: `${pct}%` }} />
               <div className="relative flex h-full items-center justify-between gap-3 px-4 text-[32px]">
                 <span className="truncate">
-                  Gõ <b className="text-[#ffe680]">{i + 1}</b>: {label}
+                  Type <b className="text-[#ffe680]">{i + 1}</b>: {label}
                 </span>
                 <span>{r.counts[i]}</span>
               </div>
@@ -756,12 +760,12 @@ function Vote({ v, left }: { v: StageView; left: number }) {
   );
 }
 
-// Dừng giữa tiết: bạn nhỏ giỏi nhất từ đầu tiết, kèm quà cô vừa tặng
+// Mid-class break: best students since the start of the class, with the gift the teacher just gave
 function Praise({ v }: { v: StageView }) {
   return (
     <div className="flex h-full flex-col items-center">
-      <div className="text-[50px] leading-none text-[#ffe680]">{X('🎁 Cô phát quà nè!')}</div>
-      <div className="mt-1 text-[28px] opacity-80">Bạn nhỏ giỏi nhất sau {v.qNo} câu</div>
+      <div className="text-[50px] leading-none text-[#ffe680]">{X('🎁 Prize time!')}</div>
+      <div className="mt-1 text-[28px] opacity-80">Top students after {v.qNo} questions</div>
       <div className="mt-4 w-full space-y-2">
         {v.praiseTop.map((s, i) => (
           <motion.div
@@ -774,11 +778,11 @@ function Praise({ v }: { v: StageView }) {
             <span className="w-12">{['🥇', '🥈', '🥉'][i]}</span>
             <span className="flex-1 truncate">{s.nickname}</span>
             <span className="text-[34px]">{s.desk[s.desk.length - 1]?.icon}</span>
-            <span>{s.score}đ</span>
+            <span>{s.score} pts</span>
           </motion.div>
         ))}
       </div>
-      <div className="mt-auto text-[30px] text-[#ffe680]">{X('Chào cô, thả tim để được quà nha! 💕')}</div>
+      <div className="mt-auto text-[30px] text-[#ffe680]">{X('Say hi and send hearts for a prize! 💕')}</div>
     </div>
   );
 }
@@ -787,8 +791,8 @@ function Results({ v }: { v: StageView }) {
   const top = v.seats.filter((s) => s.score > 0).slice(0, 5);
   return (
     <div className="flex h-full flex-col items-center">
-      <div className="text-[56px] leading-none text-[#ffe680]">Bảng vàng tiết {v.round}</div>
-      {top.length === 0 && <div className="mt-16 text-[38px]">Chưa ai ghi điểm</div>}
+      <div className="text-[56px] leading-none text-[#ffe680]">Class {v.round} honor roll</div>
+      {top.length === 0 && <div className="mt-16 text-[38px]">Nobody scored yet</div>}
       <div className="mt-4 w-full space-y-1">
         {top.map((s, i) => (
           <motion.div
@@ -800,51 +804,51 @@ function Results({ v }: { v: StageView }) {
           >
             <span className="w-12 text-[#ffe680]">{['🥇', '🥈', '🥉', '4', '5'][i]}</span>
             <span className="flex-1 truncate">{s.nickname}</span>
-            <span>{s.score}đ</span>
+            <span>{s.score} pts</span>
           </motion.div>
         ))}
       </div>
       {v.teamWin.length > 0 && (
         <div className="mt-auto text-[36px] text-[#ffe680]">
-          🚩 {v.teamWin.map((n) => `Tổ ${n}`).join(' & ')} thắng tiết này!
+          🚩 {v.teamWin.map((n) => `Team ${n}`).join(' & ')} won this class!
         </div>
       )}
     </div>
   );
 }
 
-// ---------- Chia tổ (bản riêng cô Ngân) ----------
-// 45 giây đầu tiết: 4 ô tổ trên bảng đen, số bạn mỗi tổ nhảy lên khi có người chọn
+// ---------- Teams ----------
+// first 45 s of a class: 4 team boxes on the board, each team's count jumps when someone picks it
 function TeamPick({ v, left }: { v: StageView; left: number }) {
   return (
     <div className="flex h-full flex-col items-center">
       <div className="flex w-full items-center justify-between">
-        <span className="rounded-full bg-[#ffd84a] px-4 text-[26px] font-bold text-[#7a2e0e]">🚩 Chọn tổ thi đua</span>
+        <span className="rounded-full bg-[#ffd84a] px-4 text-[26px] font-bold text-[#7a2e0e]">🚩 Pick your team</span>
         <Timer left={left} />
       </div>
       <div className="mt-1 text-[32px] leading-tight">
-        Gõ <b className="text-[#ffe680]">tổ 1</b>, <b className="text-[#ffe680]">tổ 2</b>, <b className="text-[#ffe680]">tổ 3</b> hoặc <b className="text-[#ffe680]">tổ 4</b>
+        Type <b className="text-[#ffe680]">team 1</b>, <b className="text-[#ffe680]">team 2</b>, <b className="text-[#ffe680]">team 3</b> or <b className="text-[#ffe680]">team 4</b>
       </div>
       <div className="mt-2 grid w-full grid-cols-2 gap-2 px-2">
         {v.teams.map((t, i) => (
           <div key={t.no} className="rounded-2xl border-[3px] bg-white/10 text-center leading-[38px]" style={{ borderColor: TEAM_COLOR[i] }}>
             <div className="text-[32px] font-bold" style={{ color: TEAM_COLOR[i] }}>
-              {TEAM_ICON[i]} Tổ {t.no}
+              {TEAM_ICON[i]} Team {t.no}
             </div>
             <motion.div key={t.members} initial={{ scale: 1.4 }} animate={{ scale: 1 }} className="text-[28px] leading-[32px]">
-              {t.members} bạn{t.wins > 0 && <span className="ml-2 text-[24px] text-[#ffe680]">🚩{t.wins}</span>}
+              {t.members} {t.members === 1 ? 'student' : 'students'}{t.wins > 0 && <span className="ml-2 text-[24px] text-[#ffe680]">🚩{t.wins}</span>}
             </motion.div>
           </div>
         ))}
       </div>
       <div className="mt-auto text-[24px] leading-tight opacity-85">
-        {X(v.noTeam > 0 ? `${v.noTeam} bạn chưa chọn, hết giờ cô xếp giùm` : 'Chưa chọn thì cô tự xếp vào tổ ít người')}
+        {X(v.noTeam > 0 ? `${v.noTeam} not picked yet: I will place them` : 'No pick? I will put you in the smallest team')}
       </div>
     </div>
   );
 }
 
-// Bảng thi đua tổ: ghim bên phải bảng đen, điểm tiết này của cả tổ, tổ dẫn đầu nổi lên trên, 🚩 = số tiết đã thắng
+// Team race board: pinned right of the blackboard, this class's points per team, the leader floats to the top, 🚩 = classes won
 function TeamBoard({ v }: { v: StageView }) {
   if (!v.teams.length) return null;
   const rows = [...v.teams].sort((a, b) => b.score - a.score || b.wins - a.wins || a.no - b.no);
@@ -852,7 +856,7 @@ function TeamBoard({ v }: { v: StageView }) {
   return (
     <div className="absolute right-[8px] top-[150px] z-20 w-[168px] rotate-2 rounded-[14px] border-[3px] border-[#c9a45c] bg-[#fff8e1]/95 px-2 pb-2 pt-3 text-[#4a2c0e] shadow-[0_6px_10px_rgba(0,0,0,0.3)]">
       <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 text-[28px]">📌</div>
-      <div className="text-center text-[19px] font-extrabold leading-tight text-[#b45309]">🚩 Thi đua tổ</div>
+      <div className="text-center text-[19px] font-extrabold leading-tight text-[#b45309]">🚩 Team race</div>
       <div className="mt-1 space-y-[4px]">
         {rows.map((t) => (
           <motion.div
@@ -861,14 +865,14 @@ function TeamBoard({ v }: { v: StageView }) {
             className="rounded-lg px-2 py-[2px] text-white shadow"
             style={{ background: TEAM_COLOR[t.no - 1], outline: t.no === lead ? '3px solid #ffd84a' : undefined }}
           >
-            <div className="flex items-center justify-between text-[20px] font-extrabold leading-tight">
+            <div className="flex items-center justify-between gap-1 whitespace-nowrap text-[19px] font-extrabold leading-tight">
               <span>
-                {t.no === lead ? '👑 ' : ''}Tổ {t.no}
+                {t.no === lead ? '👑 ' : ''}Team {t.no}
               </span>
-              <span>{t.score}đ</span>
+              <span>{t.score}</span>
             </div>
             <div className="flex justify-between text-[15px] font-semibold leading-tight opacity-95">
-              <span>{t.members} bạn</span>
+              <span>{t.members} kids</span>
               <span>{t.wins > 0 ? `🚩x${t.wins}` : ''}</span>
             </div>
           </motion.div>
@@ -878,18 +882,18 @@ function TeamBoard({ v }: { v: StageView }) {
   );
 }
 
-// Bảng sự kiện bên phải tên kênh: cho khán giả biết lớp có 2 game lớn và phiên tới là game nào, sau tiết mấy
+// Events board right of the channel name: tells viewers there are 2 big shows and which one is next, after which class
 function EventBadge({ v }: { v: StageView }) {
   const n = v.nextShow;
   if (!n) return null;
-  // chỉ liệt kê game đang bật ở trang điều khiển
+  // only lists the shows that are switched on in the control page
   const games = [
-    { kind: 'everest', label: '🏔️ Đường lên đỉnh Everest', on: v.cfg.everest },
-    { kind: 'chuong', label: '🔔 Rung Chuông Đồng', on: v.cfg.chuong },
+    { kind: 'everest', label: '🏔️ Road to Everest', on: v.cfg.everest },
+    { kind: 'chuong', label: '🔔 Golden Bell', on: v.cfg.chuong },
   ].filter((g) => g.on || g.kind === n.kind);
   return (
     <div className="absolute left-[784px] top-[12px] z-20 w-[288px] overflow-hidden rounded-[18px] border-[3px] border-[#7c3aed] bg-gradient-to-b from-[#2e1065] to-[#4c1d95] text-white shadow-[0_6px_0_#3b0764]">
-      <div className="bg-[#7c3aed] py-[1px] text-center text-[18px] font-extrabold tracking-wide text-[#fde68a]">🎪 SỰ KIỆN TRONG LỚP</div>
+      <div className="bg-[#7c3aed] py-[1px] text-center text-[18px] font-extrabold tracking-wide text-[#fde68a]">🎪 CLASS EVENTS</div>
       <div className="px-2 pt-1">
         {games.map((g) => (
           <div key={g.kind} className={`truncate text-[19px] font-bold leading-[26px] ${g.kind === n.kind ? 'text-[#fde68a]' : 'opacity-70'}`}>
@@ -903,14 +907,14 @@ function EventBadge({ v }: { v: StageView }) {
         transition={{ duration: 1, repeat: Infinity }}
         className={`mx-2 mb-2 mt-1 rounded-lg px-2 text-center text-[18px] font-extrabold leading-[26px] ${n.now ? 'bg-[#dc2626]' : n.soon ? 'bg-[#f59e0b] text-[#3b0764]' : 'bg-white/15'}`}
       >
-        {n.now ? `🔴 ĐANG DIỄN RA` : n.soon ? '⏰ Hết tiết này là tới!' : `⏭ Phiên tới: sau tiết ${n.afterRound}`}
+        {n.now ? `🔴 HAPPENING NOW` : n.soon ? '⏰ Right after this class!' : `⏭ Next: after class ${n.afterRound}`}
       </motion.div>
     </div>
   );
 }
 
-// ---------- 2 game lớn (bản riêng): Đường lên đỉnh Everest / Rung Chuông Đồng ----------
-// Bảng đen: cô đọc câu thì hiện câu + 4 đáp án để đọc theo; cô hô bắt đầu (boardShown) mới chạy đồng hồ và nhận đáp án
+// ---------- The 2 big shows: Road to Everest / Golden Bell ----------
+// Board: while she reads, show the question + 4 options to read along; when she says go (boardShown) the clock starts and answers count
 type ShowView = NonNullable<StageView['show']>;
 const SHOW_ACCENT = { everest: '#7dd3fc', chuong: '#fbbf24' };
 function ShowBoard({ v, left }: { v: StageView; left: number }) {
@@ -918,7 +922,7 @@ function ShowBoard({ v, left }: { v: StageView; left: number }) {
   const accent = SHOW_ACCENT[s.kind];
   const answering = s.stage === 'ask' && v.boardShown;
   const badge =
-    s.tag === 'tie' ? '⚖️ Câu phụ' : s.tag === 'bell' ? '🔔 Câu Chuông Đồng' : s.tag === 'rescue' ? '🤝 Cứu trợ cả phòng' : s.step === 'code' ? '🔐 Mật mã trạm' : s.step === 'stake' ? '🏔️ Chọn mức điểm' : `Câu ${s.qNo}`;
+    s.tag === 'tie' ? '⚖️ Tiebreaker' : s.tag === 'bell' ? '🔔 Golden Bell question' : s.tag === 'rescue' ? '🤝 Rescue for everyone' : s.step === 'code' ? '🔐 Base Camp Password' : s.step === 'stake' ? '🏔️ Place your bet' : `Question ${s.qNo}`;
   return (
     <div className="flex h-full flex-col">
       {s.step !== 'gather' && s.step !== 'section' && s.step !== 'honor' && (
@@ -926,7 +930,7 @@ function ShowBoard({ v, left }: { v: StageView; left: number }) {
           <span className="rounded-full px-4 text-[26px] font-bold text-[#1e1b4b]" style={{ background: accent }}>
             {badge}
           </span>
-          {answering ? <Timer left={left} /> : s.stage === 'reveal' ? <span className="text-[30px] text-[#9df29d]">Đáp án</span> : <span className="text-[26px] opacity-80">👂 Nghe cô đọc…</span>}
+          {answering ? <Timer left={left} /> : s.stage === 'reveal' ? <span className="text-[30px] text-[#9df29d]">Answer</span> : <span className="text-[26px] opacity-80">👂 Listen…</span>}
         </div>
       )}
       {s.step === 'gather' && <ShowGather s={s} left={left} />}
@@ -941,26 +945,26 @@ function ShowBoard({ v, left }: { v: StageView; left: number }) {
       {s.step === 'mc' && <ShowQuestion s={s} answering={answering} />}
       {s.step === 'stake' && (
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <div className="text-[36px]">Câu tiếp theo cược bao nhiêu?</div>
+          <div className="text-[36px]">How much will you bet on the next question?</div>
           <div className="mt-3 flex gap-6">
             {[10, 20].map((x, i) => (
               <div key={x} className="w-[190px] rounded-2xl border-4 py-2" style={{ borderColor: accent }}>
                 <div className="text-[54px] font-extrabold leading-none" style={{ color: accent }}>
                   {x}
                 </div>
-                <div className="text-[24px]">Gõ "{x}" · {s.stakes[i]} bạn</div>
+                <div className="text-[24px]">Type "{x}" · {s.stakes[i]} players</div>
               </div>
             ))}
           </div>
-          <div className="mt-3 text-[24px] opacity-80">Không chọn thì tính 10 · sai không bị trừ</div>
+          <div className="mt-3 text-[24px] opacity-80">No pick = 10 · wrong answers lose nothing</div>
         </div>
       )}
       {(s.step === 'code' || s.step === 'codeReveal') && s.code && <ShowCode s={s} answering={answering} />}
       {s.step === 'honor' && <ShowHonor s={s} />}
       {answering && (s.step === 'mc' || s.step === 'stake') && (
         <div className="mt-auto shrink-0 text-center text-[24px] opacity-85">
-          {s.step === 'stake' ? 'Gõ 10 hoặc 20' : 'Gõ A, B, C hoặc D'} · {s.answered} bạn đã chọn
-          {s.tag === 'final' && s.tickets > 0 && !s.ticketUser && <span className="text-[#ffe680]"> · 🎟️ có phiếu: gõ "gợi ý"</span>}
+          {s.step === 'stake' ? 'Type 10 or 20' : 'Type A, B, C or D'} · {s.answered} answered
+          {s.tag === 'final' && s.tickets > 0 && !s.ticketUser && <span className="text-[#ffe680]"> · 🎟️ got a ticket? type "hint"</span>}
         </div>
       )}
     </div>
@@ -970,8 +974,8 @@ function ShowBoard({ v, left }: { v: StageView; left: number }) {
 function ShowGather({ s, left }: { s: ShowView; left: number }) {
   const rules =
     s.kind === 'everest'
-      ? ['👣 Bước chân đầu tiên · 🔐 Mật mã trạm', '🌪️ Bão tốc độ · 🏔️ Chạm đỉnh', 'Gõ A B C D · ai đúng cũng có điểm']
-      : ['🔥 Làm nóng · 💪 Trụ vững · 🤝 Cứu trợ', '⚡ Thử thách cuối · 🔔 Câu Chuông Đồng', 'Gõ A B C D · sai không bị loại'];
+      ? ['👣 First Steps · 🔐 Base Camp Password', '🌪️ Speed Storm · 🏔️ The Summit', 'Type A B C D · every right answer scores']
+      : ['🔥 Warm-up · 💪 Hold Steady · 🤝 Rescue', '⚡ Final Challenge · 🔔 Golden Bell question', 'Type A B C D · nobody gets eliminated'];
   return (
     <div className="flex h-full flex-col items-center justify-center text-center">
       <motion.div animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 0.47, repeat: Infinity }} className="text-[64px] leading-none">
@@ -985,7 +989,7 @@ function ShowGather({ s, left }: { s: ShowView; left: number }) {
           <div key={r}>{r}</div>
         ))}
       </div>
-      <div className="mt-3 text-[26px] opacity-80">Bắt đầu sau {left} giây</div>
+      <div className="mt-3 text-[26px] opacity-80">Starting in {left} seconds</div>
     </div>
   );
 }
@@ -1018,9 +1022,9 @@ function ShowQuestion({ s, answering }: { s: ShowView; answering: boolean }) {
           );
         })}
       </div>
-      {s.tag === 'tie' && s.stage === 'ask' && <div className="shrink-0 truncate text-center text-[22px] text-[#ffe680]">Chỉ tính: {s.tied.join(', ')}</div>}
-      {s.ticketUser && s.stage === 'ask' && <div className="shrink-0 truncate text-center text-[22px] text-[#ffe680]">🎟️ {s.ticketUser} tiếp sức: bỏ 2 đáp án sai</div>}
-      {reveal && <div className="shrink-0 text-center text-[24px] text-[#9df29d]">{s.lastRight} bạn trả lời đúng</div>}
+      {s.tag === 'tie' && s.stage === 'ask' && <div className="shrink-0 truncate text-center text-[22px] text-[#ffe680]">Only counts for: {s.tied.join(', ')}</div>}
+      {s.ticketUser && s.stage === 'ask' && <div className="shrink-0 truncate text-center text-[22px] text-[#ffe680]">🎟️ {s.ticketUser} used a ticket: 2 wrong answers removed</div>}
+      {reveal && <div className="shrink-0 text-center text-[24px] text-[#9df29d]">{s.lastRight} got it right</div>}
     </>
   );
 }
@@ -1040,20 +1044,20 @@ function ShowCode({ s, answering }: { s: ShowView; answering: boolean }) {
       <div className="mt-2 flex-1 space-y-1 overflow-hidden">
         {c.hints.map((h, i) => (
           <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex gap-2 text-[24px] leading-[30px]">
-            <b className="shrink-0 text-[#7dd3fc]">{[30, 20, 10][i]}đ</b>
+            <b className="shrink-0 text-[#7dd3fc]">{[30, 20, 10][i]} pts</b>
             <span className="line-clamp-2">{h}</span>
           </motion.div>
         ))}
-        {c.rescue && !c.answer && <div className="text-[24px] text-[#ffe680]">🆘 Cứu trợ 10 giây · chữ đầu là {c.first}</div>}
+        {c.rescue && !c.answer && <div className="text-[24px] text-[#ffe680]">🆘 10 second rescue · starts with {c.first}</div>}
       </div>
       <div className="shrink-0 text-center text-[23px] opacity-90">
         {c.answer
           ? c.solvers.length
-            ? `🔓 ${c.solved} bạn giải được: ${c.solvers.map((x) => x.nickname).slice(0, 3).join(', ')}`
-            : '🔒 Không ai giải được'
+            ? `🔓 ${c.solved} cracked it: ${c.solvers.map((x) => x.nickname).slice(0, 3).join(', ')}`
+            : '🔒 Nobody cracked it'
           : answering
-            ? `Gõ từ khoá có dấu · đúng được ${c.pts} điểm · ${c.solved} bạn đã giải`
-            : `${c.solved} bạn đã giải`}
+            ? `Type the password · ${c.pts} pts · ${c.solved} cracked it`
+            : `${c.solved} cracked it`}
       </div>
     </div>
   );
@@ -1063,32 +1067,32 @@ function ShowHonor({ s }: { s: ShowView }) {
   return (
     <div className="flex h-full flex-col items-center">
       <div className="text-[44px] font-extrabold leading-none" style={{ color: SHOW_ACCENT[s.kind] }}>
-        {s.kind === 'everest' ? '🚩 Vinh danh đỉnh Everest' : '🔔 Vinh danh Chuông Đồng'}
+        {s.kind === 'everest' ? '🚩 Everest Hall of Fame' : '🔔 Golden Bell Hall of Fame'}
       </div>
-      {s.honors.length === 0 && <div className="mt-16 text-[34px]">Chưa ai ghi điểm</div>}
+      {s.honors.length === 0 && <div className="mt-16 text-[34px]">Nobody scored yet</div>}
       <div className="mt-2 grid w-full grid-cols-2 gap-x-4 px-2 text-[22px] leading-[30px]">
         {s.honors.map((h, i) => (
           <motion.div key={h.username} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.12 }} className={`flex min-w-0 gap-1 ${i === 0 ? 'col-span-2 justify-center text-[30px] text-[#ffe680]' : ''}`}>
             <span className="shrink-0">{i === 0 ? h.title.split(' ')[0] : `${i + 1}.`}</span>
             <span className="min-w-0 truncate">{h.nickname}</span>
-            <b className="shrink-0">{h.score}đ</b>
+            <b className="shrink-0">{h.score} pts</b>
           </motion.div>
         ))}
       </div>
-      {s.honors[0] && <div className="mt-auto text-[24px] opacity-85">{s.honors[0].title.slice(s.honors[0].title.indexOf(' ') + 1)} · top 10 nhận huy hiệu</div>}
+      {s.honors[0] && <div className="mt-auto text-[24px] opacity-85">{s.honors[0].title.slice(s.honors[0].title.indexOf(' ') + 1)} · top 10 get a badge</div>}
     </div>
   );
 }
 
-// Dưới bảng đen: núi Everest, top 10 leo cao theo điểm (điểm tối đa = đỉnh), người đầu cầm cờ
+// Below the board: Mount Everest, the top 10 climb by points (max points = summit), the leader holds the flag
 function Mountain({ v }: { v: StageView }) {
   const s = v.show!;
-  const W = 400; // nhỏ lại cho khỏi che bảng Top tương tác bên phải
+  const W = 400; // smaller so it does not cover the Top chatters board on the right
   const H = 168;
   const top = s.top.slice(0, 10);
   const pos = (i: number, score: number) => {
     const p = Math.min(1, score / Math.max(1, s.maxScore));
-    const side = i % 2 === 0 ? -1 : 1; // so le 2 sườn núi cho đỡ chồng tên
+    const side = i % 2 === 0 ? -1 : 1; // alternate between the two slopes so names overlap less
     const y = H - 18 - p * (H - 40);
     const halfWidth = ((y - 20) / (H - 20)) * (W / 2 - 10);
     return { x: W / 2 + side * Math.max(8, halfWidth * (0.35 + ((i * 37) % 50) / 100)), y };
@@ -1101,8 +1105,8 @@ function Mountain({ v }: { v: StageView }) {
         <line x1={W / 2} y1={20} x2={W / 2} y2={2} stroke="#7c2d12" strokeWidth={3} />
         <polygon points={`${W / 2},2 ${W / 2 + 22},8 ${W / 2},14`} fill="#ef4444" />
       </svg>
-      <div className="absolute left-2 top-1 text-[18px] font-extrabold text-[#0c4a6e]">⛰️ Top 10 leo núi · {s.players} bạn chơi</div>
-      {top.length === 0 && <div className="absolute inset-x-0 bottom-3 text-center text-[20px] font-bold text-white">Trả lời đúng để leo lên nha!</div>}
+      <div className="absolute left-2 top-1 text-[18px] font-extrabold text-[#0c4a6e]">⛰️ Top 10 climbers · {s.players} players</div>
+      {top.length === 0 && <div className="absolute inset-x-0 bottom-3 text-center text-[20px] font-bold text-white">Answer right to climb!</div>}
       {top.map((r, i) => {
         const p = pos(i, r.score);
         return (
@@ -1122,38 +1126,38 @@ function Mountain({ v }: { v: StageView }) {
   );
 }
 
-// Dưới bảng đen: Rung Chuông Đồng, top 5 thanh điểm + người đủ điều kiện rung chuông
+// Below the board: Golden Bell, top 5 score bars + who can still ring the bell
 function BellBoard({ v }: { v: StageView }) {
   const s = v.show!;
   const top = s.top.slice(0, 5);
   return (
     <div className="absolute left-[392px] top-[622px] z-30 w-[400px] overflow-hidden rounded-[16px] border-[3px] border-[#78350f] bg-[#fffbeb]/97 shadow-xl">
       <div className="flex items-center justify-between bg-gradient-to-r from-[#b45309] to-[#d97706] px-3 py-[2px] text-[19px] font-bold text-[#fff7d6]">
-        <span>🔔 Bảng điểm Chuông Đồng</span>
+        <span>🔔 Golden Bell scores</span>
         <span>
-          {s.players} bạn chơi{s.tickets > 0 ? ` · 🎟️ ${s.tickets}` : ''}
+          {s.players} players{s.tickets > 0 ? ` · 🎟️ ${s.tickets}` : ''}
         </span>
       </div>
       <div className="space-y-[3px] px-2 py-1">
-        {top.length === 0 && <div className="py-3 text-center text-[20px] text-[#92400e]">Trả lời đúng để lên bảng nha!</div>}
+        {top.length === 0 && <div className="py-3 text-center text-[20px] text-[#92400e]">Answer right to get on the board!</div>}
         {top.map((r, i) => (
           <motion.div key={r.username} layout className="relative h-[26px] overflow-hidden rounded-md bg-[#fde68a]/50">
             <motion.div className="absolute inset-y-0 left-0 bg-[#f59e0b]/70" animate={{ width: `${Math.min(100, (r.score / Math.max(1, s.maxScore)) * 100)}%` }} />
             <div className="relative flex h-full items-center gap-2 px-2 text-[18px] font-bold text-[#78350f]">
               <span>{['🥇', '🥈', '🥉', '4', '5'][i]}</span>
               <span className="min-w-0 flex-1 truncate">{r.nickname}</span>
-              <span>{r.score}đ</span>
+              <span>{r.score} pts</span>
             </div>
           </motion.div>
         ))}
-        {s.bellRingers.length > 0 && <div className="truncate text-[17px] font-semibold text-[#b45309]">🔔 Rung chuông: {s.bellRingers.join(', ')}</div>}
+        {s.bellRingers.length > 0 && <div className="truncate text-[17px] font-semibold text-[#b45309]">🔔 Bell ringers: {s.bellRingers.join(', ')}</div>}
       </div>
     </div>
   );
 }
 
-// ---------- Giờ ra chơi ----------
-const RECESS_TITLE = { rps: 'Oẳn tù tì với cô', callup: 'Kiểm tra miệng', pick: 'Chọn phe', roll: 'Điểm danh siêu tốc', heart: 'Thả tim cả lớp', dance: '💃 Nhảy múa thả tim' };
+// ---------- Recess ----------
+const RECESS_TITLE = { rps: 'Rock Paper Scissors', callup: 'Pop quiz', pick: 'Pick a side', roll: 'Speed roll call', heart: 'Hearts for the class', dance: '💃 Dance & hearts' };
 
 function Recess({ v, left }: { v: StageView; left: number }) {
   const r = v.recess!;
@@ -1163,7 +1167,7 @@ function Recess({ v, left }: { v: StageView; left: number }) {
     <div className="flex h-full flex-col items-center text-center">
       <div className="flex w-full items-center justify-between">
         <span className="rounded-full bg-[#ffd84a] px-4 text-[26px] font-bold text-[#7a2e0e]">
-          🔔 Giờ ra chơi{r.game === 'callup' ? ` · ${RECESS_TITLE.callup}` : ''}
+          🔔 Recess{r.game === 'callup' ? ` · ${RECESS_TITLE.callup}` : ''}
         </span>
         {playing && <Timer left={left} />}
       </div>
@@ -1172,9 +1176,9 @@ function Recess({ v, left }: { v: StageView; left: number }) {
         <>
           <div className="mt-3 flex w-full justify-center gap-6 text-[34px]">
             {[
-              ['✊', 'búa'],
-              ['✌️', 'kéo'],
-              ['✋', 'bao'],
+              ['✊', 'rock'],
+              ['✌️', 'scissors'],
+              ['✋', 'paper'],
             ].map(([icon, word], i) => (
               <div key={word} className={`w-[150px] rounded-2xl border-2 py-2 ${r.teacher === word ? 'border-[#ffd84a] bg-white/15' : 'border-white/30'}`}>
                 <div className="text-[56px] leading-none">{icon}</div>
@@ -1183,17 +1187,17 @@ function Recess({ v, left }: { v: StageView; left: number }) {
               </div>
             ))}
           </div>
-          <div className="mt-3 text-[32px]">{playing ? 'Gõ: búa, kéo hoặc bao' : r.teacher ? X(`Cô ra: ${r.teacher}`) : 'Không ai chơi'}</div>
+          <div className="mt-3 text-[32px]">{playing ? 'Type: rock, paper or scissors' : r.teacher ? X(`Teacher threw: ${r.teacher}`) : 'Nobody played'}</div>
         </>
       )}
       {r.game === 'callup' && (
         <>
-          <div className="mt-1 max-w-full shrink-0 truncate text-[36px] text-[#ffe680]">📢 {r.callName} lên bảng!</div>
+          <div className="mt-1 max-w-full shrink-0 truncate text-[36px] text-[#ffe680]">📢 {r.callName} to the board!</div>
           <div className="line-clamp-2 shrink-0 text-[30px] leading-[36px]">{r.callClue}</div>
           <Tiles letters={r.callTiles} dim={!playing} />
           <Slots slots={r.callSlots} reveal={!playing} />
           {!playing && (
-            <div className="mt-1 text-[34px]">{r.callResult === 'right' ? '✅ Đúng! +5 điểm' : r.callResult === 'wrong' ? '❌ Sai mất rồi' : '💤 Không trả lời'}</div>
+            <div className="mt-1 text-[34px]">{r.callResult === 'right' ? '✅ Correct! +5 points' : r.callResult === 'wrong' ? '❌ Not quite' : '💤 No answer'}</div>
           )}
         </>
       )}
@@ -1207,7 +1211,7 @@ function Recess({ v, left }: { v: StageView; left: number }) {
                 <div className="absolute inset-y-0 left-0 bg-[#ffd84a]/35 transition-all duration-500" style={{ width: `${pct}%` }} />
                 <div className="relative flex h-full items-center justify-between px-4 text-[36px]">
                   <span>
-                    Gõ <b className="text-[#ffe680]">{i + 1}</b>: {label}
+                    Type <b className="text-[#ffe680]">{i + 1}</b>: {label}
                   </span>
                   <span>{r.votes[i]}</span>
                 </div>
@@ -1219,7 +1223,7 @@ function Recess({ v, left }: { v: StageView; left: number }) {
       {r.game === 'roll' && (
         <>
           <div className="text-[34px]">
-            Gõ <b className="text-[#ffe680]">CÓ MẶT</b> thật nhanh, 10 bạn đầu +3
+            Type <b className="text-[#ffe680]">HERE</b> fast, first 10 get +3
           </div>
           <div className="mt-2 grid w-full grid-cols-2 gap-x-6 px-6 text-left text-[28px]">
             {r.roll.map((n, i) => (
@@ -1232,24 +1236,24 @@ function Recess({ v, left }: { v: StageView; left: number }) {
       )}
       {r.game === 'dance' && (
         <>
-          <div className="mt-1 text-[32px]">Thả tim tiếp sức cho cả lớp nào!</div>
+          <div className="mt-1 text-[32px]">Send hearts to power up the class!</div>
           <HeartCounter n={r.hearts} />
           {r.topLiker && r.topLiker.nickname && (
             <div className="mt-1 max-w-full truncate px-4 text-[28px] text-[#ffb3c8]">
-              👑 Thả tim nhiều nhất: {r.topLiker.nickname} · {r.topLiker.n}
+              👑 Top heart sender: {r.topLiker.nickname} · {r.topLiker.n}
             </div>
           )}
-          {!playing && <div className="mt-1 text-[32px] text-[#9df29d]">Cảm ơn cả lớp! 💕</div>}
+          {!playing && <div className="mt-1 text-[32px] text-[#9df29d]">Thank you, class! 💕</div>}
         </>
       )}
-      {/* thả tim cả lớp (chủ kênh 2026-11-07): không còn mốc 0/300, máy chỉ đếm số tim thật */}
+      {/* class heart rain (owner 2026-11-07): no more 0/300 goal, it just counts real hearts */}
       {r.game === 'heart' && (
         <>
-          <div className="mt-2 text-[32px]">Chạm màn hình thả tim nào!</div>
+          <div className="mt-2 text-[32px]">Tap the screen to send hearts!</div>
           <HeartCounter n={r.hearts} />
           {r.topLiker && r.topLiker.nickname && (
             <div className="mt-1 max-w-full truncate px-4 text-[28px] text-[#ffb3c8]">
-              👑 Thả tim nhiều nhất: {r.topLiker.nickname} · {r.topLiker.n}
+              👑 Top heart sender: {r.topLiker.nickname} · {r.topLiker.n}
             </div>
           )}
         </>
@@ -1258,12 +1262,12 @@ function Recess({ v, left }: { v: StageView; left: number }) {
   );
 }
 
-// Cuối giờ ra chơi: lớp trưởng các tiết trước (mới nhất trên cùng), ai làm nhiều lần thì có số lần
+// End of recess: class monitors of the previous classes (newest on top), with a count for repeat monitors
 function SessionBoard({ v }: { v: StageView }) {
   return (
     <div className="flex h-full flex-col items-center">
-      <div className="text-[48px] leading-none text-[#ffe680]">👑 Lớp trưởng các tiết</div>
-      {v.champions.length === 0 && <div className="mt-16 text-[36px]">Chưa có lớp trưởng</div>}
+      <div className="text-[48px] leading-none text-[#ffe680]">👑 Class monitors</div>
+      {v.champions.length === 0 && <div className="mt-16 text-[36px]">No class monitor yet</div>}
       <div className="mt-3 w-full space-y-1">
         {v.champions.map((c, i) => (
           <motion.div
@@ -1273,14 +1277,14 @@ function SessionBoard({ v }: { v: StageView }) {
             transition={{ delay: i * 0.2 }}
             className="flex items-center gap-3 px-6 text-[36px]"
           >
-            <span className="w-[110px] text-[26px] text-[#ffe680]">Tiết {c.round}</span>
+            <span className="w-[110px] text-[26px] text-[#ffe680]">Class {c.round}</span>
             <span className="flex-1 truncate">{c.nickname}</span>
             {c.times > 1 && <span className="text-[26px] text-[#ffe680]">👑x{c.times}</span>}
-            <span>{c.score}đ</span>
+            <span>{c.score} pts</span>
           </motion.div>
         ))}
       </div>
-      <div className="mt-auto text-[28px] opacity-80">Tiết mới điểm làm lại, ai cũng có thể làm lớp trưởng!</div>
+      <div className="mt-auto text-[28px] opacity-80">New class, new scores: anyone can be class monitor!</div>
     </div>
   );
 }
@@ -1288,30 +1292,30 @@ function SessionBoard({ v }: { v: StageView }) {
 function WeekBoard({ v, left }: { v: StageView; left: number }) {
   return (
     <div className="flex h-full flex-col items-center">
-      <div className="text-[48px] leading-none text-[#ffe680]">Bảng vàng tuần này</div>
+      <div className="text-[48px] leading-none text-[#ffe680]">This week's honor roll</div>
       <div className="mt-3 w-full space-y-1">
         {v.weekTop.slice(0, 5).map((s, i) => (
           <div key={s.username} className="flex items-center gap-3 px-6 text-[36px]">
             <span className="w-12 text-[#ffe680]">{['🥇', '🥈', '🥉', '4', '5'][i]}</span>
             <span className="flex-1 truncate">{s.nickname}</span>
-            <span>{s.points}đ</span>
+            <span>{s.points} pts</span>
           </div>
         ))}
       </div>
-      <div className="mt-auto text-[28px] opacity-80">Vào tiết sau {left} giây</div>
+      <div className="mt-auto text-[28px] opacity-80">Next class in {left} seconds</div>
     </div>
   );
 }
 
-// Góc trái trên đầu cô: tờ giấy ghim "Học sinh xuất sắc trong tiết", chỉ tính điểm tiết đang học, sang tiết mới làm lại
-// (chủ kênh đổi 2026-11-04, trước tính cả ngày). Ghế đã xếp theo điểm tiết nên lấy luôn 4 bạn đầu
+// Top-left corner above the teacher: pinned note "Top students this class", only this class's points, restarts every class
+// (owner changed it 2026-11-04, it used to be the whole day). Seats are already sorted by class points, so take the first 4
 function DayTop({ v }: { v: StageView }) {
-  const rows = v.seats.filter((s) => s.score > 0).slice(0, 4).map((s) => ({ username: s.username, nickname: s.nickname, points: s.score })); // top 4 thôi để không che đầu cô
+  const rows = v.seats.filter((s) => s.score > 0).slice(0, 4).map((s) => ({ username: s.username, nickname: s.nickname, points: s.score })); // top 4 only so it never covers the teacher's head
   return (
     <div className="absolute left-[10px] top-[230px] z-20 w-[326px] -rotate-2 rounded-[14px] border-[3px] border-[#c9a45c] bg-[#fff8e1]/95 px-3 pb-2 pt-3 text-[#4a2c0e] shadow-[0_6px_10px_rgba(0,0,0,0.3)]">
       <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 text-[30px]">📌</div>
-      <div className="whitespace-nowrap text-center text-[21px] font-extrabold leading-tight text-[#b45309]">🏆 Học sinh xuất sắc trong tiết</div>
-      {rows.length === 0 && <div className="py-3 text-center text-[20px] text-[#8a6a3a]">Chưa có ai, trả lời đúng là lên bảng!</div>}
+      <div className="whitespace-nowrap text-center text-[21px] font-extrabold leading-tight text-[#b45309]">🏆 Top students this class</div>
+      {rows.length === 0 && <div className="py-3 text-center text-[20px] text-[#8a6a3a]">Nobody yet, answer right to get on the board!</div>}
       <div className="mt-1 space-y-[2px]">
         {rows.map((r, i) => (
           <motion.div key={r.username} layout className="flex items-center gap-2 text-[23px] leading-[28px]">
@@ -1325,26 +1329,26 @@ function DayTop({ v }: { v: StageView }) {
   );
 }
 
-// ---------- Cô giáo (cô Ngân, bản riêng: 16 tư thế, ảnh gốc trong nhan-vat/co-giao-ngan, tách nền ra public/assets/nv/co-ngan) ----------
+// ---------- Teacher (Ms. Ngan: 16 poses, art in characters/co-giao-ngan, background removed into public/assets/nv/co-ngan) ----------
 function teacherPose(v: StageView, now: number): string {
-  // đang bật thông báo tan trường / tắt live: cô đứng vẫy tay chào tạm biệt xen kẽ thả tim vui vẻ
+  // goodbye / end of live banner is on: she waves goodbye, alternating with happy heart hands
   if (v.goodbye) return now % 3000 < 1800 ? '04-vay-chao' : '07-tay-nguc';
-  // có bạn cầm hoa đi lên: ngạc nhiên, tới bục đưa hoa thì cười che miệng
+  // a student walks up with flowers: surprised, then laughs behind her hand when the flowers arrive
   if (v.walk) return now - v.walk.at < GAME.walkMs * 0.35 ? '13-ngac-nhien' : '06-cuoi';
-  if (now - v.lastFlowerAt < 3000) return '06-cuoi'; // được tặng hoa
+  if (now - v.lastFlowerAt < 3000) return '06-cuoi'; // got flowers
   if (v.birthday) return '09-mung';
   if (v.clapping) return '10-vo-tay';
-  if (v.loveFans > 0) return '07-tay-nguc'; // các bạn gõ "yêu cô"
+  if (v.loveFans > 0) return '07-tay-nguc'; // students typing "love you teacher"
   switch (v.phase) {
     case 'team':
     case 'intro':
       return '04-vay-chao';
     case 'question':
-      if (!v.boardShown) return '02-gioi-thieu'; // đang đọc đề
-      if (v.correctCount > 0) return '08-ngon-cai'; // có bạn đúng rồi
-      return now % 8000 < 4000 ? '03-chi-bang' : '01-dung'; // chờ trả lời: lúc chỉ bảng, lúc đứng
+      if (!v.boardShown) return '02-gioi-thieu'; // reading the question
+      if (v.correctCount > 0) return '08-ngon-cai'; // someone got it right
+      return now % 8000 < 4000 ? '03-chi-bang' : '01-dung'; // waiting for answers: sometimes pointing at the board, sometimes standing
     case 'bonus':
-      return '12-gai-dau'; // chưa ai ra, thêm giờ
+      return '12-gai-dau'; // nobody yet, extra time
     case 'reveal':
       return v.correctCount === 0 ? '11-nhun-vai' : v.golden ? '09-mung' : '08-ngon-cai';
     case 'praise':
@@ -1359,7 +1363,7 @@ function teacherPose(v: StageView, now: number): string {
   return '01-dung';
 }
 
-/** 2 game lớn: tư thế theo từng bước (ảnh nhan-vat/co-giao-ngan/duong-len-dinh-everest và Rung-Chuong-Dong) */
+/** The 2 big shows: pose per step (art in characters/co-giao-ngan/duong-len-dinh-everest and Rung-Chuong-Dong) */
 function showPose(v: StageView, now: number): string {
   const sh = v.show!;
   const flower = now - v.lastFlowerAt < 3000 || !!v.walk;
@@ -1372,7 +1376,7 @@ function showPose(v: StageView, now: number): string {
       case 'gather':
         return alt ? '04-chao-doan-leo' : '12-vay-chao';
       case 'section':
-        return sh.section.includes('Chạm đỉnh') ? '02-chi-len-dinh' : '03-chi-lo-trinh';
+        return sh.section.includes('Summit') ? '02-chi-len-dinh' : '03-chi-lo-trinh';
       case 'stake':
         return '16-tu-tin';
       case 'code':
@@ -1394,7 +1398,7 @@ function showPose(v: StageView, now: number): string {
     case 'gather':
       return alt ? '12-moi-thi-sinh' : '13-vay-chao-cam-chuong';
     case 'section':
-      return sh.section.includes('Chuông') ? '15-chuan-bi-rung' : '09-bao-hieu-bat-dau';
+      return sh.section.includes('Bell') ? '15-chuan-bi-rung' : '09-bao-hieu-bat-dau';
     case 'honor':
       return alt ? '10-mung-chien-thang' : '03-rung-chuong-cao';
     default:
@@ -1410,16 +1414,16 @@ function showPose(v: StageView, now: number): string {
 function Teacher({ v, now }: { v: StageView; now: number }) {
   const gotFlower = now - v.lastFlowerAt < 3000;
   if (THAY) return <TeacherThay v={v} now={now} gotFlower={gotFlower} />;
-  // trang phục: bộ trắng ở thư mục gốc, bộ khác ở thư mục con; 2 game lớn mặc bộ của game
+  // outfit: the white set is in the main folder, the others in sub-folders; the 2 big shows use the show outfit
   const src = v.show
-    ? `/assets/nv/co-ngan/${v.show.kind}/${showPose(v, now)}.webp`
+    ? asset(`/assets/nv/co-ngan/${v.show.kind}/${showPose(v, now)}.webp`)
     : v.outfit === 'trang' || !v.outfit
-      ? `/assets/nv/co-ngan/${teacherPose(v, now)}.webp`
-      : `/assets/nv/co-ngan/${v.outfit}/${OUTFIT_POSE[teacherPose(v, now)] ?? '01-dung'}.webp`;
+      ? asset(`/assets/nv/co-ngan/${teacherPose(v, now)}.webp`)
+      : asset(`/assets/nv/co-ngan/${v.outfit}/${OUTFIT_POSE[teacherPose(v, now)] ?? '01-dung'}.webp`);
   return (
     <div className="absolute left-[86px] top-[410px] h-[490px] w-[320px]">
       <img src={src} className="h-full w-full object-contain object-bottom drop-shadow-[0_10px_8px_rgba(0,0,0,0.25)]" />
-      {/* bảng tên cài ngực áo (trên đầu cô là bảng Học sinh xuất sắc nên không đặt ở đó) */}
+      {/* name badge pinned on her chest (the Top students note is above her head, so not there) */}
       <div className="absolute left-1/2 top-[128px] z-10 -translate-x-1/2 -rotate-3 whitespace-nowrap rounded-full border-[3px] border-[#fff6dd] bg-gradient-to-b from-[#ff6b9a] to-[#d63384] px-3 py-[1px] text-[22px] font-extrabold text-white shadow-[0_3px_0_#9d174d]">
         🌸 {v.cfg.teacherName}
       </div>
@@ -1440,14 +1444,14 @@ function Teacher({ v, now }: { v: StageView; now: number }) {
   );
 }
 
-/** Thầy giáo đứng lớp: cùng chỗ đứng với cô, đổi tông vest & huy hiệu bảng tên theo từng Kỳ thi (Cấp 1 -> Cấp 2 -> Cấp 3 -> Tú Tài) */
+/** Male teacher: same spot as the teacher, suit colour & badge change with each term (Term 1 -> Term 2 -> Term 3 -> Finals) */
 function TeacherThay({ v, now, gotFlower }: { v: StageView; now: number; gotFlower: boolean }) {
   const pose = v.show ? thayShowPose(v, now) : (THAY_POSE[teacherPose(v, now)] ?? '01-dung');
   const t = STAGE_THEMES[stageIdxOf(v)];
   return (
     <div className="absolute left-[86px] top-[410px] h-[490px] w-[320px]">
       <img
-        src={`/assets/nv/thay/${pose}.webp`}
+        src={asset(`/assets/nv/thay/${pose}.webp`)}
         className="h-full w-full object-contain object-bottom drop-shadow-[0_10px_8px_rgba(0,0,0,0.25)] transition-[filter] duration-500"
         style={t.thayFilter ? { filter: t.thayFilter } : undefined}
       />
@@ -1465,11 +1469,11 @@ function TeacherThay({ v, now, gotFlower }: { v: StageView; now: number; gotFlow
   );
 }
 
-// ---------- Thầy giám thị (2026-11-07) ----------
-// Ảnh riêng bỏ vào nhan-vat/thay-giam-thi rồi chạy: node tools/tach-nen.mjs thay-giam-thi giam-thi (cần có 01-dung.png).
-// Chưa có ảnh thì mượn ảnh thầy giáo, đổi màu áo + băng đỏ "GIÁM THỊ" cho khác người đứng lớp.
-const GIAM_THI_IMGS = ['/assets/nv/giam-thi/01-dung.webp', '/assets/nv/thay/01-dung.webp'];
-const DOOR: [number, number] = [1000, 690]; // cửa lớp bên phải (toạ độ góc trên trái nhân vật)
+// ---------- Hall monitor (2026-11-07) ----------
+// Own art: put it in characters/thay-giam-thi and run: node tools/remove-bg.mjs thay-giam-thi giam-thi (needs 01-dung.png).
+// Without art it borrows the male teacher image, with another shirt colour + a red "HALL MONITOR" armband so it differs from the teacher.
+const GIAM_THI_IMGS = [asset('/assets/nv/giam-thi/01-dung.webp'), asset('/assets/nv/thay/01-dung.webp')];
+const DOOR: [number, number] = [1000, 690]; // classroom door on the right (top-left corner of the character)
 function GiamThi({ h }: { h: number }) {
   const [own, setOwn] = useState(true);
   return (
@@ -1481,20 +1485,20 @@ function GiamThi({ h }: { h: number }) {
         style={own ? undefined : { filter: 'hue-rotate(185deg) saturate(1.6) brightness(0.92)' }}
       />
       <div className="absolute left-1/2 top-[26%] -translate-x-1/2 -rotate-6 whitespace-nowrap rounded-md border-2 border-white bg-[#2563eb] px-2 text-[17px] font-extrabold text-white shadow">
-        📋 QUẢN LỚP
+        📋 HALL MONITOR
       </div>
     </div>
   );
 }
 
-/** Thầy giám thị đi từ cửa tới ghế bạn ngồi im lâu, dắt bạn ra cửa; bạn đang chờ đi từ cửa vào ghế trống */
+/** The hall monitor walks from the door to a student who has been quiet too long and walks them out; a waiting student walks from the door to the empty seat */
 function Escort({ v }: { v: StageView }) {
   const e = v.escort;
   if (!e) return null;
   const T = GAME.escortMs / 1000;
   const H = 300;
   const seat = seatBox(Math.max(0, e.seat));
-  // đứng trên sàn cạnh ghế (bên phải ghế cho khỏi khuất sau người đứng lớp ở góc trái)
+  // stands on the floor next to the seat (right of the seat so he is not hidden behind the teacher in the left corner)
   const at: [number, number] = [seat.x + seat.w * 0.6, seat.y + seat.show + 30 - H];
   const kidH = 150;
   const g = e.out.girl ? 'nu' : 'nam';
@@ -1511,7 +1515,7 @@ function Escort({ v }: { v: StageView }) {
       >
         <GiamThi h={H} />
       </motion.div>
-      {/* bạn bị đưa ra: đứng dậy ở ghế, đi theo thầy ra cửa */}
+      {/* student being walked out: stands up at the seat and follows him to the door */}
       <motion.div
         key={`out${e.at}`}
         initial={{ left: seat.x, top: seat.y - 30, opacity: 0 }}
@@ -1520,12 +1524,12 @@ function Escort({ v }: { v: StageView }) {
         className="pointer-events-none absolute z-30"
         style={{ width: kidH * 0.47, height: kidH }}
       >
-        <img src={`/assets/nv/${g}/${POSE[g].buon}.webp`} className="h-full w-full drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]" />
+        <img src={asset(`/assets/nv/${g}/${POSE[g].buon}.webp`)} className="h-full w-full drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]" />
         <div className="nametag" style={{ fontSize: 15, maxWidth: 120 }}>
           <span className="truncate">💤 {e.out.nickname}</span>
         </div>
       </motion.div>
-      {/* bạn mới vào lớp: từ cửa đi vào ghế */}
+      {/* new student: walks from the door to the seat */}
       {e.in && target && (
         <motion.div
           key={`in${e.at}`}
@@ -1535,7 +1539,7 @@ function Escort({ v }: { v: StageView }) {
           className="pointer-events-none absolute z-30"
           style={{ width: kidH * 0.47, height: kidH }}
         >
-          <img src={`/assets/nv/${gi}/${POSE[gi].chao}.webp`} className="h-full w-full drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]" />
+          <img src={asset(`/assets/nv/${gi}/${POSE[gi].chao}.webp`)} className="h-full w-full drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]" />
           <div className="nametag" style={{ fontSize: 15, maxWidth: 120 }}>
             <span className="truncate">🙋 {e.in.nickname}</span>
           </div>
@@ -1545,13 +1549,13 @@ function Escort({ v }: { v: StageView }) {
   );
 }
 
-// ---------- Giờ ra chơi nhảy múa thả tim (2026-11-07) ----------
-/** bạn đang ngồi lên bảng nhảy: tối đa GAME.dancers bạn còn tương tác, theo thứ tự ghế (điểm cao trước) */
+// ---------- Dance break with hearts at recess (2026-11-07) ----------
+/** seated students come up to dance: at most GAME.dancers students who are still active, in seat order (high scores first) */
 function dancersOf(v: StageView) {
   if (v.phase !== 'recess' || v.recess?.game !== 'dance') return [];
   return v.seats.filter((s) => !s.sleeping).slice(0, GAME.dancers);
 }
-// khoảng sàn trước bảng đen (giữa cô và dãy bàn đầu), 2 hàng so le: [giữa người, chân]
+// floor space in front of the board (between the teacher and the first row), 2 staggered rows: [body centre, feet]
 const DANCE_SPOTS: [number, number][] = [
   [445, 915], [550, 915], [655, 915], [760, 915], [865, 915],
   [497, 845], [602, 845], [707, 845], [812, 845], [917, 845],
@@ -1574,7 +1578,7 @@ function Dancers({ v }: { v: StageView }) {
             style={{ left: cx - (H * 0.47) / 2, top: feet - H, width: H * 0.47, height: H, zIndex: i < 5 ? 31 : 30 }}
           >
             <motion.img
-              src={`/assets/nv/${g}/${POSE[g][pose]}.webp`}
+              src={asset(`/assets/nv/${g}/${POSE[g][pose]}.webp`)}
               animate={{ y: [0, -22, 0, -10, 0], rotate: [-8, 8, -8], scaleX: [1, 1, -1, -1, 1] }}
               transition={{ duration: 1.3 + (i % 3) * 0.15, repeat: Infinity, ease: 'easeInOut', delay: i * 0.12 }}
               style={{ transformOrigin: 'bottom center' }}
@@ -1597,7 +1601,7 @@ function Dancers({ v }: { v: StageView }) {
   );
 }
 
-/** máy đếm tim: số to, mỗi lần tăng thì nảy lên */
+/** heart counter: big number that bounces on every increase */
 function HeartCounter({ n }: { n: number }) {
   return (
     <div className="mt-2 flex items-center gap-3 rounded-[24px] border-4 border-[#ff8fb1] bg-[#3b0a1e]/70 px-6 py-1 shadow-[0_0_24px_rgba(255,93,143,0.6)]">
@@ -1605,14 +1609,14 @@ function HeartCounter({ n }: { n: number }) {
         ❤️
       </motion.span>
       <motion.span key={n} initial={{ scale: 1.4 }} animate={{ scale: 1 }} className="font-mono text-[84px] font-extrabold leading-none text-[#ffd1de] tabular-nums">
-        {n.toLocaleString('vi-VN')}
+        {n.toLocaleString('en-US')}
       </motion.span>
-      <span className="text-[34px] text-[#ffd1de]">tim</span>
+      <span className="ml-3 text-[34px] text-[#ffd1de]">hearts</span>
     </div>
   );
 }
 
-/** băng thông báo giờ nhảy múa trên đầu màn hình + tim bay từ dưới lên */
+/** dance-break banner at the top of the screen + hearts floating up from the bottom */
 function DanceBanner({ v }: { v: StageView }) {
   const on = v.phase === 'recess' && v.recess?.game === 'dance' && v.recess.stage === 'play';
   return (
@@ -1625,7 +1629,7 @@ function DanceBanner({ v }: { v: StageView }) {
             transition={{ scale: { duration: 0.9, repeat: Infinity } }}
             className="absolute left-[110px] top-[140px] w-[860px] rounded-[30px] border-4 border-white bg-gradient-to-r from-fuchsia-500 via-pink-500 to-amber-400 px-6 py-2 text-center font-extrabold text-white shadow-2xl"
           >
-            <div className="text-[40px] leading-tight">💃 GIỜ RA CHƠI · CẢ LỚP LÊN NHẢY 🕺</div>
+            <div className="text-[40px] leading-tight">💃 RECESS · EVERYBODY DANCE 🕺</div>
             <div className="line-clamp-2 text-[28px] leading-tight">{v.cfg.danceText}</div>
           </motion.div>
           {Array.from({ length: 12 }, (_, i) => (
@@ -1646,9 +1650,9 @@ function DanceBanner({ v }: { v: StageView }) {
   );
 }
 
-// ---------- Ai nhanh nhất câu này ----------
-// Hết câu (hiện đáp án): bảng Top 5 nhanh nhất, thời gian tới mili giây + điểm được cộng; ai đúng chậm hơn +1
-const secText = (ms: number) => `${(ms / 1000).toFixed(3).replace('.', ',')} giây`;
+// ---------- Fastest on this question ----------
+// End of the question (answer shown): Top 5 fastest board, time to the millisecond + points earned; slower right answers +1
+const secText = (ms: number) => `${(ms / 1000).toFixed(3)} s`;
 function FastestBoard({ v }: { v: StageView }) {
   return (
     <motion.div
@@ -1657,10 +1661,10 @@ function FastestBoard({ v }: { v: StageView }) {
       className="absolute left-[378px] top-[618px] z-30 w-[460px] overflow-hidden rounded-[16px] border-[3px] border-[#7a2e0e] bg-[#fff6dd]/97 shadow-xl"
     >
       <div className="flex items-center justify-between bg-[#7a2e0e] px-3 py-[2px] text-[25px] font-bold text-[#ffe9b8]">
-        <span>⚡ Top {GAME.fastestShown} nhanh nhất</span>
-        <span>{v.correctCount} bạn đúng</span>
+        <span>⚡ Top {GAME.fastestShown} fastest</span>
+        <span>{v.correctCount} correct</span>
       </div>
-      {v.fastest.length === 0 && <div className="py-3 text-center text-[22px] text-[#8a6a3a]">Chưa ai đúng câu này</div>}
+      {v.fastest.length === 0 && <div className="py-3 text-center text-[22px] text-[#8a6a3a]">Nobody got this one</div>}
       {v.fastest.map((a, i) => (
         <motion.div
           key={a.username}
@@ -1677,7 +1681,7 @@ function FastestBoard({ v }: { v: StageView }) {
       ))}
       {v.laterCount > 0 && (
         <div className="border-t border-[#e9d8a6] px-3 text-center text-[22px] font-semibold leading-[34px] text-[#6b4a22]">
-          {v.laterCount} bạn khác đúng chậm hơn: mỗi bạn +{v.laterPoints}
+          {v.laterCount} more got it later: +{v.laterPoints} each
         </div>
       )}
     </motion.div>
@@ -1692,11 +1696,11 @@ function Podium({ v }: { v: StageView }) {
   return (
     <div className="absolute left-[417px] top-[634px] w-[420px]">
       <div className={`flex items-center justify-between rounded-t-[14px] px-3 py-[1px] text-[19px] font-bold transition-colors duration-500 ${t.podiumHeader}`}>
-        <span>⚡ Nhanh nhất</span>
-        <span>{v.correctCount} bạn đã đúng</span>
+        <span>⚡ Fastest</span>
+        <span>{v.correctCount} correct so far</span>
       </div>
       <div className={`flex h-[48px] items-center gap-1 rounded-b-[14px] px-2 shadow-lg transition-colors duration-500 ${t.podiumBody}`}>
-        {v.correctTop.length === 0 && <div className="w-full text-center text-[20px] text-[#8a6a3a]">Chưa ai đoán ra…</div>}
+        {v.correctTop.length === 0 && <div className="w-full text-center text-[20px] text-[#8a6a3a]">Nobody has it yet…</div>}
         <AnimatePresence initial={false}>
           {v.correctTop.map((a, i) => (
             <motion.div
@@ -1719,10 +1723,10 @@ function Podium({ v }: { v: StageView }) {
   );
 }
 
-// Dòng nhắc dưới khung "Nhanh nhất", trên hàng ghế đầu: cách được vào lớp ngồi (đổi câu mỗi 8 giây, viết ngắn)
-const SEAT_HINTS = ['⭐ Đoán nhanh, điểm cao được vào lớp ngồi!', '💬 Tương tác nhiều để giữ chỗ trong lớp nha!'];
-// đang hỏi: luôn hiện hướng dẫn cố định để người mới lướt vào hiểu ngay (chế độ nhanh 2026-11-04)
-const ASK_HINT = '💬 Gõ đáp án vào bình luận · nhanh nhất +10 điểm';
+// Hint line under the "Fastest" box, above the first row: how to get a seat (changes every 8 s, kept short)
+const SEAT_HINTS = ['⭐ Answer fast, score high, get a seat!', '💬 Keep chatting to keep your seat!'];
+// while asking: always show the fixed how-to so people scrolling in understand at once (quick mode 2026-11-04)
+const ASK_HINT = '💬 Type your answer in the comments · fastest +10';
 function SeatHint({ now, asking }: { now: number; asking: boolean }) {
   const i = asking ? -1 : Math.floor(now / 8000) % SEAT_HINTS.length;
   return (
@@ -1742,7 +1746,7 @@ function SeatHint({ now, asking }: { now: number; asking: boolean }) {
   );
 }
 
-// ---------- Học sinh ----------
+// ---------- Students ----------
 function studentPose(s: StageView['seats'][number], v: StageView, rank: number, now: number): PoseKey {
   if (v.goodbye) return (rank + Math.floor(now / 1200)) % 2 === 0 ? 'chao' : 'vui';
   if (v.clapping) return 'vui';
@@ -1752,35 +1756,35 @@ function studentPose(s: StageView['seats'][number], v: StageView, rank: number, 
   if (s.answered === 'wrong') return asking ? 'buon' : 'ngac';
   if (asking) return now - s.lastActive < 2500 ? 'tay' : 'nghi';
   if ((v.phase === 'results' || v.phase === 'praise') && rank < 3 && s.score > 0) return 'vui';
-  if (now - (s.desk[s.desk.length - 1]?.at ?? 0) < 3000) return 'vui'; // vừa được cô tặng quà
+  if (now - (s.desk[s.desk.length - 1]?.at ?? 0) < 3000) return 'vui'; // just got a gift from the teacher
   return now - s.lastActive < 2500 ? 'tay' : 'dung';
 }
 
-/** bạn ngồi đầu / cuối dãy: bảng tên neo vào phía trong cho khỏi tràn ra ngoài mép màn hình */
+/** student at the start / end of a row: the name tag leans inwards so it never spills off the screen */
 function edgeTag(k: number, n: number): React.CSSProperties {
   if (k === 0) return { left: 0, transform: 'none' };
   if (k === n - 1) return { left: 'auto', right: 0, transform: 'none' };
   return {};
 }
 
-/** Vị trí ghế thứ i (khung nửa trên người ngồi, toạ độ stage) */
+/** Position of seat i (box of the seated upper body, stage coordinates) */
 function seatBox(i: number) {
   const ri = SEAT_ROW[i] ?? ROWS.length - 1;
   const row = ROWS[ri];
-  const k = i - SEAT_ROW.indexOf(ri); // thứ tự trong dãy
+  const k = i - SEAT_ROW.indexOf(ri); // place in the row
   const scale = row.s * KID;
   const w = SPRITE_H * 0.47 * scale;
   const h = SPRITE_H * scale;
   const show = h * SHOW;
   const cx = row.x1 + ((k + 0.5) * (row.x2 - row.x1)) / Math.max(1, row.n);
   const x = cx * K - w / 2;
-  const y = (row.y + 0.64 * (row.b - row.y)) * K - show; // ngồi trên ghế băng, lưng quay ra khán giả
+  const y = (row.y + 0.64 * (row.b - row.y)) * K - show; // sitting on the bench, back to the audience
   return { scale, w, h, show, x, y, ri, k, gap: ((row.x2 - row.x1) * K) / Math.max(1, row.n) };
 }
 
-// Bảng màu & kiểu dáng Bàn Ghế cho 4 Kỳ Thi (giữ nguyên 100% toạ độ ROWS)
+// Desk colours & styles for the 4 terms (keeps the ROWS coordinates exactly)
 const DESK_STYLES = [
-  // Kỳ 1 (Cấp 1): Bàn gỗ thông vàng ấm truyền thống
+  // Term 1: warm golden pine desks, the classic look
   {
     shadow: '#9c5a2c',
     leg: '#70411b',
@@ -1793,7 +1797,7 @@ const DESK_STYLES = [
     stroke: '#57320f',
     trim: '',
   },
-  // Kỳ 2 (Cấp 2): Bàn gỗ sồi sáng hiện đại + khung thép sơn tĩnh điện xanh Navy
+  // Term 2: light modern oak desks + navy powder-coated steel frame
   {
     shadow: '#1e3a5f',
     leg: '#1e293b',
@@ -1806,7 +1810,7 @@ const DESK_STYLES = [
     stroke: '#0f172a',
     trim: '#38bdf8',
   },
-  // Kỳ 3 (Cấp 3): Bàn gỗ Gụ / Cẩm Lai đỏ trầm Hội trường THPT viền chỉ vàng đồng
+  // Term 3: deep red mahogany / rosewood hall desks with brass-gold trim
   {
     shadow: '#4a1228',
     leg: '#3b0a1e',
@@ -1819,7 +1823,7 @@ const DESK_STYLES = [
     stroke: '#2d0614',
     trim: '#f59e0b',
   },
-  // Kỳ 4 (Đấu Trường Tú Tài): Bàn Đấu Trường Vinh Quang phủ khăn nhung đỏ thẫm nẹp Vàng Kim Hoàng Gia
+  // Term 4 (finals arena): Hall of Glory desks with crimson velvet cloth and royal gold trim
   {
     shadow: '#550c0c',
     leg: '#78350f',
@@ -1834,7 +1838,7 @@ const DESK_STYLES = [
   },
 ] as const;
 
-/** Bàn dài + ghế băng của 1 dãy (che hẳn dãy bàn lẻ vẽ sẵn trong ảnh nền, biến hình theo 4 Cấp học) */
+/** Long desk + bench for one row (fully covers the single desks painted in the background, changes with the 4 terms) */
 function LongDesk({ ri, stageIdx = 0 }: { ri: number; stageIdx?: 0 | 1 | 2 | 3 }) {
   const r = ROWS[ri];
   const h = r.b - r.y;
@@ -1848,26 +1852,26 @@ function LongDesk({ ri, stageIdx = 0 }: { ri: number; stageIdx?: 0 | 1 | 2 | 3 }
 
   return (
     <svg className="pointer-events-none absolute left-0 top-0" width={1080} height={1920} viewBox="0 0 941 1672" style={{ zIndex: 9 + ri }}>
-      {/* bóng dưới bàn ghế: che chân bàn lẻ trong ảnh nền */}
+      {/* shadow under the desks: hides the legs of the single desks in the background */}
       <rect x={x1 - 2} y={Y(0.5)} width={x2 - x1 + 4} height={h * 0.52} rx={10} fill={d.shadow} />
-      {/* chân bàn 2 đầu */}
+      {/* desk legs at both ends */}
       <rect x={x1 + 6} y={Y(0.34)} width={14} height={h * 0.62} fill={d.leg} {...line} />
       <rect x={x2 - 20} y={Y(0.34)} width={14} height={h * 0.62} fill={d.leg} {...line} />
-      {/* mặt bàn + cạnh trước + tấm chắn trước bàn */}
+      {/* desk top + front edge + modesty panel */}
       <rect x={x1 + 14} y={Y(0.36)} width={x2 - x1 - 28} height={h * 0.26} fill={d.frontPanel} {...line} />
       <polygon points={`${x1 + 8},${r.y} ${x2 - 8},${r.y} ${x2},${Y(0.28)} ${x1},${Y(0.28)}`} fill={d.topFace} {...line} />
       <rect x={x1} y={Y(0.28)} width={x2 - x1} height={h * 0.08} fill={d.frontEdge} {...line} />
 
-      {/* Hoạ tiết trang trí đặc trưng trên yếm bàn của Cấp 2, Cấp 3, Kỳ 4 */}
+      {/* Signature decoration on the desk front for Term 2, Term 3 and Term 4 */}
       {stageIdx === 1 && (
         <>
-          {/* Thanh giằng hợp kim xanh sáng chạy ngang yếm bàn Cấp 2 */}
+          {/* Bright blue metal brace across the desk front (Term 2) */}
           <line x1={x1 + 26} y1={Y(0.48)} x2={x2 - 26} y2={Y(0.48)} stroke={d.trim} strokeWidth={3} strokeDasharray="18 8" opacity="0.85" />
         </>
       )}
       {stageIdx === 2 && (
         <>
-          {/* Khung viền chỉ vàng đồng sang trọng trên yếm bàn gỗ Gụ Cấp 3 */}
+          {/* Elegant brass-gold trim frame on the mahogany desk front (Term 3) */}
           <rect
             x={x1 + 24}
             y={Y(0.39)}
@@ -1883,7 +1887,7 @@ function LongDesk({ ri, stageIdx = 0 }: { ri: number; stageIdx?: 0 | 1 | 2 | 3 }
       )}
       {stageIdx === 3 && (
         <>
-          {/* Diềm khăn nhung đỏ viền tua rua Vàng Kim + Ngôi sao Vinh Quang chính giữa bàn Kỳ 4 */}
+          {/* Red velvet valance with gold fringe + Star of Glory in the middle of the desk (Term 4) */}
           <rect
             x={x1 + 20}
             y={Y(0.38)}
@@ -1899,7 +1903,7 @@ function LongDesk({ ri, stageIdx = 0 }: { ri: number; stageIdx?: 0 | 1 | 2 | 3 }
         </>
       )}
 
-      {/* ghế băng */}
+      {/* bench */}
       {legs.map((lx) => (
         <rect key={lx} x={lx - 5} y={Y(0.74)} width={10} height={h * 0.24} fill={d.benchLeg} />
       ))}
@@ -1909,12 +1913,12 @@ function LongDesk({ ri, stageIdx = 0 }: { ri: number; stageIdx?: 0 | 1 | 2 | 3 }
   );
 }
 
-/** Phụ kiện đồng phục nhìn từ sau lưng theo từng Cấp học (vẽ đè lên vai áo sơ mi trắng của học sinh) */
+/** Uniform accessories seen from behind for each term (drawn over the shoulders of the white school shirt) */
 function StudentUniformBack({ stageIdx }: { stageIdx: 0 | 1 | 2 | 3 }) {
   return (
     <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full">
       {stageIdx === 0 && (
-        /* Kỳ 1 (Cấp 1 - Tiểu học): Khăn quàng đỏ Đội viên vắt qua vai áo trắng */
+        /* Term 1: red scarf over the shoulder of the white shirt */
         <g>
           <polygon points="24,55 76,55 50,86" fill="#ef4444" stroke="#991b1b" strokeWidth="1.8" strokeLinejoin="round" />
           <polygon points="29,56 71,56 50,80" fill="#dc2626" />
@@ -1922,7 +1926,7 @@ function StudentUniformBack({ stageIdx }: { stageIdx: 0 | 1 | 2 | 3 }) {
         </g>
       )}
       {stageIdx === 1 && (
-        /* Kỳ 2 (Cấp 2 - THCS): Cổ áo thuỷ thủ / Đoàn Đội viền xanh dương + cầu vai xanh */
+        /* Term 2: sailor-style collar with blue trim + blue shoulder straps */
         <g>
           <polygon points="23,55 77,55 70,73 30,73" fill="#0284c7" stroke="#0c4a6e" strokeWidth="1.6" strokeLinejoin="round" />
           <line x1="27" y1="68" x2="73" y2="68" stroke="#e0f2fe" strokeWidth="2" />
@@ -1931,14 +1935,14 @@ function StudentUniformBack({ stageIdx }: { stageIdx: 0 | 1 | 2 | 3 }) {
         </g>
       )}
       {stageIdx === 2 && (
-        /* Kỳ 3 (Cấp 3 - THPT): Cổ áo danh dự Tím - Vàng trường Chuyên */
+        /* Term 3: purple and gold honour collar of a gifted school */
         <g>
           <polygon points="22,55 78,55 68,75 32,75" fill="#6b21a8" stroke="#fbbf24" strokeWidth="1.8" strokeLinejoin="round" />
           <circle cx="50" cy="65" r="4.5" fill="#fde047" stroke="#581c87" strokeWidth="1.2" />
         </g>
       )}
       {stageIdx === 3 && (
-        /* Kỳ 4 (Đấu Trường Tú Tài): Áo choàng Vinh Quang Đỏ Hoàng Gia viền Vàng Kim vắt ngang vai */
+        /* Term 4 (finals arena): royal red Cape of Glory with gold trim across the shoulders */
         <g>
           <path d="M 18,54 Q 50,62 82,54 L 85,96 Q 50,90 15,96 Z" fill="#b91c1c" stroke="#fde047" strokeWidth="2.2" strokeLinejoin="round" />
           <path d="M 22,55 Q 50,63 78,55 L 74,70 Q 50,65 26,70 Z" fill="#7f1d1d" stroke="#fbbf24" strokeWidth="1.6" />
@@ -1962,28 +1966,28 @@ function Students({ v, now }: { v: StageView; now: number }) {
       ))}
       {v.seats.map((s, i) => {
         const { scale, w, h, show, x, y, ri, k, gap } = seatBox(i);
-        // bảng tên so le: bạn thứ 2, 4, 6... trong dãy tên thấp xuống 1 tầng, nên 2 tên cùng tầng cách nhau 2 ghế, hiện đủ tên dài hơn
+        // staggered name tags: the 2nd, 4th, 6th... student in a row has the tag one level lower, so tags on the same level are 2 seats apart and long names fit
         const low = k % 2 === 1;
         const pose = studentPose(s, v, i, now);
         const g = s.girl ? 'nu' : 'nam';
         const hd = HEAD[g];
         const called = v.recess?.game === 'callup' && v.recess.callUser === s.username;
-        // đang lên bục (tặng hoa / bị phạt): ghế trống, nhân vật vẽ ở chỗ khác
-        // đang nhảy múa trước bảng, hoặc đang được thầy giám thị cho vào lớp (chưa đi tới ghế): ghế trống
+        // walking up to the front (flowers / standing up front): empty seat, the character is drawn elsewhere
+        // dancing in front of the board, or being brought in by the hall monitor (not at the seat yet): empty seat
         const entering = v.escort?.in?.username === s.username && now - v.escort.at < GAME.escortMs * 0.95;
         const away = s.standing || v.walk?.username === s.username || dancing.has(s.username) || entering;
         return (
           <motion.div
             key={s.username}
             initial={{ opacity: 0, left: x, top: y + 40 }}
-            // bạn đúng đầu tiên: nhảy lên vui mừng
+            // first right answer: jumps for joy
             animate={{ opacity: away ? 0 : 1, left: x, top: s.username === first ? [y, y - 34, y, y - 18, y] : y }}
             transition={s.username === first ? { top: { duration: 0.9 } } : { type: 'spring', stiffness: 120, damping: 18 }}
             className={`absolute ${called ? 'called-up' : ''}`}
             style={{ width: w, height: show, zIndex: 10 + ri }}
           >
             <div className="absolute inset-0 overflow-hidden">
-              <img src={`/assets/nv/${g}/sau-${POSE[g][pose]}.webp`} style={{ width: w, height: h }} className="max-w-none" />
+              <img src={asset(`/assets/nv/${g}/sau-${POSE[g][pose]}.webp`)} style={{ width: w, height: h }} className="max-w-none" />
               <StudentUniformBack stageIdx={stageIdx} />
               <div className="absolute" style={{ left: hd.x * w, top: hd.y * h, width: hd.w * w, height: hd.h * h }}>
                 <Hair username={s.username} girl={s.girl} stageIdx={stageIdx} rank={i} />
@@ -2029,7 +2033,7 @@ function Students({ v, now }: { v: StageView; now: number }) {
               {s.showIcons && <span className="mr-1 whitespace-nowrap">{s.showIcons}</span>}
               {called && <span className="mr-1">📢</span>}
               {s.days >= 2 && <span className="mr-1 whitespace-nowrap">🎒{s.days}</span>}
-              {/* học bạ: lớp mấy (lớp 1 thì khỏi hiện cho gọn), tốt nghiệp đội mũ */}
+              {/* report card: grade (grade 1 is hidden to keep it tidy), graduates wear a cap */}
               {s.grade >= 2 && (
                 <span className="mr-1 shrink-0 rounded-full bg-[#2563eb] px-[5px] font-extrabold text-white">{s.grade > 12 ? '🎓' : `L${s.grade}`}</span>
               )}
@@ -2043,7 +2047,7 @@ function Students({ v, now }: { v: StageView; now: number }) {
   );
 }
 
-// Bong bóng chat trên đầu (đã lọc: không có câu trả lời, không có từ cấm)
+// Chat bubble above the head (filtered: never an answer, never a banned word)
 function ChatBubble({ text, scale }: { text: string; scale: number }) {
   return (
     <motion.div
@@ -2059,8 +2063,8 @@ function ChatBubble({ text, scale }: { text: string; scale: number }) {
   );
 }
 
-// Tặng hoa: bạn nhỏ đứng dậy đi lên bục đưa hoa cho cô, rồi đi về chỗ (bạn không có ghế thì đi từ cửa lớp)
-const PODIUM: [number, number] = [372, 690]; // chỗ đứng đưa hoa, cạnh tay cô (toạ độ góc trên trái nhân vật)
+// Flowers: the student stands up, walks to the front, gives the teacher the flowers and walks back (students without a seat walk in from the door)
+const PODIUM: [number, number] = [372, 690]; // where the student stands to hand over the flowers, next to her hand (top-left corner of the character)
 function FlowerWalk({ v }: { v: StageView }) {
   const w = v.walk;
   if (!w) return null;
@@ -2077,8 +2081,8 @@ function FlowerWalk({ v }: { v: StageView }) {
       className="pointer-events-none absolute z-30"
       style={{ width: H * 0.47, height: H }}
     >
-      <img src={`/assets/nv/${g}/${POSE[g].vui}.webp`} className="h-full w-full drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]" />
-      {/* bó hoa to nhỏ theo bậc quà */}
+      <img src={asset(`/assets/nv/${g}/${POSE[g].vui}.webp`)} className="h-full w-full drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]" />
+      {/* bunch size follows the gift tier */}
       <div className="absolute -right-4 top-[70px] leading-none" style={{ fontSize: 40 * GAME.giftTiers[w.tier].size }}>
         {w.icon}
       </div>
@@ -2089,7 +2093,7 @@ function FlowerWalk({ v }: { v: StageView }) {
   );
 }
 
-// Đội cổ vũ / Trợ giảng cạnh bảng: khi bật công tắc standWrong, bạn trả lời chưa đúng lên đứng cạnh cô vẫy tay cổ vũ cả lớp 3 câu
+// Cheer squad next to the board: with the standWrong switch on, students who answered wrong stand next to the teacher and cheer the class for 3 questions
 const STAND_SPOTS = [420, 492, 564, 636, 708, 780];
 const STAND_FEET = 880;
 function Punished({ v }: { v: StageView }) {
@@ -2108,7 +2112,7 @@ function Punished({ v }: { v: StageView }) {
             style={{ left: STAND_SPOTS[i] - (H * 0.47) / 2, top: STAND_FEET - H, width: H * 0.47, height: H }}
           >
             <motion.img
-              src={`/assets/nv/${g}/${POSE[g][pose]}.webp`}
+              src={asset(`/assets/nv/${g}/${POSE[g][pose]}.webp`)}
               animate={{ y: [0, -6, 0], rotate: [-4, 4, -4] }}
               transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: i * 0.15 }}
               style={{ transformOrigin: 'bottom center' }}
@@ -2124,7 +2128,7 @@ function Punished({ v }: { v: StageView }) {
   );
 }
 
-// Bình hoa trên bàn cô: hoa các bạn tặng cắm vào, càng nhiều hoa càng đầy bình
+// Vase on the teacher's desk: flowers from students go in, the more flowers the fuller the vase
 const VASE_SPOTS: [number, number][] = [
   [0, 0], [-22, 8], [22, 8], [-12, -18], [12, -18], [0, -30], [-30, -10], [30, -10], [-20, -36], [20, -36], [-36, 14], [36, 14],
 ];
@@ -2148,12 +2152,12 @@ function Vase({ v }: { v: StageView }) {
   );
 }
 
-// Quà cô thưởng: bay từ tay cô giáo xuống, đặt lên mặt bàn 2 bên người bạn nhỏ
+// Teacher's prizes: fly from her hand down to the desk on both sides of the student
 const TEACHER_HAND: [number, number] = [300, 640]; // px stage
 function DeskGifts({ desk, x, y, w, show, scale }: { desk: StageView['seats'][number]['desk']; x: number; y: number; w: number; show: number; scale: number }) {
   const size = 34 * scale;
-  const deskTop = show - 72 * K + 44 * scale; // mặt bàn: mép trên bàn (ROWS.y) lùi xuống, tính trong khung học sinh
-  // chỗ trống trên mặt bàn 2 bên đầu bạn nhỏ (lệch so với tâm bàn): trái, phải, trái ngoài, phải ngoài
+  const deskTop = show - 72 * K + 44 * scale; // desk top: the top edge of the desk (ROWS.y) moved down, inside the student box
+  // free spots on the desk on both sides of the student's head (offset from the desk centre): left, right, far left, far right
   const SPOTS = [-40, 40, -58, 58];
   return (
     <>
@@ -2163,7 +2167,7 @@ function DeskGifts({ desk, x, y, w, show, scale }: { desk: StageView['seats'][nu
         return (
           <motion.div
             key={g.at + g.icon}
-            // quà cũ (mở lại trang, đổi chỗ ngồi) thì nằm sẵn trên bàn, không bay lại
+            // old gifts (page reload, seat change) are already on the desk and do not fly again
             initial={Date.now() - g.at < 2000 ? { x: TEACHER_HAND[0] - (x + left), y: TEACHER_HAND[1] - (y + top), scale: 2.2, rotate: -30, opacity: 0 } : false}
             animate={{ x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 }}
             transition={{ duration: 1.1, ease: [0.3, 1.4, 0.5, 1], opacity: { duration: 0.2 } }}
@@ -2178,20 +2182,20 @@ function DeskGifts({ desk, x, y, w, show, scale }: { desk: StageView['seats'][nu
   );
 }
 
-// Bên phải, trên hàng ghế đầu: top tương tác hôm nay (cách tính không hiện ra màn hình)
+// Right side, above the first row: today's top chatters (how it is counted is not shown on screen)
 function TalkTop({ v }: { v: StageView }) {
   const rows = (v.talkTop ?? []).slice(0, 5);
   return (
     <div className="absolute left-[842px] top-[616px] z-[8] w-[232px] rotate-1 rounded-[14px] border-[3px] border-[#c9a45c] bg-[#fff8e1]/95 px-2 pb-2 pt-3 text-[#4a2c0e] shadow-[0_6px_10px_rgba(0,0,0,0.3)]">
       <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 text-[28px]">📌</div>
-      <div className="whitespace-nowrap text-center text-[22px] font-extrabold leading-tight text-[#b45309]">💬 Top tương tác</div>
-      {rows.length === 0 && <div className="py-2 text-center text-[17px] text-[#8a6a3a]">Bình luận để lên bảng nha!</div>}
+      <div className="whitespace-nowrap text-center text-[22px] font-extrabold leading-tight text-[#b45309]">💬 Top chatters</div>
+      {rows.length === 0 && <div className="py-2 text-center text-[17px] text-[#8a6a3a]">Comment to get on the board!</div>}
       <div className="mt-1 space-y-[1px]">
         {rows.map((r, i) => (
           <motion.div key={r.username} layout className="flex items-center gap-1 text-[22px] leading-[28px]">
             <span className="w-6 text-center">{['🥇', '🥈', '🥉', '4', '5'][i]}</span>
             <span className="min-w-0 flex-1 truncate font-semibold">{r.nickname}</span>
-            {/* hiện điểm tương tác, không ghi cách tính (chủ kênh đổi 2026-11-04) */}
+            {/* show the chat points, without explaining how they are counted (owner's change 2026-11-04) */}
             <b className="text-[#c2410c]">{r.points}</b>
           </motion.div>
         ))}
@@ -2200,9 +2204,9 @@ function TalkTop({ v }: { v: StageView }) {
   );
 }
 
-// Bảng khẩu hiệu đỏ trên bảng đen
+// Red slogan banner above the blackboard
 function Motto({ text }: { text: string }) {
-  // chữ đổi được ở trang điều khiển: dài thì nhỏ lại cho vừa bảng
+  // text can be changed on the control page: long text gets smaller to fit
   const size = text.length > 34 ? 28 : text.length > 28 ? 33 : 38;
   return (
     <div className="motto absolute left-1/2 top-[168px] -translate-x-1/2 whitespace-nowrap px-10 py-[6px] font-extrabold tracking-wider" style={{ fontSize: size }}>
@@ -2223,7 +2227,7 @@ function GiftBanner({ gift, now }: { gift: GameState['lastGift']; now: number })
           exit={{ opacity: 0 }}
           className="absolute left-[24px] top-[470px] z-50 max-w-[560px] rounded-[26px] bg-gradient-to-r from-pink-500 to-rose-400 px-6 py-3 text-[30px] font-bold text-white shadow-xl"
         >
-          {giftOf(gift.giftName)?.icon ?? '💐'} <span className="inline-block max-w-[300px] truncate align-bottom">{gift.nickname}</span> {X('tặng cô')} {gift.repeatCount > 1 ? `${gift.repeatCount} × ` : ''}
+          {giftOf(gift.giftName)?.icon ?? '💐'} <span className="inline-block max-w-[300px] truncate align-bottom">{gift.nickname}</span> {X('gave Teacher')} {gift.repeatCount > 1 ? `${gift.repeatCount} × ` : ''}
           {giftOf(gift.giftName)?.say ?? gift.giftName}
         </motion.div>
       )}
@@ -2231,7 +2235,7 @@ function GiftBanner({ gift, now }: { gift: GameState['lastGift']; now: number })
   );
 }
 
-// "Ai yêu cô thì gõ số 1": mỗi bạn gõ là một trái tim bay lên cạnh cô, kèm số đếm
+// "Love the teacher? Type 1": every student who types it sends a heart up next to her, with a counter
 function LoveHearts({ n }: { n: number }) {
   if (n <= 0) return null;
   return (
@@ -2249,13 +2253,13 @@ function LoveHearts({ n }: { n: number }) {
         </motion.div>
       ))}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-pink-500 px-5 py-1 text-[30px] font-bold text-white shadow-lg">
-        💕 {n} {X('bạn yêu cô')}
+        💕 {n} {X('love Teacher')}
       </div>
     </div>
   );
 }
 
-// Bình chọn vui ("miền Bắc gõ B..."): thẻ đếm phiếu cạnh cô trong 15 giây
+// Fun poll ("type A or B..."): vote card next to the teacher for 15 seconds
 function PollCard({ v }: { v: StageView }) {
   return (
     <AnimatePresence>
@@ -2266,7 +2270,7 @@ function PollCard({ v }: { v: StageView }) {
           exit={{ opacity: 0, x: -40 }}
           className="absolute left-[16px] top-[640px] z-40 w-[330px] rounded-[20px] border-[3px] border-white bg-gradient-to-br from-sky-500 to-indigo-500 px-4 py-2 text-white shadow-xl"
         >
-          <div className="text-center text-[24px] font-extrabold">🗳️ Gõ chữ để chọn nha!</div>
+          <div className="text-center text-[24px] font-extrabold">🗳️ Type a letter to vote!</div>
           {v.poll.map((o) => (
             <div key={o.key} className="flex items-center gap-2 text-[24px] leading-[34px]">
               <b className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white text-indigo-600">{o.key.toUpperCase()}</b>
@@ -2280,7 +2284,7 @@ function PollCard({ v }: { v: StageView }) {
   );
 }
 
-// Chúc mừng sinh nhật: biểu ngữ trên đầu lớp, bánh kem đã đặt lên bàn bạn nhỏ
+// Happy birthday: banner across the top of the class, the cake is already on the student's desk
 function BirthdayBanner({ v }: { v: StageView }) {
   return (
     <AnimatePresence>
@@ -2293,9 +2297,9 @@ function BirthdayBanner({ v }: { v: StageView }) {
           transition={{ type: 'spring', stiffness: 200, damping: 14 }}
           className="absolute left-1/2 top-[620px] z-50 w-[900px] -translate-x-1/2 rounded-[30px] border-4 border-white bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-400 px-6 py-4 text-center font-extrabold text-white shadow-2xl"
         >
-          {/* chữ biểu ngữ đổi ở trang điều khiển; có {ten} thì chèn tên vào câu */}
-          {v.cfg.birthdayText.includes('{ten}') ? (
-            <div className="line-clamp-2 text-[50px] leading-tight drop-shadow">{v.cfg.birthdayText.split('{ten}').join(v.birthday.nickname)}</div>
+          {/* the banner text is set on the control page; {name} (or {ten}) inserts the name */}
+          {/\{(ten|name)\}/.test(v.cfg.birthdayText) ? (
+            <div className="line-clamp-2 text-[50px] leading-tight drop-shadow">{v.cfg.birthdayText.replace(/\{(ten|name)\}/g, () => v.birthday!.nickname)}</div>
           ) : (
             <>
               <div className="text-[46px] leading-tight">{v.cfg.birthdayText}</div>
@@ -2308,20 +2312,20 @@ function BirthdayBanner({ v }: { v: StageView }) {
   );
 }
 
-// Câu chúc vui nhộn kiểu Gen Z / công sở xoay vòng trên bảng Lễ Tan Trường (luôn kèm lời kêu gọi Follow nhận thông báo)
+// Fun Gen Z / office-life wishes rotating on the goodbye board (always with a follow-for-notifications call)
 const GOODBYE_QUOTES = [
-  '🎒 Cất sách vở về ăn ngon ngủ kỹ, nhớ bấm FOLLOW kênh để lần sau nhận thông báo vào lớp nha! 🔔',
-  '💸 Chúc cả lớp ngủ ngon không mơ thấy deadline! Bấm FOLLOW ngay để lần sau có chuông báo vào lớp! ✨',
-  '🪑 Muốn ngồi ghế bàn đầu tiết sau? Bấm FOLLOW kênh liền tay để nhận thông báo ngay khi mở lớp! 💕',
-  '🏆 Cô cho cả lớp 10 điểm tinh thần! Nhớ FOLLOW kênh để lần sau nhận thông báo vào lớp đúng giờ nha! 💯',
+  '🎒 Pack your bags, eat well, sleep well, and FOLLOW the channel to get notified for the next class! 🔔',
+  '💸 Sleep well, no deadline nightmares! Hit FOLLOW so the bell rings for the next class! ✨',
+  '🪑 Want a front row seat next time? FOLLOW the channel to get notified the moment class opens! 💕',
+  '🏆 Ten spirit points for everyone! FOLLOW the channel so you are on time for the next class! 💯',
 ];
 
-// Nút "Chào tạm biệt / Tan trường" ở trang điều khiển (chủ kênh bấm trước khi xuống live): Đại lễ Bế giảng & Tan trường vui nhộn
+// "Say goodbye / End of class" button on the control page (pressed before ending the live): a fun end-of-school ceremony
 function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
   const g = v.goodbye;
   const leftSec = g ? Math.max(0, Math.ceil((g.at + GAME.goodbyeBannerSec * 1000 - now) / 1000)) : 0;
   const quoteIdx = Math.floor(now / 4500) % GOODBYE_QUOTES.length;
-  // Lấy Top 3 học sinh xuất sắc nhất buổi (ưu tiên sessionTop, nếu chưa có thì lấy theo ghế)
+  // Top 3 students of the session (sessionTop first, otherwise by seat)
   const top3 =
     v.sessionTop && v.sessionTop.length > 0
       ? v.sessionTop.slice(0, 3).map((s) => ({ nickname: s.nickname, pts: s.session }))
@@ -2340,7 +2344,7 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
           exit={{ opacity: 0 }}
           className="pointer-events-none absolute inset-0 z-[65] overflow-hidden"
         >
-          {/* 1. Mưa Pháo Giấy & Icon Tan Trường bay rợp trời */}
+          {/* 1. Confetti & end-of-school icons raining down */}
           {Array.from({ length: 18 }, (_, i) => {
             const icons = ['🎉', '🎒', '🧋', '💖', '✨', '🥳', '🌸', '🏆', '💯'];
             const left = 40 + ((i * 59) % 1000);
@@ -2365,7 +2369,7 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
             );
           })}
 
-          {/* 2. Khung Đại Lễ Tan Trường ở trung tâm màn hình */}
+          {/* 2. End-of-school ceremony card in the middle of the screen */}
           <motion.div
             initial={{ opacity: 0, y: -60, scale: 0.65 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -2373,7 +2377,7 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
             transition={{ type: 'spring', stiffness: 210, damping: 15 }}
             className="absolute left-1/2 top-[480px] w-[940px] -translate-x-1/2 rounded-[36px] border-[6px] border-[#fef08a] bg-gradient-to-br from-[#be185d] via-[#7e22ce] to-[#1d4ed8] p-5 text-center text-white shadow-[0_20px_50px_rgba(0,0,0,0.65),0_0_40px_rgba(250,204,21,0.55)]"
           >
-            {/* Huy hiệu Trống Trường Tan Học trên đỉnh */}
+            {/* School-bell badge on top */}
             <div className="absolute -top-[34px] left-1/2 flex -translate-x-1/2 items-center gap-3 whitespace-nowrap rounded-full border-4 border-white bg-gradient-to-r from-[#f59e0b] via-[#ef4444] to-[#f59e0b] px-7 py-1.5 text-[28px] font-black tracking-wide text-[#fef08a] shadow-[0_6px_16px_rgba(0,0,0,0.45)]">
               <motion.span
                 animate={{ rotate: [-18, 18, -18], scale: [1, 1.2, 1] }}
@@ -2382,11 +2386,11 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
               >
                 🥁
               </motion.span>
-              <span>TÙNG! TÙNG! TÙNG! TRỐNG TAN TRƯỜNG</span>
+              <span>DING! DING! DING! THE FINAL BELL</span>
               <span className="rounded-full bg-black/30 px-3 py-0.5 text-[22px] text-white">⏳ {leftSec}s</span>
             </div>
 
-            {/* Tiêu đề chính + 2 bàn tay vẫy chào */}
+            {/* Main title + two waving hands */}
             <div className="mt-4 flex items-center justify-center gap-4">
               <motion.span
                 animate={{ rotate: [-20, 20, -20], scale: [1, 1.15, 1] }}
@@ -2397,10 +2401,10 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
               </motion.span>
               <div>
                 <div className="text-[48px] font-black leading-tight text-[#fef08a] drop-shadow-[0_4px_0_rgba(0,0,0,0.45)]">
-                  TAN LỚP RỒI! HẸN GẶP LẠI CẢ LỚP 💕
+                  CLASS DISMISSED! SEE YOU NEXT TIME 💕
                 </div>
                 <div className="mt-1 text-[25px] font-bold text-pink-100">
-                  {X('Cô Ngân cảm ơn cả lớp hôm nay đã học và quẩy hết mình!')}
+                  {`${shownTeacherName(v.cfg)} thanks the class for learning and partying so hard today!`}
                 </div>
               </div>
               <motion.span
@@ -2412,7 +2416,7 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
               </motion.span>
             </div>
 
-            {/* Câu chúc hài hước xoay vòng */}
+            {/* Rotating funny wishes */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={quoteIdx}
@@ -2425,11 +2429,11 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
               </motion.div>
             </AnimatePresence>
 
-            {/* Bảng Vinh Danh Top 3 Hôm Nay + Thống kê nhanh buổi học */}
+            {/* Top 3 Today honour board + quick class stats */}
             {top3.length > 0 && (
               <div className="mt-3.5 rounded-[22px] border-2 border-[#fde047]/60 bg-white/15 px-4 py-2.5 backdrop-blur-sm">
                 <div className="text-[22px] font-black uppercase tracking-wider text-[#fef08a]">
-                  👑 BẢNG VÀNG TUYÊN DƯƠNG CUỐI BUỔI 👑
+                  👑 TODAY'S HONOR ROLL 👑
                 </div>
                 <div className="mt-1.5 grid grid-cols-3 gap-3">
                   {top3.map((st, idx) => (
@@ -2445,7 +2449,7 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
                       <div className="min-w-0 flex-1 leading-tight">
                         <div className="truncate text-[22px] font-black">{st.nickname}</div>
                         <div className={`text-[19px] font-extrabold ${idx === 0 ? 'text-[#7c2d12]' : 'text-[#c2410c]'}`}>
-                          ⭐ {st.pts} điểm
+                          ⭐ {st.pts} points
                         </div>
                       </div>
                     </div>
@@ -2454,12 +2458,12 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
               </div>
             )}
 
-            {/* Thanh thống kê lớp + Kêu gọi Follow nhấp nháy */}
+            {/* Class stats bar + blinking follow call */}
             <div className="mt-3.5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 rounded-full border-2 border-white/40 bg-black/30 px-5 py-2 text-[23px] font-extrabold text-white">
-                <span>👥 Sĩ số: {v.classSize} bạn</span>
+                <span>👥 Class size: {v.classSize}</span>
                 <span>·</span>
-                <span>💝 Quỹ hoa: {v.fund.today} bông</span>
+                <span>💝 Flower fund: {v.fund.today}</span>
               </div>
 
               <motion.div
@@ -2468,7 +2472,7 @@ function GoodbyeBanner({ v, now }: { v: StageView; now: number }) {
                 className="flex flex-1 items-center justify-center gap-2 rounded-full border-[3px] border-[#fef08a] bg-gradient-to-r from-[#ec4899] via-[#f43f5e] to-[#f59e0b] px-5 py-2 text-[23px] font-black text-white shadow-lg"
               >
                 <span>➕</span>
-                <span>FOLLOW kênh để lần sau nhận thông báo vào lớp! 🔔</span>
+                <span>FOLLOW the channel to get notified for the next class! 🔔</span>
               </motion.div>
             </div>
           </motion.div>

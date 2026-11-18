@@ -1,0 +1,33 @@
+# Everyday objects
+> This is an everyday object.
+UMBRELLA | Keeps you dry when it rains, always forgotten on the bus. | 1
+TOOTHBRUSH | You use it twice a day, the dentist asks if you really do. | 1
+MIRROR | Shows your reflection, you check your hair in it before a date. | 1
+PILLOW | Soft thing under your head at night, the cold side is the best. | 1
+BLANKET | Keeps you warm in bed, protects you from monsters under the bed. | 1
+CLOCK | Tells the time, ticks loudly when you cannot sleep. | 1
+KEYS | Open your front door, always lost when you are late. | 1 | KEY
+WALLET | Holds your money and cards, empty before payday. | 1 | PURSE
+GLASSES | Help you see clearly, often sitting on top of your head while you look for them. | 1 | SPECTACLES
+CHARGER | Gives your phone battery life back, you never have one when you need it. | 1
+REMOTE CONTROL | Changes the TV channel, always lost in the sofa. | 2 | REMOTE
+TOWEL | Dries you off after a shower. | 1
+SPOON | Used to eat soup and cereal. | 1
+FORK | Has prongs to pick up food. | 1
+CHOPSTICKS | Two thin sticks used to eat noodles and rice. | 1
+FRIDGE | Keeps food cold, you open it ten times hoping new food appears. | 1 | REFRIGERATOR
+MICROWAVE | Heats leftovers in two minutes and beeps loudly. | 1
+KETTLE | Boils water for tea, whistles when it is ready. | 2
+HAIRDRYER | Blows hot air to dry your hair. | 2 | BLOW DRYER
+VACUUM CLEANER | Sucks up dust from the floor, cats hate it. | 2 | VACUUM
+WASHING MACHINE | Cleans your clothes and somehow eats one sock from every pair. | 2
+CANDLE | Gives light when the power goes out, smells nice too. | 1
+FLASHLIGHT | A small light you hold in your hand in the dark. | 2 | TORCH
+SCALE | Measures your weight, nobody likes it after the holidays. | 2
+CALENDAR | Shows the days and months, everyone counts the days until payday on it. | 2
+HANGER | Holds your clothes in the closet. | 2
+DOORBELL | Rings when someone is at the door, usually the delivery driver. | 2
+SUNGLASSES | Dark lenses that protect your eyes from the sun and make you look cool. | 2
+HEADPHONES | Let you listen to music without bothering anyone. | 2 | EARPHONES
+THERMOMETER | Measures temperature, mom puts it under your tongue. | 3
+EXTENSION CORD | Gives you more plug sockets far from the wall. | 3 | POWER STRIP

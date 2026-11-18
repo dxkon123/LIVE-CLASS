@@ -1,0 +1,32 @@
+# Nature
+> This is something in nature.
+RAINBOW | Seven colors in the sky after the rain. | 1
+VOLCANO | A mountain that erupts with hot lava. | 1
+OCEAN | A huge body of salt water, covers most of the Earth. | 1 | SEA
+DESERT | Hot and dry, full of sand and cactus. | 1
+FOREST | A large area full of trees. | 1 | JUNGLE
+WATERFALL | Water falling down from a cliff. | 1
+THUNDER | The loud boom after lightning. | 1
+LIGHTNING | A bright flash of electricity in a stormy sky. | 2
+SNOW | White flakes that fall from the sky in winter. | 1
+CLOUD | White and fluffy in the sky, sometimes gray and full of rain. | 1
+SUNSET | When the sun goes down and paints the sky orange. | 1
+MOUNTAIN | Very high land with a peak, you hike up it. | 1
+RIVER | Fresh water that flows to the sea. | 1
+ISLAND | Land surrounded by water on all sides. | 1
+GLACIER | A huge slow-moving river of ice. | 2
+EARTHQUAKE | The ground shakes and buildings can fall. | 2
+TORNADO | A spinning column of wind that destroys everything in its path. | 2 | TWISTER
+HURRICANE | A huge storm over the ocean with very strong winds. | 2 | TYPHOON, CYCLONE
+FOG | A cloud that sits on the ground, you cannot see far. | 2 | MIST
+CAVE | A big hole in a mountain where bats live. | 1
+CORAL REEF | Colorful underwater structure where lots of fish live. | 2 | REEF
+TIDE | The sea rises and falls twice a day because of the moon. | 3
+AURORA | Colored lights dancing in the night sky near the poles. | 3 | NORTHERN LIGHTS
+ECLIPSE | When the moon blocks the sun or the Earth's shadow covers the moon. | 3
+METEOR | A shooting star, make a wish! | 2 | SHOOTING STAR
+VALLEY | Low land between two hills or mountains. | 2
+CANYON | A deep valley with steep rock walls carved by a river. | 3
+SWAMP | Wet muddy land where crocodiles hide. | 2 | MARSH
+DEW | Tiny water drops on the grass in the early morning. | 3
+AVALANCHE | A huge mass of snow rushing down a mountain. | 3

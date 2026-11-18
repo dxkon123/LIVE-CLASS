@@ -2,27 +2,17 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { LiveStatus } from './types';
 import { emitTest, sendControl } from './page';
 
-interface VieneuVoice {
-  id: string;
-  name: string;
-  description: string;
-  gender: string;
-}
-interface VieneuStatus {
-  state: 'loading' | 'ready' | 'unavailable';
-  voice: string;
-  voices: VieneuVoice[];
-}
+type EdgeVoice = '__edge_f__' | '__edge_m__';
 
-const FAKE_NAMES = ['Lan Anh', 'Minh Tuấn', 'Bé Na 🌸', 'Hoàng Long', 'Thu Trang', 'Quốc Bảo', 'duyanh99', '𝑵𝒈𝒐̣𝒄 𝑨𝒏𝒉'];
+const FAKE_NAMES = ['Emma Stone', 'Noah', 'Lily 🌸', 'Jayden', 'Sophie', 'Marco', 'kim_99', '𝑨𝒊𝒔𝒉𝒂'];
 const pick = () => {
   const nickname = FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)];
-  return { nickname, username: nickname.normalize('NFKD').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'khach' };
+  return { nickname, username: nickname.normalize('NFKD').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'guest' };
 };
 
 /**
- * Trang điều khiển (http://localhost:3006). Im lặng, không phát tiếng.
- * Đồng bộ 100% phong cách giao diện với dự án Ai Là Trạng Nguyên.
+ * Control page (http://localhost:3006). Silent, it never plays sound.
+ * Same look and feel as the other live-game dashboards.
  */
 export function Dashboard({
   status,
@@ -40,45 +30,31 @@ export function Dashboard({
   const [msg, setMsg] = useState('');
   const [speakText, setSpeakText] = useState('');
   const [busy, setBusy] = useState(false);
-  const [vieneu, setVieneu] = useState<VieneuStatus>({ state: 'loading', voice: 'Trúc Ly', voices: [] });
+  const [voice, setVoice] = useState<EdgeVoice>('__edge_f__');
 
+  // teacher voice: Microsoft Edge female (Jenny) or male (Guy); the class settings can change it too
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
     const load = () => {
       fetch('/api/tts/status')
         .then((r) => r.json())
-        .then((d: VieneuStatus) => {
-          setVieneu(d);
-          if (d.state === 'loading') timer = setTimeout(load, 2000);
-        })
+        .then((d: { voice?: string }) => setVoice(d.voice === '__edge_m__' ? '__edge_m__' : '__edge_f__'))
         .catch(() => {});
     };
     load();
-    const onVoiceChanged = () => load();
-    window.addEventListener('vieneu-voice-changed', onVoiceChanged);
-    return () => {
-      if (timer) clearTimeout(timer);
-      window.removeEventListener('vieneu-voice-changed', onVoiceChanged);
-    };
+    window.addEventListener('voice-changed', load);
+    return () => window.removeEventListener('voice-changed', load);
   }, []);
 
-  const changeVoice = async (newVoice: string) => {
-    setVieneu((prev) => ({ ...prev, voice: newVoice.startsWith('__edge_') ? '' : newVoice }));
+  const changeVoice = async (next: EdgeVoice) => {
+    setVoice(next);
     try {
       const r = await fetch('/api/tts/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voice: newVoice }),
+        body: JSON.stringify({ voice: next }),
       }).then((x) => x.json());
-      if (r.state) setVieneu(r);
-      window.dispatchEvent(new CustomEvent('vieneu-voice-changed'));
-      setMsg(
-        newVoice === '__edge_f__'
-          ? 'Đã đổi sang giọng Microsoft Edge Nữ (Hoài My)'
-          : newVoice === '__edge_m__'
-            ? 'Đã đổi sang giọng Microsoft Edge Nam (Nam Minh)'
-            : `Đã đổi sang giọng AI VieNeu: ${newVoice}`,
-      );
+      setMsg(r.success ? (next === '__edge_m__' ? 'Switched to the male voice (Guy)' : 'Switched to the female voice (Jenny)') : r.error);
+      window.dispatchEvent(new CustomEvent('voice-changed'));
     } catch (e) {
       setMsg(String(e));
     }
@@ -94,7 +70,7 @@ export function Dashboard({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: user }),
       }).then((x) => x.json());
-      setMsg(r.success ? 'Đã kết nối' : r.error);
+      setMsg(r.success ? 'Connected' : r.error);
     } catch (e) {
       setMsg(String(e));
     }
@@ -105,13 +81,13 @@ export function Dashboard({
 
   const speak = async () => {
     const r = await sendControl('speak', speakText);
-    setMsg(r.pages > 1 ? `Đã gửi (đang mở ${r.pages} trang)` : 'Đã gửi');
+    setMsg(r.pages > 1 ? `Sent (${r.pages} pages open)` : 'Sent');
     setSpeakText('');
   };
 
   const saveName = async () => {
     const r = await sendControl('setName', nameText);
-    setMsg(r.success ? `Đã lưu tên kênh: ${nameText.trim()}` : r.error);
+    setMsg(r.success ? `Class name saved: ${nameText.trim()}` : r.error);
     if (r.success) setNameText('');
   };
 
@@ -119,116 +95,88 @@ export function Dashboard({
     <div className="min-h-screen bg-slate-950 p-4 text-slate-100 md:p-6">
       <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-[1fr_auto]">
         <div className="space-y-4">
-          <Card title="Kết nối TikTok LIVE">
+          <Card title="Connect TikTok LIVE">
             <div className="flex flex-wrap gap-2">
               <input
                 className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-2"
-                placeholder="username TikTok (không cần @)"
+                placeholder="TikTok username (no @)"
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && user.trim() && connect()}
               />
               <Btn onClick={connect} disabled={busy || !user.trim()}>
-                {busy ? 'Đang nối...' : 'Kết nối'}
+                {busy ? 'Connecting...' : 'Connect'}
               </Btn>
               <Btn onClick={disconnect} tone="ghost">
-                Ngắt
+                Disconnect
               </Btn>
             </div>
             <div className="mt-3 text-sm">
-              Trạng thái:{' '}
+              Status:{' '}
               {status?.isConnected ? (
                 <span className="text-emerald-400">
-                  Đang live @{status.username} · {status.viewerCount} người xem · {status.totalLikes} tim
+                  Live @{status.username} · {status.viewerCount} viewers · {status.totalLikes} hearts
                 </span>
               ) : status?.isConnecting ? (
-                <span className="text-amber-400">Đang kết nối...</span>
+                <span className="text-amber-400">Connecting...</span>
               ) : (
-                <span className="text-slate-400">Chưa kết nối</span>
+                <span className="text-slate-400">Not connected</span>
               )}
             </div>
             {(msg || status?.error) && <div className="mt-1 text-sm text-amber-300">{msg || status?.error}</div>}
             <div className="mt-3 rounded-lg bg-slate-800/60 p-3 text-xs text-slate-400">
-              Link cho TikTok LIVE Studio:{' '}
-              <b className="text-slate-200">http://lvh.me:{window.location.port || 3006}/?view=stage</b> · 1080 × 1920. Chỉ trang đó phát tiếng.
+              Link for TikTok LIVE Studio:{' '}
+              <b className="text-slate-200">http://lvh.me:{window.location.port || 3006}/?view=stage</b> · 1080 × 1920. Only that page plays sound.
             </div>
           </Card>
 
-          <Card title="Giọng đọc trên stage">
+          <Card title="Stage voice">
             <div className="mb-3 rounded-xl bg-slate-800/70 p-3 text-sm ring-1 ring-slate-700/60">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <span className="font-medium text-slate-200">Bộ giọng đọc Giáo viên:</span>
-                {vieneu.state === 'loading' ? (
-                  <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-medium text-amber-300">
-                    ⏳ Đang nạp model AI VieNeu (~10s)...
-                  </span>
-                ) : vieneu.state === 'ready' && vieneu.voice ? (
-                  <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-                    🟢 VieNeu AI sẵn sàng ({vieneu.voice})
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-sky-500/20 px-2.5 py-0.5 text-xs font-medium text-sky-300">
-                    🔵 Đang dùng Microsoft Edge (Hoài My / Nam Minh)
-                  </span>
-                )}
+                <span className="font-medium text-slate-200">Teacher voice:</span>
+                <span className="rounded-full bg-sky-500/20 px-2.5 py-0.5 text-xs font-medium text-sky-300">
+                  🔵 Microsoft Edge English voices (internet needed)
+                </span>
               </div>
               <select
                 className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700 focus:ring-amber-400"
-                value={vieneu.voice || '__edge_f__'}
-                onChange={(e) => changeVoice(e.target.value)}
+                value={voice}
+                onChange={(e) => changeVoice(e.target.value as EdgeVoice)}
               >
-                {(vieneu.voices.length > 0
-                  ? vieneu.voices
-                  : [
-                      { id: 'Trúc Ly', name: 'Trúc Ly', description: 'Nữ · Bắc · Phong cách tự nhiên', gender: 'female' },
-                      { id: 'Ngọc Huyền', name: 'Ngọc Huyền', description: 'Nữ · Bắc · Giọng đọc tự nhiên', gender: 'female' },
-                      { id: 'Adam bựa', name: 'Adam bựa', description: 'Nam · Bắc · Phong cách tự nhiên', gender: 'male' },
-                    ]
-                ).map((v) => (
-                  <option key={v.id} value={v.id}>
-                    🎙️ VieNeu AI: {v.name} {v.description ? `— ${v.description}` : ''}
-                  </option>
-                ))}
-                <option value="__edge_f__">🌐 Microsoft Edge (Hoài My — Nữ, nhẹ)</option>
-                <option value="__edge_m__">🌐 Microsoft Edge (Nam Minh — Nam, nhẹ)</option>
+                <option value="__edge_f__">🌐 Microsoft Edge (Jenny, female)</option>
+                <option value="__edge_m__">🌐 Microsoft Edge (Guy, male)</option>
               </select>
-              {vieneu.state === 'unavailable' && (
-                <div className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-200 ring-1 ring-amber-500/30">
-                  💡 <b>Máy chưa có giọng AI "Adam bựa"?</b> Hãy cài Python 3.11/3.12 rồi bấm đúp file{' '}
-                  <code className="rounded bg-slate-900 px-1.5 py-0.5 text-amber-300">CAI-GIONG-ADAM.bat</code> trong thư mục game để tự động tải và cài đặt từ A–Z.
-                </div>
-              )}
             </div>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
               <span>
-                Tên kênh: <b className="text-amber-300">{channelName}</b>
+                Class name: <b className="text-amber-300">{channelName}</b>
               </span>
               <input
                 className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-2"
-                placeholder="Đổi tên kênh mà giọng đọc xưng..."
+                placeholder="New class name on the sign..."
                 maxLength={40}
                 value={nameText}
                 onChange={(e) => setNameText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && nameText.trim() && saveName()}
               />
               <Btn onClick={saveName} disabled={!nameText.trim()}>
-                Lưu tên
+                Save
               </Btn>
             </div>
             <div className="flex gap-2">
               <input
                 className="min-w-0 flex-1 rounded-lg bg-slate-800 px-3 py-2"
-                placeholder="Gõ câu muốn đọc ngay..."
+                placeholder="Type a line for the teacher to read now..."
                 value={speakText}
                 onChange={(e) => setSpeakText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && speakText.trim() && speak()}
               />
               <Btn onClick={speak} disabled={!speakText.trim()}>
-                Đọc ngay
+                Read it
               </Btn>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-              Tốc độ:
+              Speed:
               {['0.85', '1', '1.15', '1.3'].map((r) => (
                 <Btn key={r} tone="ghost" onClick={() => sendControl('setRate', r)}>
                   {r}×
@@ -240,51 +188,51 @@ export function Dashboard({
             </div>
           </Card>
 
-          <Card title="Giả lập (test khi chưa live)">
+          <Card title="Simulator (test before going live)">
             <div className="flex flex-wrap gap-2">
               <Btn tone="ghost" onClick={() => emitTest('member', pick())}>
-                👋 Người vào
+                👋 Viewer joins
               </Btn>
-              <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'vào lớp' })}>
-                ✋ Gõ "vào lớp"
+              <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'join class' })}>
+                ✋ Type "join class"
               </Btn>
-              <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'Live hay quá' })}>
+              <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'love this live!' })}>
                 💬 Comment
               </Btn>
-              <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: 'mong mai thi được điểm cao' })}>
-                🙏 Comment cầu chúc
+              <Btn tone="ghost" onClick={() => emitTest('chat', { ...pick(), comment: "it's my birthday today" })}>
+                🎂 Birthday comment
               </Btn>
               <Btn
                 tone="ghost"
                 onClick={() => emitTest('gift', { ...pick(), giftName: 'rose', giftId: 5655, diamondCount: 1, repeatCount: 5 })}
               >
-                🌹 5 Hoa hồng
+                🌹 5 roses
               </Btn>
               <Btn
                 tone="ghost"
-                onClick={() => emitTest('gift', { ...pick(), giftName: 'Sư tử', giftId: 6369, diamondCount: 29999, repeatCount: 1 })}
+                onClick={() => emitTest('gift', { ...pick(), giftName: 'Lion', giftId: 6369, diamondCount: 29999, repeatCount: 1 })}
               >
-                🦁 Quà to
+                🦁 Big gift
               </Btn>
               <Btn tone="ghost" onClick={() => comboSameUser()}>
-                🔁 1 người tặng 3 lần liền
+                🔁 Same viewer gifts 3 times
               </Btn>
               <Btn tone="ghost" onClick={() => emitTest('follow', pick())}>
                 ➕ Follow
               </Btn>
               <Btn tone="ghost" onClick={() => emitTest('like', { ...pick(), likeCount: 100 })}>
-                ❤️ 100 tim
+                ❤️ 100 hearts
               </Btn>
             </div>
-            <p className="mt-2 text-xs text-slate-500">Sự kiện giả đi tới mọi trang đang mở, kể cả stage trong LIVE Studio.</p>
+            <p className="mt-2 text-xs text-slate-500">Test events go to every open page, including the stage inside LIVE Studio.</p>
           </Card>
 
           {extra}
 
-          <Card title="Thông tin dự án & Tác giả (Info)">
+          <Card title="About the project">
             <div className="space-y-2.5 text-sm text-slate-300">
               <p>
-                <b className="text-amber-300">LIVE-CLASS (v2.0)</b> — Game show lớp học đa chủ đề &amp; vượt cấp học tương tác tự động 100% cho TikTok LIVE, phát triển và nâng cấp bởi{' '}
+                <b className="text-amber-300">LIVE-CLASS (v2.0, English edition)</b> — a fully automatic multi-topic classroom game show for TikTok LIVE, created by{' '}
                 <a
                   href="https://duongbirken.deta.vn"
                   target="_blank"
@@ -305,12 +253,12 @@ export function Dashboard({
                   🌐 Website: duongbirken.deta.vn
                 </a>
                 <a
-                  href="/bao-cao"
+                  href="/report"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-100 ring-1 ring-slate-700 hover:bg-slate-700"
                 >
-                  📊 Báo cáo buổi Live hôm nay
+                  📊 Today's live report
                 </a>
               </div>
             </div>
@@ -318,7 +266,7 @@ export function Dashboard({
         </div>
 
         <div className="justify-self-center">
-          <div className="mb-2 text-center text-sm text-slate-400">Xem trước (im lặng)</div>
+          <div className="mb-2 text-center text-sm text-slate-400">Preview (silent)</div>
           <div className="overflow-hidden rounded-2xl ring-1 ring-slate-700">{preview}</div>
         </div>
       </div>
@@ -326,7 +274,7 @@ export function Dashboard({
   );
 }
 
-// Cùng 1 người tặng 3 lần cách nhau 1 giây: chỉ được cảm ơn 1 lần
+// Same person sends 3 gifts 1 second apart: thanked only once
 function comboSameUser() {
   const who = pick();
   for (let i = 0; i < 3; i++) {
@@ -381,6 +329,6 @@ function localStorageSet(k: string, v: string) {
   try {
     localStorage.setItem(k, v);
   } catch {
-    // bỏ qua
+    // ignore
   }
 }

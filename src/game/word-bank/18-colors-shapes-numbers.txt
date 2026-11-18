@@ -1,0 +1,34 @@
+# Colors, shapes and numbers
+> This is a color, a shape or a number.
+RED | The color of fire trucks and strawberries. | 1
+BLUE | The color of the sky and the ocean. | 1
+GREEN | The color of grass and leaves. | 1
+YELLOW | The color of bananas and the sun in children's drawings. | 1
+PURPLE | Mix red and blue to get this color. | 1 | VIOLET
+ORANGE | Mix red and yellow to get this color. | 1
+PINK | Mix red and white, the color of flamingos. | 1
+BLACK | The color of night, and of my coffee. | 1
+WHITE | The color of snow and clouds. | 1
+GOLD | The color of first place medals. | 2 | GOLDEN
+SILVER | The color of second place medals. | 2
+CIRCLE | A round shape with no corners. | 1
+SQUARE | Four equal sides and four corners. | 1
+TRIANGLE | A shape with three sides. | 1
+RECTANGLE | Four sides, two long and two short, like a door. | 2
+STAR | A shape with five points, also twinkles in the sky. | 1
+HEART | The shape of love. | 1
+DIAMOND | A shape like a square standing on its corner, also a precious stone. | 2
+OVAL | Like a stretched circle, the shape of an egg. | 2
+HEXAGON | A shape with six sides, like a honeycomb cell. | 3
+PENTAGON | A shape with five sides, also a famous building in the US. | 3
+OCTAGON | A shape with eight sides, like a stop sign. | 3
+CUBE | A 3D shape with six square faces, like a dice. | 2
+SPHERE | A perfectly round 3D shape, like a ball. | 3
+PYRAMID | A 3D shape with a square base and triangle sides. | 2
+DOZEN | Twelve of something, like eggs. | 2
+HUNDRED | Ten times ten. | 1
+MILLION | A thousand thousands, the dream number in your bank account. | 2
+ZERO | Nothing at all, also my savings at the end of the month. | 1
+SEVEN | The number of days in a week. | 1
+TWELVE | The number of months in a year. | 1
+TURQUOISE | A blue-green color, like a tropical sea. | 3 | TEAL

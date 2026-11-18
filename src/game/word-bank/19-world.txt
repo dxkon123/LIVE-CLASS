@@ -1,0 +1,32 @@
+# Around the world
+> This is something about the world.
+EQUATOR | An imaginary line around the middle of the Earth. | 2
+CONTINENT | One of seven huge land masses, like Asia or Africa. | 2
+PASSPORT | The little book you need to travel abroad. | 1
+SUITCASE | You pack your clothes in it for a trip, and sit on it to close it. | 1 | LUGGAGE
+AIRPORT | Where planes take off and land, and coffee costs double. | 1
+MAP | Shows you where places are, before phones did it for you. | 1
+COMPASS | Always points north. | 2
+GLOBE | A spinning ball model of the Earth. | 1
+ANTARCTICA | The coldest continent, home of penguins. | 2
+AUSTRALIA | A country that is also a continent, with kangaroos. | 1
+AFRICA | The continent with the Sahara and the Nile. | 1
+EUROPE | The continent with France, Italy and Germany. | 1
+ASIA | The biggest continent, with China, India and Vietnam. | 1
+PACIFIC | The biggest ocean in the world. | 2
+ATLANTIC | The ocean between America and Europe. | 2
+NORTH POLE | Santa's workshop is said to be here, at the top of the world. | 2
+TIME ZONE | Why it is morning in New York and night in Tokyo. | 3
+CURRENCY | Dollar, euro and yen are all kinds of this. | 2
+LANGUAGE | English, Spanish and Chinese are all one of these. | 2
+FLAG | Every country has one, with its own colors and symbols. | 1
+CAPITAL | The main city of a country, like Paris for France. | 2
+BORDER | The line where one country ends and another begins. | 2
+VISA | Permission stamped in your passport to enter a country. | 3
+JET LAG | Feeling tired after flying across many time zones. | 3
+TOURIST | Takes photos of everything and walks very slowly in the middle of the street. | 1
+SOUVENIR | A little gift you buy on a trip to remember it. | 3
+LATITUDE | Lines on a map that run east to west. | 3
+NILE | The longest river in Africa. | 2
+OLYMPICS | Sports event every four years with five rings on the flag. | 2
+UNITED NATIONS | An organization where almost every country meets, based in New York. | 3

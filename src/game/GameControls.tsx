@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { emitTest, sendControl } from '../live/page';
+import { api } from '../live/api';
 import type { StageView } from './useGame';
 import { GAME, shownTeacherName, type RoomCfg } from './config';
 
-const HO = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Vũ', 'Đặng', 'Bùi'];
-const TEN = ['Lan Anh', 'Minh Tuấn', 'Thu Trang', 'Quốc Bảo', 'Ngọc Hân', 'Gia Huy', 'Khánh Linh', 'Hải Yến', 'Đức Anh', 'Bảo Ngọc', 'Thanh Hà', 'Văn Toàn'];
-const CHAT = ['khó quá cô ơi', 'chữ gì vậy trời', 'hay quá', 'vào lớp', 'cô xinh quá', 'ủa là gì', '???', 'hihi'];
-const fake = (i: number) => ({ username: `hs${i}`, nickname: `${HO[i % HO.length]} ${TEN[i % TEN.length]}`, avatar: '' });
+const HO = ['Smith', 'Garcia', 'Lee', 'Patel', 'Brown', 'Nguyen', 'Kim', 'Lopez'];
+const TEN = ['Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Mia', 'Lucas', 'Sophia', 'Mason', 'Isla', 'Leo'];
+const CHAT = ['so hard teacher', 'what word is that', 'love this', 'join class', 'teacher is so pretty', 'wait what', '???', 'hehe'];
+const fake = (i: number) => ({ username: `hs${i}`, nickname: `${TEN[i % TEN.length]} ${HO[i % HO.length]}`, avatar: '' });
 const shuffleWord = (w: string) => [...w].sort(() => Math.random() - 0.5).join('');
 
 const KY_THI = [
-  { nhan: 'CẤP 1 · KHỞI ĐỘNG', moTa: 'Câu 1–5' },
-  { nhan: 'CẤP 2 · TĂNG TỐC', moTa: 'Câu 6–10' },
-  { nhan: 'CẤP 3 · BỨT PHÁ', moTa: 'Câu 11–15' },
-  { nhan: 'TÚ TÀI · VỀ ĐÍCH', moTa: 'Câu 16–20' },
+  { nhan: 'WARM-UP', moTa: 'Questions 1–5' },
+  { nhan: 'SPEED UP', moTa: 'Questions 6–10' },
+  { nhan: 'LEVEL UP', moTa: 'Questions 11–15' },
+  { nhan: 'FINALS', moTa: 'Questions 16–20' },
 ];
 
 export function GameControls({ view, stageCount = 0 }: { view: StageView | null; stageCount?: number }) {
@@ -41,7 +42,7 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
   };
 
   useEffect(() => {
-    fetch('/api/room-settings')
+    api('/api/room-settings')
       .then((r) => r.json())
       .then(load)
       .catch(() => {});
@@ -72,7 +73,7 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
   };
 
   const save = async (patch: Partial<RoomCfg>, done: string) => {
-    const r = await fetch('/api/room-settings', {
+    const r = await api('/api/room-settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
@@ -80,7 +81,7 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
     setDaLuu(r.success ? done : r.error);
     if (r.success) {
       load(r.room);
-      window.dispatchEvent(new CustomEvent('vieneu-voice-changed'));
+      window.dispatchEvent(new CustomEvent('voice-changed'));
     }
     return r.success as boolean;
   };
@@ -90,10 +91,10 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
     if (teacherName.trim()) patch.teacherName = teacherName.trim();
     if (motto.trim()) patch.motto = motto.trim();
     if (Object.keys(patch).length === 0) {
-      setDaLuu('Đã giữ nguyên tên mặc định');
+      setDaLuu('Kept the default names');
       return;
     }
-    const ok = await save(patch, 'Đã lưu, màn hình đổi ngay');
+    const ok = await save(patch, 'Saved, the screen updates right away');
     if (ok) {
       setTeacherName('');
       setMotto('');
@@ -102,18 +103,18 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
 
   const upload = async (f: File | undefined) => {
     if (!f) return;
-    setDaLuu('Đang tải ảnh nền lên...');
-    const r = await fetch('/api/room-bg', { method: 'POST', headers: { 'Content-Type': f.type }, body: f })
+    setDaLuu('Uploading the background...');
+    const r = await api('/api/room-bg', { method: 'POST', headers: { 'Content-Type': f.type }, body: f })
       .then((x) => x.json())
-      .catch(() => ({ success: false, error: 'Ảnh quá lớn hoặc không đúng loại (PNG, JPG, WEBP, tối đa 12 MB)' }));
-    setDaLuu(r.success ? 'Đã đổi nền lớp' : r.error);
+      .catch(() => ({ success: false, error: 'Image too big or wrong type (PNG, JPG, WEBP, max 12 MB)' }));
+    setDaLuu(r.success ? 'Classroom background changed' : r.error);
     if (r.success) load(r.room);
     if (file.current) file.current.value = '';
   };
 
   const resetBg = async () => {
-    const r = await fetch('/api/room-bg', { method: 'DELETE' }).then((x) => x.json());
-    setDaLuu('Đã về nền gốc');
+    const r = await api('/api/room-bg', { method: 'DELETE' }).then((x) => x.json());
+    setDaLuu('Back to the default classroom');
     load(r.room);
   };
 
@@ -145,7 +146,7 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
     <div className="space-y-3 rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
       {stageCount > 1 && (
         <div className="rounded-lg bg-red-600 p-2 text-xs font-semibold text-white">
-          ⚠️ Đang mở {stageCount} trang stage, sẽ có 2 giọng đè nhau. Hãy đóng bớt đi!
+          ⚠️ {stageCount} stage pages are open, the voices will overlap. Close the extra ones!
         </div>
       )}
 
@@ -153,33 +154,33 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
         <div className="font-bold text-amber-300">LIVE-CLASS</div>
         {view && (
           <div className="text-xs text-slate-300">
-            Tiết <b>{view.round}</b> · Câu <b>{view.qNo}/{view.total}</b> · Đáp án:{' '}
-            <b className="rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-300">{view.answer || '—'}</b> · Đúng:{' '}
-            <b className="text-emerald-400">{view.correctCount}</b>/{view.stats.attempts} ({view.players} học sinh)
+            Class <b>{view.round}</b> · Question <b>{view.qNo}/{view.total}</b> · Answer:{' '}
+            <b className="rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-300">{view.answer || '—'}</b> · Correct:{' '}
+            <b className="text-emerald-400">{view.correctCount}</b>/{view.stats.attempts} ({view.players} players)
           </div>
         )}
       </div>
 
       <div className="grid gap-2 sm:grid-cols-3">
         <label className="text-sm text-white/70">
-          Người đứng lớp (Nhân vật)
+          Teacher (character)
           <select
             className={o}
             value={cfg.teacher}
             onChange={(e) => {
               const teacher = e.target.value as RoomCfg['teacher'];
               const patch: Partial<RoomCfg> = { teacher, teacherVoice: teacher === 'thay' ? 'nam' : 'nu' };
-              if (teacher === 'thay' && /^cô(\s|$)/i.test(cfg.teacherName)) patch.teacherName = GAME.defaultThayName;
-              if (teacher === 'co' && /^thầy(\s|$)/i.test(cfg.teacherName)) patch.teacherName = GAME.defaultRoom.teacherName;
-              void save(patch, teacher === 'thay' ? 'Đã đổi sang Thầy giáo (giọng nam)' : 'Đã đổi sang Cô Ngân (giọng nữ)');
+              if (teacher === 'thay' && /^(ms|miss|mrs)\.?(\s|$)/i.test(cfg.teacherName)) patch.teacherName = GAME.defaultThayName;
+              if (teacher === 'co' && /^(mr|sir)\.?(\s|$)/i.test(cfg.teacherName)) patch.teacherName = GAME.defaultRoom.teacherName;
+              void save(patch, teacher === 'thay' ? 'Switched to Mr. Minh (male voice)' : 'Switched to Ms. Ngan (female voice)');
             }}
           >
-            <option value="co" className="bg-slate-900">👩‍🏫 Cô Ngân (Giáo viên Nữ)</option>
-            <option value="thay" className="bg-slate-900">👨‍🏫 Thầy Minh (Giáo viên Nam)</option>
+            <option value="co" className="bg-slate-900">👩‍🏫 Ms. Ngan (female teacher)</option>
+            <option value="thay" className="bg-slate-900">👨‍🏫 Mr. Minh (male teacher)</option>
           </select>
         </label>
         <label className="text-sm text-white/70">
-          Tên {cfg.teacher === 'thay' ? 'thầy' : 'cô'} giáo (bảng tên cài áo)
+          Teacher name (name badge)
           <input
             className={o}
             value={teacherName}
@@ -189,7 +190,7 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
           />
         </label>
         <label className="text-sm text-white/70">
-          Chữ khẩu hiệu bảng đỏ (tối đa 40 ký tự)
+          Red banner slogan (max 40 characters)
           <input
             className={o}
             value={motto}
@@ -202,9 +203,9 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
 
       <div className="flex flex-wrap items-center gap-3">
         <button className={`${btn} bg-emerald-700 text-white hover:bg-emerald-600`} onClick={luuTenVaBang}>
-          💾 Lưu tên
+          💾 Save
         </button>
-        <span className="text-sm text-white/60">{daLuu || 'Để trống là dùng tên mặc định'}</span>
+        <span className="text-sm text-white/60">{daLuu || 'Leave empty to keep the defaults'}</span>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -215,17 +216,17 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
             void sendControl('custom', 'newRound');
           }}
         >
-          ▶ Bắt đầu ván mới ngay
+          ▶ Start a new class now
         </button>
         <button className={`${btn} bg-slate-700 text-white hover:bg-slate-600`} onClick={() => sendControl('custom', 'skip')}>
-          ⏭ Qua phần tiếp
+          ⏭ Skip to next part
         </button>
         <button
           className={`${btn} bg-red-800 text-white hover:bg-red-700`}
           disabled={!view?.answer || !!view.math || !['question', 'bonus', 'reveal'].includes(view.phase)}
           onClick={() => sendControl('custom', 'ban')}
         >
-          🚫 Bỏ câu này
+          🚫 Drop this question
         </button>
         <button
           className={`${btn} bg-rose-600 text-white ring-1 ring-rose-400/50 hover:bg-rose-500`}
@@ -234,19 +235,19 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
             void sendControl('custom', 'goodbye');
           }}
         >
-          🛑 Tắt Live ({cfg.teacher === 'thay' ? 'Thầy giáo' : 'Cô Ngân'} chào tạm biệt)
+          🛑 End class ({cfg.teacher === 'thay' ? 'Mr. Minh' : 'Ms. Ngan'} says goodbye)
         </button>
       </div>
 
       <div className="rounded-xl bg-black/30 p-3 ring-1 ring-white/10">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-white/75">
-          <span>⏰ Hẹn giờ tự động dừng game &amp; {cfg.teacher === 'thay' ? 'Thầy giáo' : 'Cô Ngân'} đọc lời chào tắt Live:</span>
+          <span>⏰ Auto-stop timer: the game ends and {cfg.teacher === 'thay' ? 'Mr. Minh' : 'Ms. Ngan'} says goodbye:</span>
           {stopAt ? (
             <span className="rounded-full bg-rose-500/20 px-2.5 py-0.5 font-bold text-rose-300">
-              ⏳ Tự kết thúc sau {fmtTime(remainSec)}
+              ⏳ Ends in {fmtTime(remainSec)}
             </span>
           ) : (
-            <span className="text-white/40">Chưa hẹn giờ</span>
+            <span className="text-white/40">No timer set</span>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -256,7 +257,7 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
               className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
               onClick={() => setStopAt(Date.now() + phut * 60_000)}
             >
-              +{phut} phút
+              +{phut} min
             </button>
           ))}
           {stopAt && (
@@ -264,13 +265,13 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
               className="rounded-lg bg-rose-900/60 px-3 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-800"
               onClick={() => setStopAt(null)}
             >
-              ✖ Hủy hẹn giờ
+              ✖ Cancel timer
             </button>
           )}
         </div>
       </div>
 
-      <div className="text-sm text-white/60">Chuyển nhanh kỳ thi (đổi bối cảnh bảng đen &amp; trang phục giáo viên):</div>
+      <div className="text-sm text-white/60">Jump to a term (changes the board style &amp; the teacher's outfit):</div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {KY_THI.map((v, i) => (
           <button
@@ -278,54 +279,54 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
             className="rounded-xl bg-amber-500/15 px-3 py-2 text-xs font-bold text-amber-200 ring-1 ring-amber-400/30 hover:bg-amber-500/30"
             onClick={() => sendControl('custom', `vong:${i}`)}
           >
-            Kỳ {i + 1}: {v.nhan}
+            Term {i + 1}: {v.nhan}
           </button>
         ))}
       </div>
 
-      <div className="text-sm text-white/60">Giả lập (bấm lúc đang hiện câu hỏi trên bảng):</div>
+      <div className="text-sm text-white/60">Simulate players (press while a question is on the board):</div>
       <div className="flex flex-wrap gap-2">
         <button
           className={`${btn} bg-white/10 text-white hover:bg-white/20`}
           onClick={() => emitTest('chat', { ...fake(Math.floor(Math.random() * 50)), comment: view?.answer.toLowerCase() ?? '' })}
         >
-          1 người đúng
+          1 correct player
         </button>
         <button className={`${btn} bg-white/10 text-white hover:bg-white/20`} disabled={running} onClick={() => flood(60)}>
-          60 người
+          60 players
         </button>
         <button className={`${btn} bg-white/10 text-white hover:bg-white/20`} disabled={running} onClick={() => flood(500)}>
-          500 người
+          500 players
         </button>
-        {sent > 0 && <span className="self-center text-xs text-amber-300">Đã gửi: {sent}</span>}
+        {sent > 0 && <span className="self-center text-xs text-amber-300">Sent: {sent}</span>}
       </div>
 
       <details className="rounded-xl bg-black/25 p-3 text-xs text-slate-300 ring-1 ring-white/10">
         <summary className="cursor-pointer font-semibold text-amber-200">
-          ⚙️ Mở rộng: Gameshow lớn (Everest / Chuông Đồng), Giờ ra chơi, Giám thị &amp; Cài đặt lớp
+          ⚙️ More: big shows (Everest / Golden Bell), recess, hall monitor &amp; class settings
         </summary>
         <div className="mt-3 space-y-2.5">
           <div className="flex flex-wrap gap-1.5">
             <button className="rounded-lg bg-sky-700 px-3 py-1.5 font-semibold text-white hover:bg-sky-600" onClick={() => sendControl('custom', 'show:everest')}>
-              🏔️ Chơi ngay: Đường lên đỉnh Everest
+              🏔️ Play now: Road to Everest
             </button>
             <button className="rounded-lg bg-amber-700 px-3 py-1.5 font-semibold text-white hover:bg-amber-600" onClick={() => sendControl('custom', 'show:chuong')}>
-              🔔 Chơi ngay: Rung Chuông Đồng
+              🔔 Play now: Golden Bell
             </button>
             <button className="rounded-lg bg-slate-700 px-2.5 py-1.5 text-white hover:bg-slate-600" onClick={() => sendControl('custom', 'recess:dance')}>
-              💃 Ra chơi: Nhảy múa
+              💃 Recess: dance
             </button>
             <button className="rounded-lg bg-slate-700 px-2.5 py-1.5 text-white hover:bg-slate-600" onClick={() => sendControl('custom', 'recess:rps')}>
-              ✊ Oẳn tù tì
+              ✊ Rock paper scissors
             </button>
             <button className="rounded-lg bg-slate-700 px-2.5 py-1.5 text-white hover:bg-slate-600" onClick={() => sendControl('custom', 'recess:callup')}>
-              📢 Kiểm tra miệng
+              📢 Pop quiz
             </button>
             <button className="rounded-lg bg-slate-700 px-2.5 py-1.5 text-white hover:bg-slate-600" onClick={() => sendControl('custom', 'recess:roll')}>
-              🙋 Điểm danh
+              🙋 Roll call
             </button>
             <button className="rounded-lg bg-slate-700 px-2.5 py-1.5 text-white hover:bg-slate-600" onClick={() => sendControl('custom', 'escort')}>
-              👮 Giám thị vào lớp
+              👮 Hall monitor visit
             </button>
           </div>
 
@@ -333,7 +334,7 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
             <input
               value={bdName}
               onChange={(e) => setBdName(e.target.value)}
-              placeholder="Nhập tên bạn sinh nhật..."
+              placeholder="Birthday person's name..."
               className="w-48 rounded-lg bg-slate-900 px-2.5 py-1.5 text-white ring-1 ring-white/15"
             />
             <button
@@ -343,31 +344,31 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
               }}
               className="rounded-lg bg-pink-700 px-3 py-1.5 font-semibold text-white hover:bg-pink-600"
             >
-              🎂 Chúc sinh nhật
+              🎂 Wish happy birthday
             </button>
             <label className="ml-2 flex items-center gap-1">
               <input
                 type="checkbox"
                 checked={cfg.everest}
-                onChange={(e) => save({ everest: e.target.checked }, e.target.checked ? 'Đã bật Everest' : 'Đã tắt Everest')}
+                onChange={(e) => save({ everest: e.target.checked }, e.target.checked ? 'Everest on' : 'Everest off')}
               />
-              🏔️ Everest tự động
+              🏔️ Auto Everest
             </label>
             <label className="ml-2 flex items-center gap-1">
               <input
                 type="checkbox"
                 checked={cfg.chuong}
-                onChange={(e) => save({ chuong: e.target.checked }, e.target.checked ? 'Đã bật Rung Chuông Đồng' : 'Đã tắt Rung Chuông Đồng')}
+                onChange={(e) => save({ chuong: e.target.checked }, e.target.checked ? 'Golden Bell on' : 'Golden Bell off')}
               />
-              🔔 Chuông Đồng tự động
+              🔔 Auto Golden Bell
             </label>
             <label className="ml-2 flex items-center gap-1">
               <input
                 type="checkbox"
                 checked={cfg.standWrong}
-                onChange={(e) => save({ standWrong: e.target.checked }, e.target.checked ? 'Đã bật lên bục cổ vũ' : 'Đã tắt lên bục cổ vũ')}
+                onChange={(e) => save({ standWrong: e.target.checked }, e.target.checked ? 'Front-of-class cheering on' : 'Front-of-class cheering off')}
               />
-              🙋 Lên bục cổ vũ khi sai
+              🙋 Wrong answer = cheer at the front
             </label>
           </div>
 
@@ -376,9 +377,9 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
               <input
                 type="checkbox"
                 checked={cfg.supervisor}
-                onChange={(e) => save({ supervisor: e.target.checked }, e.target.checked ? 'Đã bật thầy giám thị' : 'Đã tắt thầy giám thị')}
+                onChange={(e) => save({ supervisor: e.target.checked }, e.target.checked ? 'Hall monitor on' : 'Hall monitor off')}
               />
-              👮 Giám thị sau
+              👮 Hall monitor after
             </label>
             <input
               className="w-14 rounded-lg bg-slate-900 px-2 py-1 text-white ring-1 ring-white/15"
@@ -389,23 +390,23 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
               value={mins}
               onChange={(e) => setMins(e.target.value)}
             />
-            <span>phút</span>
+            <span>min</span>
             <button
               disabled={!mins}
-              onClick={() => save({ supervisorMin: Number(mins) }, 'Đã đổi số phút giám thị').then((ok) => ok && setMins(''))}
+              onClick={() => save({ supervisorMin: Number(mins) }, 'Hall monitor minutes changed').then((ok) => ok && setMins(''))}
               className="rounded-lg bg-slate-700 px-2.5 py-1 text-white disabled:opacity-40"
             >
-              Lưu
+              Save
             </button>
-            <span className="ml-2">💃 Nhảy múa:</span>
+            <span className="ml-2">💃 Dance recess:</span>
             <select
               className="rounded-lg bg-slate-900 px-2 py-1 text-white ring-1 ring-white/15"
               value={cfg.dance}
-              onChange={(e) => save({ dance: e.target.value as RoomCfg['dance'] }, 'Đã đổi chế độ nhảy múa')}
+              onChange={(e) => save({ dance: e.target.value as RoomCfg['dance'] }, 'Dance mode changed')}
             >
-              <option value="off">Tắt</option>
-              <option value="mix">Xen kẽ</option>
-              <option value="always">Mọi giờ ra chơi</option>
+              <option value="off">Off</option>
+              <option value="mix">Sometimes</option>
+              <option value="always">Every recess</option>
             </select>
             <input
               className="w-14 rounded-lg bg-slate-900 px-2 py-1 text-white ring-1 ring-white/15"
@@ -416,18 +417,18 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
               value={danceSec}
               onChange={(e) => setDanceSec(e.target.value)}
             />
-            <span>giây</span>
+            <span>sec</span>
             <button
               disabled={!danceSec}
-              onClick={() => save({ danceSec: Number(danceSec) }, 'Đã đổi thời gian nhảy').then((ok) => ok && setDanceSec(''))}
+              onClick={() => save({ danceSec: Number(danceSec) }, 'Dance time changed').then((ok) => ok && setDanceSec(''))}
               className="rounded-lg bg-slate-700 px-2.5 py-1 text-white disabled:opacity-40"
             >
-              Lưu
+              Save
             </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span>Thông báo nhảy:</span>
+            <span>Dance banner:</span>
             <input
               className="min-w-0 flex-1 rounded-lg bg-slate-900 px-2 py-1 text-white ring-1 ring-white/15"
               placeholder={cfg.danceText}
@@ -437,15 +438,15 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
             />
             <button
               disabled={!danceText.trim()}
-              onClick={() => save({ danceText }, 'Đã đổi thông báo nhảy múa').then((ok) => ok && setDanceText(''))}
+              onClick={() => save({ danceText }, 'Dance banner changed').then((ok) => ok && setDanceText(''))}
               className="rounded-lg bg-slate-700 px-2.5 py-1 text-white disabled:opacity-40"
             >
-              Lưu
+              Save
             </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span>🎂 Biểu ngữ SN:</span>
+            <span>🎂 Birthday banner:</span>
             <input
               className="min-w-0 flex-1 rounded-lg bg-slate-900 px-2 py-1 text-white ring-1 ring-white/15"
               placeholder={cfg.birthdayText}
@@ -455,18 +456,18 @@ export function GameControls({ view, stageCount = 0 }: { view: StageView | null;
             />
             <button
               disabled={!bdText.trim()}
-              onClick={() => save({ birthdayText: bdText }, 'Đã đổi chữ biểu ngữ sinh nhật').then((ok) => ok && setBdText(''))}
+              onClick={() => save({ birthdayText: bdText }, 'Birthday banner changed').then((ok) => ok && setBdText(''))}
               className="rounded-lg bg-slate-700 px-2.5 py-1 text-white disabled:opacity-40"
             >
-              Lưu
+              Save
             </button>
             <input ref={file} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
             <button onClick={() => file.current?.click()} className="rounded-lg bg-slate-700 px-2.5 py-1 text-white hover:bg-slate-600">
-              🖼️ Đổi nền lớp...
+              🖼️ Change background...
             </button>
             {cfg.bg && (
               <button onClick={resetBg} className="rounded-lg bg-rose-800 px-2.5 py-1 text-white">
-                Về nền gốc
+                Default background
               </button>
             )}
           </div>

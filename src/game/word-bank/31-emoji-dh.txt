@@ -1,0 +1,144 @@
+# Emoji puzzles
+# Emoji puzzles are asked at the 'dh' spots of a class (5 per class). The clue column is the EMOJI string shown big
+# on the board; the teacher does not read it, she only says "Emoji puzzle! This is a compound word, 9 letters."
+# Prefer puns and sound-alikes: car + pet = CARPET, night + mare = NIGHTMARE. No flag emojis (Windows shows letters).
+# Each line: ANSWER | emoji | difficulty (1 easy, 2 medium, 3 hard) | other accepted answers
+> This is a compound word.
+SUNFLOWER | ☀️ + 🌸 | 1
+RAINBOW | 🌧️ + 🎀 | 1
+BUTTERFLY | 🧈 + 🪰 | 1
+STARFISH | ⭐ + 🐟 | 1
+SNOWMAN | ❄️ + 👨 | 1
+PANCAKE | 🍳 + 🎂 | 1
+CUPCAKE | ☕ + 🎂 | 1
+POPCORN | 💥 + 🌽 | 1
+MOONLIGHT | 🌙 + 💡 | 1
+SUNGLASSES | ☀️ + 👓 | 1
+FOOTBALL | 🦶 + 🏀 | 1
+BASKETBALL | 🧺 + 🏐 | 1
+KEYBOARD | 🔑 + 🛹 | 2
+EARRING | 👂 + 💍 | 1
+TOOTHBRUSH | 🦷 + 🖌️ | 1
+RAINCOAT | 🌧️ + 🧥 | 1
+SNOWBALL | ❄️ + 🏐 | 1
+DOGHOUSE | 🐶 + 🏠 | 1
+HONEYMOON | 🍯 + 🌙 | 2
+HORSESHOE | 🐴 + 👟 | 2
+BOOKWORM | 📚 + 🪱 | 2
+WATERMELON | 💧 + 🍈 | 2
+GOLDFISH | 🥇 + 🐟 | 1
+JELLYFISH | 🍮 + 🐟 | 2
+SWORDFISH | ⚔️ + 🐟 | 2
+CATFISH | 🐱 + 🐟 | 1
+FIREFLY | 🔥 + 🪰 | 2
+DRAGONFLY | 🐉 + 🪰 | 2
+LADYBUG | 👩 + 🐛 | 2 | LADYBIRD
+SEAHORSE | 🌊 + 🐴 | 1
+BULLDOG | 🐂 + 🐕 | 2
+EGGPLANT | 🥚 + 🌱 | 2
+PINEAPPLE | 🌲 + 🍎 | 1
+STRAWBERRY | 🌾 + 🫐 | 2
+GRAPEFRUIT | 🍇 + 🍎 | 2
+PEANUT | 🫛 + 🌰 | 2
+CORNFLAKES | 🌽 + ❄️ | 2
+MILKSHAKE | 🥛 + 🤝 | 2
+BEDROOM | 🛏️ + 🚪 | 1
+DOORBELL | 🚪 + 🔔 | 1
+MAILBOX | 📧 + 📦 | 2
+SUITCASE | 🤵 + 💼 | 2
+RAILROAD | 🛤️ + 🛣️ | 2
+WATERFALL | 💧 + 🍂 | 2
+SUNRISE | ☀️ + ⬆️ | 1
+HEADPHONES | 🗣️ + 📱📱 | 2
+SMARTPHONE | 🧠 + 📞 | 2
+LIGHTHOUSE | 💡 + 🏠 | 1
+GREENHOUSE | 🟢 + 🏠 | 2
+SPACESHIP | 🌌 + 🚢 | 2
+STARLIGHT | ⭐ + 💡 | 2
+BOOKSHELF | 📚 + 🗄️ | 2
+PAINTBRUSH | 🎨 + 🪥 | 2
+FINGERPRINT | 👆 + 🖨️ | 3
+HANDSHAKE | ✋ + 🥤 | 3
+HEARTBEAT | ❤️ + 🥁 | 2
+SHOELACE | 👟 + 🎀 | 2
+BIRDHOUSE | 🐦 + 🏠 | 1
+TREEHOUSE | 🌳 + 🏠 | 1
+COWBOY | 🐄 + 👦 | 1
+RAINDROP | 🌧️ + 💧 | 1
+POSTCARD | 📮 + 💳 | 2
+NEWSPAPER | 🆕 + 📄 | 2
+NOTEBOOK | 🎵 + 📖 | 2
+TOOTHPASTE | 🦷 + 🧴 | 2
+CARPET | 🚗 + 🐶 | 2
+BUTTERCUP | 🧈 + 🏆 | 3
+MOONWALK | 🌙 + 🚶 | 2
+SUNBURN | ☀️ + 🔥 | 2
+EARTHQUAKE | 🌍 + 🫨 | 2
+HOMEWORK | 🏠 + 💼 | 2
+SANDWICH | 🏖️ + 🧙 | 3
+NIGHTMARE | 🌙 + 🐴 | 3
+BRAINSTORM | 🧠 + ⛈️ | 2
+DEADLINE | 💀 + ➖ | 3
+PAYDAY | 💳 + 📅 | 2
+WEEKEND | 📅 + 🔚 | 3
+MEATBALL | 🥩 + ⚽ | 1
+GINGERBREAD | 🫚 + 🍞 | 3
+FIREWORKS | 🔥 + 🏭 | 2
+ICEBERG | 🧊 + 🍔 | 3
+> This is a famous phrase.
+BREAK A LEG | 💔 + 🦵 | 2
+COUCH POTATO | 🛋️ + 🥔 | 1
+TIME FLIES | ⏰ + 🪰 | 2
+BRAIN FREEZE | 🧠 + 🥶 | 2
+HOT POTATO | 🔥 + 🥔 | 1
+COLD FEET | 🥶 + 🦶 | 2
+SPILL THE BEANS | 💦 + 🫘 | 3
+ON CLOUD NINE | ☁️ + 9️⃣ | 2
+NIGHT OWL | 🌙 + 🦉 | 1
+EARLY BIRD | ⏰ + 🐦 | 2
+TOP DOG | 🔝 + 🐕 | 2
+COPYCAT | 📄📄 + 🐱 | 2
+LOVE BIRDS | ❤️ + 🐦🐦 | 1
+HEART OF GOLD | ❤️ + 🥇 | 2
+SWEET DREAMS | 🍬 + 💭 | 2
+HOME SWEET HOME | 🏠 + 🍬 + 🏠 | 2
+TIME IS MONEY | ⏰ = 💰 | 2
+PIGGY BANK | 🐷 + 🏦 | 1
+GREEN THUMB | 🟢 + 👍 | 2
+SHOOTING STAR | 🏹 + ⭐ | 2
+FULL MOON | 💯 + 🌙 | 2
+SECOND HAND | 🥈 + ✋ | 3
+WORLD CUP | 🌍 + 🏆 | 1
+HAPPY HOUR | 😀 + ⏰ | 2
+FAST FOOD | ⚡ + 🍔 | 1
+JUNK FOOD | 🗑️ + 🍔 | 2
+ROAD TRIP | 🛣️ + 🧳 | 2
+POWER NAP | ⚡ + 😴 | 2
+SNAIL MAIL | 🐌 + ✉️ | 3
+HAPPY BIRTHDAY | 😀 + 🎂 | 1
+MERRY CHRISTMAS | 😀 + 🎄 | 1
+GOOD MORNING | 👍 + 🌅 | 1
+GOOD NIGHT | 👍 + 🌙 | 1
+SEE YOU LATER | 👀 + 🫵 + ⏰ | 2
+LONG TIME NO SEE | 📏 + ⏰ + 🚫 + 👀 | 3
+> This is a food.
+ICE CREAM | 🧊 + 🥛 | 1
+BUBBLE TEA | 🫧 + 🍵 | 1
+HOT DOG | 🔥 + 🐶 | 1
+CHEESEBURGER | 🧀 + 🍔 | 1
+PEANUT BUTTER | 🥜 + 🧈 | 1
+APPLE PIE | 🍎 + 🥧 | 1
+FISH AND CHIPS | 🐟 + 🍟 | 1
+CORN DOG | 🌽 + 🐕 | 2
+EGG ROLL | 🥚 + 🧻 | 2
+BANANA SPLIT | 🍌 + ✂️ | 2
+CANDY CANE | 🍬 + 🦯 | 2
+SPRING ROLL | 🌸 + 🧻 | 2
+FRENCH FRIES | 🗼🥖 + 🍟 | 2 | FRIES
+> This is a country.
+TURKEY | 🦃 | 1
+CHILE | 🌶️ | 2
+WALES | 🐋🐋 | 2
+HUNGARY | 🍽️ + 😫 | 3
+ICELAND | 🧊 + 🏝️ | 2
+GREENLAND | 🟢 + 🏝️ | 2

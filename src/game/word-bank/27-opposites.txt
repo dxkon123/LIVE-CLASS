@@ -1,0 +1,37 @@
+# Opposites
+> This is an opposite word.
+COLD | The opposite of hot. | 1
+NIGHT | The opposite of day. | 1
+SMALL | The opposite of big. | 1 | LITTLE, TINY
+HAPPY | The opposite of sad. | 1
+FAST | The opposite of slow. | 1 | QUICK
+DOWN | The opposite of up. | 1
+OPEN | The opposite of closed. | 1
+EMPTY | The opposite of full, like my wallet before payday. | 1
+SHORT | The opposite of tall, or of long. | 1
+WET | The opposite of dry. | 1
+LOUD | The opposite of quiet. | 1 | NOISY
+EARLY | The opposite of late, something I never am on Mondays. | 1
+HEAVY | The opposite of light, like a school backpack. | 1
+CHEAP | The opposite of expensive. | 1
+SOFT | The opposite of hard. | 1
+BEGINNING | The opposite of the end. | 2 | START
+FORGET | The opposite of remember. | 2
+LOSE | The opposite of win. | 1
+BRAVE | The opposite of scared. | 2 | COURAGEOUS
+ANCIENT | The opposite of modern. | 2 | OLD
+ARRIVE | The opposite of leave. | 2 | COME
+SUNRISE | The opposite of sunset. | 1 | DAWN
+PUBLIC | The opposite of private. | 2
+FRONT | The opposite of back. | 1
+NARROW | The opposite of wide. | 2
+SHALLOW | The opposite of deep. | 2
+POLITE | The opposite of rude. | 2 | KIND
+VICTORY | The opposite of defeat. | 2 | WIN
+GENEROUS | The opposite of stingy, unlike my boss at bonus time. | 3
+INVISIBLE | The opposite of visible. | 2
+ACCEPT | The opposite of refuse. | 2 | AGREE
+ARTIFICIAL | The opposite of natural. | 3 | FAKE
+TEMPORARY | The opposite of permanent. | 3
+MAXIMUM | The opposite of minimum. | 3 | MAX
+CONFUSED | The opposite of clear-headed, how I feel reading my bank statement. | 3

@@ -1,9 +1,9 @@
 /**
- * Tóc nhìn từ sau lưng, vẽ bằng SVG để mỗi học sinh một kiểu (theo tên tài khoản, cố định).
- * Khung 100x100 = vùng đầu đã xoá khỏi ảnh thân (public/assets/nv/<nam|nu>/head.json); đuôi tóc được tràn ra ngoài.
- * Nâng cấp theo 4 Kỳ thi (stageIdx 0..3):
- *  - Kỳ 3 (stageIdx = 2, Cấp 3 THPT): Đeo băng đô Quyết Thắng + dải ruy băng sau đầu.
- *  - Kỳ 4 (stageIdx = 3, Đấu Trường Tú Tài): Đội Vòng Nguyệt Quế Vàng Kim (Top 3 đội thêm Mũ Tú Tài 🎓).
+ * Hair seen from behind, drawn in SVG so every student gets a style (fixed per account name).
+ * The 100x100 box = the head area removed from the body image (public/assets/nv/<nam|nu>/head.json); the hair may spill outside it.
+ * Upgrades through the 4 terms (stageIdx 0..3):
+ * - Term 3 (stageIdx = 2, LEVEL UP): red "victory" headband + ribbon tails behind the head.
+ * - Term 4 (stageIdx = 3, FINALS): golden laurel wreath (the top 3 also get a graduation cap 🎓).
  */
 const COLORS = ['#1d1714', '#1d1714', '#1d1714', '#1d1714', '#2f221b', '#2f221b', '#2f221b', '#4a3021', '#4a3021', '#7a4b2a', '#b8862f', '#c76b8e'];
 const BOY = ['ngan', 'ngan', 'dinh', 'xoan', 'mu'] as const;
@@ -57,7 +57,7 @@ export function Hair({
         </>
       );
       break;
-    case 'dinh': // đầu đinh: tóc mỏng thấy da đầu
+    case 'dinh': // buzz cut: thin hair, scalp shows
       body = (
         <>
           {ears}
@@ -66,7 +66,7 @@ export function Hair({
         </>
       );
       break;
-    case 'xoan': // tóc xoăn: viền lượn sóng
+    case 'xoan': // curly hair: wavy edge
       body = (
         <>
           {ears}
@@ -78,7 +78,7 @@ export function Hair({
         </>
       );
       break;
-    case 'mu': // mũ lưỡi trai đội ngược
+    case 'mu': // backwards baseball cap
       body = (
         <>
           {ears}
@@ -89,7 +89,7 @@ export function Hair({
         </>
       );
       break;
-    case 'duoi': // đuôi ngựa
+    case 'duoi': // ponytail
       body = (
         <>
           <path d="M50 40 C66 60 64 110 50 150 C38 110 36 60 50 40 Z" fill={color} stroke={LINE} strokeWidth="2.5" />
@@ -99,7 +99,7 @@ export function Hair({
         </>
       );
       break;
-    case 'bui': // búi tó
+    case 'bui': // bun
       body = (
         <>
           {skull}
@@ -109,7 +109,7 @@ export function Hair({
         </>
       );
       break;
-    case 'bim': // 2 bím có nơ
+    case 'bim': // two braids with bows
       body = (
         <>
           {[24, 76].map((x) => (
@@ -125,7 +125,7 @@ export function Hair({
         </>
       );
       break;
-    case 'xoa': // tóc dài xoã
+    case 'xoa': // long hair down
       body = (
         <>
           <path d="M8 50 Q4 120 14 150 L86 150 Q96 120 92 50 Z" fill={color} stroke={LINE} strokeWidth="2.5" />
@@ -135,7 +135,7 @@ export function Hair({
         </>
       );
       break;
-    case 'bob': // tóc ngắn ngang vai
+    case 'bob': // shoulder-length bob
       body = (
         <>
           <path d="M4 52 A46 48 0 0 1 96 52 L98 104 Q50 114 2 104 Z" fill={color} stroke={LINE} strokeWidth="2.5" />
@@ -143,7 +143,7 @@ export function Hair({
         </>
       );
       break;
-    case 'hai-chum': // 2 chùm buộc 2 bên
+    case 'hai-chum': // two pigtails
       body = (
         <>
           {[2, 98].map((x) => (
@@ -162,7 +162,7 @@ export function Hair({
   return (
     <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute overflow-visible" style={{ inset: 0, width: '100%', height: '100%' }}>
       {body}
-      {/* Kỳ 3 (Cấp 3 THPT): Băng đô Quyết Thắng màu đỏ viền vàng buộc sau đầu */}
+      {/* Term 3 (LEVEL UP): red headband with gold trim, tied at the back */}
       {stageIdx === 2 && (
         <g>
           <path d="M9 36 Q50 46 91 36 L92 45 Q50 55 8 45 Z" fill="#dc2626" stroke="#fbbf24" strokeWidth="1.8" />
@@ -171,10 +171,10 @@ export function Hair({
           <path d="M52 46 C60 58 66 68 70 78" stroke="#dc2626" strokeWidth="4.5" strokeLinecap="round" fill="none" />
         </g>
       )}
-      {/* Kỳ 4 (Đấu Trường Tú Tài): Vòng Nguyệt Quế Vàng Kim + Mũ Cử Nhân Tú Tài cho Top 3 */}
+      {/* Term 4 (FINALS): golden laurel wreath + graduation cap for the top 3 */}
       {stageIdx === 3 && (
         <g>
-          {/* Vòng nguyệt quế vàng ôm quanh đầu */}
+          {/* golden laurel wreath around the head */}
           <path d="M10 38 Q50 52 90 38" stroke="#f59e0b" strokeWidth="3.5" fill="none" />
           {[-34, -24, -14, 14, 24, 34].map((dx, idx) => (
             <ellipse
@@ -190,7 +190,7 @@ export function Hair({
             />
           ))}
           <circle cx="50" cy="43" r="4.5" fill="#ef4444" stroke="#fef08a" strokeWidth="1.5" />
-          {/* Top 3 học sinh xuất sắc đội thêm Mũ Cử Nhân Tú Tài */}
+          {/* the top 3 students also wear a graduation cap */}
           {rank < 3 && (
             <g>
               <polygon points="50,-8 96,10 50,26 4,10" fill="#1e1b4b" stroke="#fbbf24" strokeWidth="2.5" />

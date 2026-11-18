@@ -34,36 +34,36 @@
   <text x="600" y="45" text-anchor="middle" fill="#fef08a" font-family="Segoe UI, Arial, sans-serif" font-weight="900" font-size="17" letter-spacing="1.5">🎓 TIKTOK LIVE INTERACTIVE GAME SHOW · 1080×1920</text>
 
   <!-- Main Title -->
-  <text x="600" y="135" text-anchor="middle" fill="url(#goldGrad)" font-family="Segoe UI, Arial, sans-serif" font-weight="900" font-size="56" letter-spacing="2">🏫 LIVE-CLASS — LỚP HỌC TƯƠNG TÁC</text>
-  <text x="600" y="176" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-weight="700" font-size="21" opacity="0.95">Cô Ngân &amp; Thầy Minh giảng bài · 25 Giọng AI VieNeu-TTS · 4 Cấp Học · 34 Chủ Đề (2,500+ Câu Đố)</text>
+  <text x="600" y="135" text-anchor="middle" fill="url(#goldGrad)" font-family="Segoe UI, Arial, sans-serif" font-weight="900" font-size="56" letter-spacing="2">🏫 LIVE-CLASS — INTERACTIVE CLASSROOM</text>
+  <text x="600" y="176" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-weight="700" font-size="21" opacity="0.95">Taught by Ms. Ngan &amp; Mr. Minh · Spoken questions · 4 Terms · 34 Topics (1,290+ questions)</text>
 
   <!-- 4 Stage Badges inside Blackboard -->
   <g transform="translate(95, 206)">
     <rect x="0" y="0" width="235" height="92" rx="12" fill="#14532d" stroke="#86efac" stroke-width="2"/>
-    <text x="117" y="28" text-anchor="middle" fill="#86efac" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">🌱 KỲ 1 · CẤP 1 (Câu 1–5)</text>
-    <text x="117" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Bảng Xanh · Bàn Gỗ Vàng</text>
-    <text x="117" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🧣 Khăn Quàng Đỏ · Áo Dài Trắng</text>
+    <text x="117" y="28" text-anchor="middle" fill="#86efac" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">🌱 TERM 1 · WARM-UP (Q1–5)</text>
+    <text x="117" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Green Board · Golden Oak Desks</text>
+    <text x="117" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🧣 Red Scarves · White Ao Dai</text>
   </g>
 
   <g transform="translate(348, 206)">
     <rect x="0" y="0" width="235" height="92" rx="12" fill="#0f3d3e" stroke="#67e8f9" stroke-width="2"/>
-    <text x="117" y="28" text-anchor="middle" fill="#67e8f9" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">⚡ KỲ 2 · CẤP 2 (Câu 6–10)</text>
-    <text x="117" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Bảng Từ Lam · Bàn Gỗ Óc Chó</text>
-    <text x="117" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🎽 Cổ Áo Đoàn Xanh · Sơ Mi</text>
+    <text x="117" y="28" text-anchor="middle" fill="#67e8f9" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">⚡ TERM 2 · SPEED UP (Q6–10)</text>
+    <text x="117" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Blue Board · Walnut Desks</text>
+    <text x="117" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🎽 Blue Collars · Shirts</text>
   </g>
 
   <g transform="translate(601, 206)">
     <rect x="0" y="0" width="235" height="92" rx="12" fill="#1e293b" stroke="#fbbf24" stroke-width="2"/>
-    <text x="117" y="28" text-anchor="middle" fill="#fbbf24" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">🔥 KỲ 3 · CẤP 3 (Câu 11–15)</text>
-    <text x="117" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Bảng Đá Đen · Bàn Gỗ Đỏ Gụ</text>
-    <text x="117" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🎗️ Băng Đô Quyết Thắng · Áo Dài Ngọc</text>
+    <text x="117" y="28" text-anchor="middle" fill="#fbbf24" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">🔥 TERM 3 · LEVEL UP (Q11–15)</text>
+    <text x="117" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Slate Board · Mahogany Desks</text>
+    <text x="117" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🎗️ Victory Headbands · Jade Ao Dai</text>
   </g>
 
   <g transform="translate(854, 206)">
     <rect x="0" y="0" width="250" height="92" rx="12" fill="#450a0a" stroke="#fde047" stroke-width="2.5"/>
-    <text x="125" y="28" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">👑 KỲ 4 · TÚ TÀI (Câu 16–20)</text>
-    <text x="125" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Bảng Sơn Mài Đỏ · Bàn Thảm Đỏ</text>
-    <text x="125" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🌿 Vòng Nguyệt Quế Vàng &amp; Mũ 🎓</text>
+    <text x="125" y="28" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="900" font-size="15">👑 TERM 4 · FINALS (Q16–20)</text>
+    <text x="125" y="52" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">Red Lacquer Board · Red Carpet Desks</text>
+    <text x="125" y="74" text-anchor="middle" fill="#fde047" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13">🌿 Golden Laurels &amp; Grad Caps 🎓</text>
   </g>
 
   <!-- Chalk Tray -->

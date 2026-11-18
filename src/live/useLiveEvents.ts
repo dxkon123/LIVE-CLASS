@@ -2,10 +2,11 @@ import { useEffect, useRef } from 'react';
 import type { LiveHandlers } from './types';
 import { IS_STAGE, STAGE_ID } from './page';
 import { voice } from './voice';
+import { openEvents } from './api';
 
 /**
- * Nghe sự kiện live từ server. Handler luôn là bản mới nhất (không lo state cũ),
- * tự kết nối lại khi rớt mạng.
+ * Listens to live events from the server. The handler is always the latest one (no stale state),
+ * and it reconnects by itself after a network drop.
  */
 export function useLiveEvents(handlers: LiveHandlers) {
   const ref = useRef(handlers);
@@ -21,12 +22,12 @@ export function useLiveEvents(handlers: LiveHandlers) {
         try {
           fn(JSON.parse((e as MessageEvent).data));
         } catch (err) {
-          console.warn(`Lỗi xử lý sự kiện ${name}:`, err);
+          console.warn(`Error handling event ${name}:`, err);
         }
       });
 
     const connect = () => {
-      source = new EventSource(IS_STAGE ? `/api/tiktok/events?stage=${STAGE_ID}` : '/api/tiktok/events');
+      source = openEvents(IS_STAGE ? `/api/tiktok/events?stage=${STAGE_ID}` : '/api/tiktok/events');
       on('status', (d) => ref.current.onStatus?.(d));
       on('chat', (d) => ref.current.onChat?.(d));
       on('gift', (d) => ref.current.onGift?.(d));
@@ -39,7 +40,7 @@ export function useLiveEvents(handlers: LiveHandlers) {
       on('roomCfg', (d) => ref.current.onRoomCfg?.(d));
       on('gamestate', (d) => ref.current.onGameState?.(d));
       on('speaker', (d) => {
-        // trang stage bị trang mới hơn thay chỗ: im lặng hẳn (cả giọng lẫn nhạc)
+        // this stage page was replaced by a newer one: go fully silent (voice and music)
         if (IS_STAGE) {
           const mine = d.id === STAGE_ID;
           if (!mine && voice.enabled) voice.stop();

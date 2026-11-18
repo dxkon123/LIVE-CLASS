@@ -1,48 +1,45 @@
 import { containsBanned } from './bannedWords';
 
 /**
- * Tên TikTok -> tên cho giọng đọc (lấy từ Đi Chùa Online, đã chạy thật trên live).
- *   'Bé Na 🌸'        -> 'Bé Na'
- *   '𝑵𝒈𝒖𝒚𝒆̂̃𝒏'         -> 'Nguyễn'       (chữ kiểu lạ về chữ thường)
- *   'an99'             -> 'an chín chín' (số đọc thành chữ)
- *   'duyanh', 'MinhTuan' -> 'duy anh', 'Minh Tuan'
- *   tên có từ cấm      -> 'bạn'
- * Chỉ dùng để ĐỌC. Hiện trên màn hình thì dùng maskBanned.
+ * TikTok nickname -> a name the voice can read.
+ *   'Lily 🌸'          -> 'Lily'
+ *   '𝑵𝒐𝒂𝒉'            -> 'Noah'          (fancy letters back to plain letters)
+ *   'sam99'            -> 'sam nine nine'  (digits are read one by one)
+ *   'MiaRose'          -> 'Mia Rose'
+ *   name with a banned word -> 'friend'
+ * Only for READING. On screen use maskBanned.
  */
 
 const DIGITS: Record<string, string> = {
-  '0': 'không',
-  '1': 'một',
-  '2': 'hai',
-  '3': 'ba',
-  '4': 'bốn',
-  '5': 'năm',
-  '6': 'sáu',
-  '7': 'bảy',
-  '8': 'tám',
-  '9': 'chín',
+  '0': 'zero',
+  '1': 'one',
+  '2': 'two',
+  '3': 'three',
+  '4': 'four',
+  '5': 'five',
+  '6': 'six',
+  '7': 'seven',
+  '8': 'eight',
+  '9': 'nine',
 };
 
-// Tên Việt hay viết dính: "duyanh" -> "duy anh". Chỉ tách chữ thường không dấu, phần còn lại >= 2 chữ.
-const NAME_STARTS = [
-  'hoang', 'tuyet', 'thanh', 'trung', 'quang', 'minh', 'ngoc', 'phuc', 'xuan', 'quoc',
-  'viet', 'tien', 'tuan', 'hong', 'duy', 'van', 'kim', 'hai', 'nam',
-];
+// names typed without spaces are left alone in English (no reliable way to split them)
+const NAME_STARTS: string[] = [];
 
-const MAX_WORDS = 5; // tên quá dài thì đọc 5 chữ đầu
+const MAX_WORDS = 5; // very long names: read the first 5 words
 
 export function speakableName(nickname: string): string {
-  if (!nickname) return 'bạn';
+  if (!nickname) return 'friend';
 
   let clean = nickname
-    .normalize('NFKC') // 𝑵𝒈𝒖𝒚𝒆̂̃𝒏 -> Nguyễn
-    .replace(/[\u{FE00}-\u{FE0F}‍⃣]/gu, '') // dấu phụ của emoji
-    .replace(/[^\p{L}\p{M}\p{N}\s._-]/gu, ' ') // emoji, ký hiệu
+    .normalize('NFKC') // fancy Unicode letters (bold, italic, script) -> plain letters
+    .replace(/[\u{FE00}-\u{FE0F}‍⃣]/gu, '') // emoji variation selectors
+    .replace(/[^\p{L}\p{M}\p{N}\s._-]/gu, ' ') // emoji, symbols
     .normalize('NFC')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!clean || containsBanned(clean)) return 'bạn';
-  if (/^user\d{4,}$/i.test(clean)) return 'bạn'; // tên mặc định của TikTok (user5639920112): đọc "user" nghe kỳ
+  if (!clean || containsBanned(clean)) return 'friend';
+  if (/^user\d{4,}$/i.test(clean)) return 'friend'; // TikTok default names (user5639920112) sound odd when read
 
   clean = clean
     .replace(/(\p{Ll})(\p{Lu})/gu, '$1 $2') // MinhTuan -> Minh Tuan
@@ -53,7 +50,7 @@ export function speakableName(nickname: string): string {
   const out: string[] = [];
   for (const w of clean.split(/\s+/).filter(Boolean)) {
     if (/^\d+$/.test(w)) {
-      // số dài (số điện thoại, 2008...) đọc từng chữ số; quá 4 số thì bỏ cho đỡ dài
+      // numbers are read digit by digit; longer than 4 digits are skipped
       if (w.length <= 4) out.push(w.split('').map((d) => DIGITS[d]).join(' '));
       continue;
     }
@@ -63,5 +60,5 @@ export function speakableName(nickname: string): string {
   }
 
   const spoken = out.slice(0, MAX_WORDS).join(' ').trim();
-  return spoken || 'bạn';
+  return spoken || 'friend';
 }

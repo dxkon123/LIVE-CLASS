@@ -1,0 +1,36 @@
+# Guess by the sound
+> This makes this sound.
+COW | Moooo! Gives you milk. | 1
+DOG | Woof woof! Guards the house. | 1
+CAT | Meow! Then knocks your glass off the table. | 1
+DUCK | Quack quack! Swims in the pond. | 1
+ROOSTER | Cock-a-doodle-doo! Wakes up the whole village at dawn. | 1 | CHICKEN
+SHEEP | Baa baa! Gives us wool. | 1 | LAMB
+PIG | Oink oink! Loves rolling in the mud. | 1
+HORSE | Neigh! You can ride it. | 1
+LION | Roar! The king of the jungle. | 1
+SNAKE | Hisss! Slithers on the ground. | 1
+OWL | Hoo hoo! Awake all night. | 1
+FROG | Ribbit! Jumps from lily pad to lily pad. | 1
+BEE | Bzzz! Makes honey. | 1
+DONKEY | Hee-haw! Stubborn and carries heavy loads. | 2
+WOLF | Awoooo! Howls at the moon. | 2
+MOUSE | Squeak squeak! The cat chases it. | 1
+ELEPHANT | Pawoo through a long trunk! The biggest land animal. | 2
+CROW | Caw caw! A big black bird. | 2
+GOAT | Meh-eh-eh! Climbs mountains and eats everything. | 2
+TURKEY | Gobble gobble! The Thanksgiving bird. | 2
+ALARM CLOCK | Beep beep beep at 6 am! You hit snooze. | 1 | ALARM
+DOORBELL | Ding dong! Someone is at the door. | 1
+PHONE | Ring ring! Or buzz buzz on silent. | 1
+TRAIN | Choo choo! Runs on tracks. | 1
+AMBULANCE | Wee-woo wee-woo! Rushing to the hospital. | 2 | SIREN
+CLOCK | Tick tock! On the wall. | 1
+CAMERA | Click! Say cheese. | 2
+DRUM | Boom boom! Hit it with sticks. | 2 | DRUMS
+KETTLE | Whistles loudly when the water boils! | 2
+POPCORN | Pop pop pop in the microwave! | 2
+THUNDER | Boom! Rumble rumble after the flash. | 2
+SNEEZE | Achoo! Bless you! | 2
+DOLPHIN | Click click whistle! Smart and lives in the sea. | 3
+WHALE | Long deep songs under the ocean, the biggest animal ever. | 3

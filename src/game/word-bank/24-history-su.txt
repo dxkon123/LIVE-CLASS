@@ -1,0 +1,88 @@
+# History
+# History questions are only asked at the history spots of a class (GAME.roundPlan 'su').
+# Scope: world history from school textbooks, no disputed details. Check new facts before adding them.
+# The ">" line names the group; the teacher reads e.g. "This is the name of a famous person, 8 letters." then the question.
+# Each line: ANSWER | question | difficulty (1 easy, 2 medium, 3 hard) | other accepted answers
+> This is the name of a famous person.
+NAPOLEON | Which French emperor was finally defeated at Waterloo in 1815? | 2 | BONAPARTE
+CLEOPATRA | Who was the last active ruler of the Ptolemaic kingdom of ancient Egypt? | 2
+JULIUS CAESAR | Which Roman leader crossed the Rubicon and was killed on the Ides of March? | 2 | CAESAR
+LINCOLN | Which US president gave the Gettysburg Address? | 2 | ABRAHAM LINCOLN
+WASHINGTON | Who was the first President of the United States? | 1 | GEORGE WASHINGTON
+GANDHI | Who led India's nonviolent independence movement and the Salt March of 1930? | 2 | MAHATMA GANDHI
+MANDELA | Who became South Africa's first Black president in 1994, after 27 years in prison? | 2 | NELSON MANDELA
+MARIE CURIE | Who was the first person to win Nobel Prizes in two different sciences? | 3 | CURIE
+EINSTEIN | Which scientist developed the theory of relativity? | 1 | ALBERT EINSTEIN
+NEWTON | Which English scientist described universal gravitation, said to be inspired by a falling apple? | 1 | ISAAC NEWTON
+COLUMBUS | Which explorer sailed across the Atlantic in 1492 and reached the Caribbean? | 1 | CHRISTOPHER COLUMBUS
+MAGELLAN | Whose expedition was the first to sail all the way around the world? | 3
+MARCO POLO | Which Venetian traveler wrote about his journey to China in the 1200s? | 2
+SHAKESPEARE | Who wrote Romeo and Juliet and Hamlet? | 1
+DA VINCI | Which Italian artist painted the Mona Lisa? | 1 | LEONARDO, LEONARDO DA VINCI
+GALILEO | Which Italian astronomer used a telescope to discover four moons of Jupiter? | 2
+ARMSTRONG | Who was the first person to walk on the Moon, in 1969? | 1 | NEIL ARMSTRONG
+GAGARIN | Who was the first human to travel into space, in 1961? | 3 | YURI GAGARIN
+GENGHIS KHAN | Who founded the Mongol Empire? | 2
+ALEXANDER | Which king of Macedonia built a huge empire before the age of 33 and was called "the Great"? | 2
+VICTORIA | Which British queen gave her name to an era in the 1800s? | 2 | QUEEN VICTORIA
+EDISON | Which American inventor is famous for the phonograph and a practical light bulb? | 2 | THOMAS EDISON
+WRIGHT BROTHERS | Who made the first powered airplane flight, at Kitty Hawk in 1903? | 2 | WRIGHTS
+MOZART | Which Austrian composer wrote music as a small child and later composed The Magic Flute? | 2
+BEETHOVEN | Which German composer kept writing music after he became deaf? | 2
+CONFUCIUS | Which ancient Chinese teacher's sayings are collected in the Analects? | 3
+JOAN OF ARC | Which young French heroine led armies during the Hundred Years' War? | 3
+DARWIN | Who wrote On the Origin of Species about evolution by natural selection? | 2 | CHARLES DARWIN
+TUTANKHAMUN | Which boy pharaoh's tomb was found almost untouched in 1922? | 3 | KING TUT
+ARISTOTLE | Which Greek philosopher was the teacher of Alexander the Great? | 3
+SOCRATES | Which Athenian philosopher taught Plato but never wrote a book himself? | 3
+PYTHAGORAS | Which Greek mathematician is famous for a theorem about right triangles? | 2
+GUTENBERG | Who built a printing press with movable metal type in Europe around 1450? | 3
+> This is the name of a civilization or an empire.
+ROMANS | Which empire built the Colosseum and roads all across Europe? | 1 | ROMAN EMPIRE, ROME
+EGYPTIANS | Which civilization built the pyramids of Giza? | 1 | EGYPT
+AZTECS | Which civilization built Tenochtitlan, where Mexico City stands today? | 3 | AZTEC
+INCAS | Which South American empire built Machu Picchu? | 2 | INCA
+MAYA | Which Central American civilization built Chichen Itza? | 3 | MAYANS
+VIKINGS | Which Scandinavian seafarers raided coasts of Europe in longships from around the year 800? | 1
+MONGOLS | Whose empire, founded by Genghis Khan, became the largest land empire in history? | 2 | MONGOL EMPIRE
+SPARTA | Which ancient Greek city-state was famous for its tough warriors? | 2
+OTTOMANS | Which empire captured Constantinople in 1453? | 3 | OTTOMAN, OTTOMAN EMPIRE
+PERSIA | Which ancient empire was founded by Cyrus the Great? | 3 | PERSIANS
+BRITISH EMPIRE | Which huge empire, ruled from London, was said to be the one where the sun never set? | 2 | BRITAIN
+> This is a famous invention.
+WHEEL | Which invention, more than 5,000 years old, changed transport forever? | 1
+PRINTING PRESS | What did Gutenberg build around 1450 that made books cheaper? | 2
+TELEPHONE | What did Alexander Graham Bell patent in 1876? | 2 | PHONE
+LIGHT BULB | Which glowing invention is Thomas Edison most famous for improving? | 1
+AIRPLANE | What did the Wright brothers fly at Kitty Hawk in 1903? | 1 | PLANE, AEROPLANE
+COMPASS | Which Chinese invention helped sailors find north? | 2
+PAPER | Which writing material was invented in China about 2,000 years ago? | 2
+GUNPOWDER | Which explosive powder was invented in China and later used for fireworks? | 2
+STEAM ENGINE | Which machine powered factories and trains in the Industrial Revolution? | 2
+INTERNET | Which worldwide computer network grew out of a project called ARPANET? | 1
+PENICILLIN | Which antibiotic did Alexander Fleming discover in 1928? | 3
+TELESCOPE | What did Galileo point at the night sky to see the moons of Jupiter? | 2
+> This is a famous place in history.
+TROY | In the old Greek story, which city fell after soldiers hid inside a wooden horse? | 2
+POMPEII | Which Roman city was buried by the eruption of Mount Vesuvius in the year 79? | 2
+WATERLOO | Where was Napoleon finally defeated in 1815? | 2
+BERLIN WALL | What barrier divided Germany's capital from 1961 until it fell in 1989? | 2
+TITANIC | Which "unsinkable" ship sank on its first voyage in 1912? | 1
+MOON | Where did the Apollo 11 astronauts land in 1969? | 1
+CONSTANTINOPLE | What was the city of Istanbul called during the Byzantine Empire? | 3 | BYZANTIUM
+ATHENS | Which Greek city is often called the birthplace of democracy? | 2
+BABYLON | Which ancient city in Mesopotamia was ruled by King Hammurabi? | 3
+HIROSHIMA | Which Japanese city was the first to be hit by an atomic bomb in war, in 1945? | 3
+> This is a famous moment in history.
+OLYMPICS | Which games were first held in ancient Greece, at a place called Olympia? | 1 | OLYMPIC GAMES
+RENAISSANCE | What do we call the rebirth of art and learning that began in Italy in the 1300s? | 3
+MAGNA CARTA | Which charter limiting the king's power did England's King John agree to in 1215? | 3
+REVOLUTION | The storming of the Bastille in 1789 started the French ___. | 2 | FRENCH REVOLUTION
+COLD WAR | What do we call the long rivalry between the USA and the Soviet Union after 1945? | 2
+GOLD RUSH | What brought hundreds of thousands of people to California around 1849? | 2
+MOON LANDING | What happened for the first time on July 20, 1969? | 2 | APOLLO
+INDEPENDENCE | What did the United States declare on July 4, 1776? | 2
+ICE AGE | What do we call a long period when huge glaciers covered much of the Earth? | 2
+STONE AGE | What is the earliest period of human history called, when tools were made of rock? | 1
+DINOSAURS | Which giant reptiles died out about 66 million years ago, probably after an asteroid hit? | 1
+INDUSTRIAL | Factories and steam engines changed Britain in the ___ Revolution of the 1700s and 1800s. | 3

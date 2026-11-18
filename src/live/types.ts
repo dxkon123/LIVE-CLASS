@@ -1,4 +1,4 @@
-// Dữ liệu server.ts gửi xuống qua SSE. Dùng chung cho mọi game.
+// Data that server.ts sends down over SSE. Shared by every game.
 
 export interface LiveStatus {
   isConnected: boolean;
@@ -16,8 +16,8 @@ export interface ChatEvent {
   comment: string;
   avatar: string;
   timestamp: number;
-  createTime?: number; // giờ TikTok gắn (ms); không có thì TikTok gửi thiếu giờ
-  test?: boolean; // sự kiện giả lập từ nút thử ở trang điều khiển (không phải TikTok thật)
+  createTime?: number; // TikTok timestamp (ms); missing when TikTok leaves it out
+  test?: boolean; // simulated event from a test button on the control page (not real TikTok)
 }
 
 export interface GiftEvent {
@@ -25,8 +25,8 @@ export interface GiftEvent {
   nickname: string;
   giftName: string;
   giftId: number;
-  diamondCount: number; // xu của 1 món
-  repeatCount: number; // số món MỚI trong lần này (server đã trừ phần combo cũ)
+  diamondCount: number; // coins per item
+  repeatCount: number; // NEW items in this event (the server already removed the earlier part of a combo)
   avatar: string;
   timestamp: number;
 }
@@ -42,7 +42,7 @@ export interface LikeEvent {
   username: string;
   nickname: string;
   likeCount: number;
-  totalLikes: number; // tổng tim cả phòng
+  totalLikes: number; // total hearts in the room
 }
 
 export interface ControlCommand {
@@ -54,13 +54,13 @@ export interface LiveHandlers {
   onStatus?: (s: LiveStatus) => void;
   onChat?: (e: ChatEvent) => void;
   onGift?: (e: GiftEvent) => void;
-  onMember?: (e: UserEvent) => void; // người mới vào phòng
+  onMember?: (e: UserEvent) => void; // someone new joined the room
   onFollow?: (e: UserEvent) => void;
   onShare?: (e: UserEvent) => void;
   onLike?: (e: LikeEvent) => void;
   onViewers?: (count: number) => void;
-  onRoomCfg?: (cfg: Record<string, unknown>) => void; // cài đặt lớp đổi ở trang điều khiển
+  onRoomCfg?: (cfg: Record<string, unknown>) => void; // class settings changed on the control page
   onControl?: (c: ControlCommand) => void;
-  onGameState?: (s: any) => void; // ảnh chụp trạng thái game từ trang stage
-  onSpeaker?: (d: { id: string | null; count: number }) => void; // trang stage nào đang được phát tiếng
+  onGameState?: (s: any) => void; // game snapshot from the stage page
+  onSpeaker?: (d: { id: string | null; count: number }) => void; // which stage page currently plays sound
 }

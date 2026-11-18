@@ -1,4 +1,4 @@
-// Bảng điểm người xem. Hàm thuần (không React) để dễ test và dùng lại.
+// Viewer scoreboard. Pure functions (no React), easy to test and reuse.
 
 export interface Player {
   username: string;
@@ -38,12 +38,12 @@ export function topPlayers(players: Players, n = 10): Player[] {
 }
 
 /**
- * Gom tên người mới vào để chào theo lượt, không đọc từng người (live đông là nghẽn giọng).
- *   const g = new NameBatcher(6000, 3, (names) => voice.say(`Chào ${names.join(', ')}`), () => voice.waiting >= 2);
+ * Collects new names and greets them in batches instead of one by one (a busy live would jam the voice).
+ * const g = new NameBatcher(6000, 3, (names) => voice.say(`Hi ${names.join(', ')}`), () => voice.waiting >= 2);
  *   g.add('an123', 'An');
- * - Mỗi người chỉ được chào 1 lần trong buổi (ra vào lại không chào nữa). reset() để chào lại từ đầu.
- * - `isBusy`: giọng còn nhiều câu chờ thì để lượt sau, tên vẫn giữ.
- * - Đông quá thì chỉ giữ `maxWaiting` người mới nhất.
+ * - Everyone is greeted once per session (leaving and coming back is not greeted again). reset() starts over.
+ * - `isBusy`: when the voice has many lines waiting, wait for the next turn; the names are kept.
+ * - When it gets too busy only the newest `maxWaiting` people are kept.
  */
 export class NameBatcher {
   private names: { key: string; name: string }[] = [];
@@ -56,7 +56,7 @@ export class NameBatcher {
     private isBusy: () => boolean = () => false,
     private maxWaiting = 30,
   ) {}
-  /** key = username (không đổi), name = tên để đọc */
+  /** key = username (never changes), name = name to read out */
   add(key: string, name = key) {
     if (this.seen.has(key)) return;
     this.seen.add(key);
@@ -79,7 +79,7 @@ export class NameBatcher {
   }
 }
 
-/** Mỗi người chỉ được làm 1 việc mỗi X giây (chống spam) */
+/** Each person can do one thing every X seconds (anti-spam) */
 export function makeCooldown(ms: number) {
   const last = new Map<string, number>();
   return (key: string, now = Date.now()) => {

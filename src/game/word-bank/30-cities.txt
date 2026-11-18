@@ -1,0 +1,30 @@
+# Big cities
+> This is a big city.
+PARIS | The City of Light, with the Eiffel Tower. | 1
+LONDON | Big Ben, red buses and lots of rain. | 1
+NEW YORK | The Big Apple, with Times Square and the Statue of Liberty. | 1 | NYC
+TOKYO | The capital of Japan, with the world's busiest crossing at Shibuya. | 1
+ROME | The Colosseum, and all roads lead here. | 1
+SYDNEY | Australia's city with the Opera House and Harbour Bridge. | 2
+DUBAI | Home of the tallest building in the world. | 2
+HANOI | Vietnam's capital, with its Old Quarter and Hoan Kiem Lake. | 2
+BANGKOK | Thailand's capital, tuk-tuks and street food. | 2
+SEOUL | South Korea's capital, the home of K-pop. | 2
+BEIJING | China's capital, with the Forbidden City. | 2
+SINGAPORE | A city-state with Gardens by the Bay. | 2
+BARCELONA | Spain's city with Gaudi's unfinished church. | 2
+VENICE | A city of canals and gondolas. | 1
+CAIRO | Egypt's capital, near the pyramids of Giza. | 2
+ISTANBUL | A city on two continents, Europe and Asia. | 3
+AMSTERDAM | Canals, bikes and tulips in the Netherlands. | 2
+LOS ANGELES | Hollywood is here. | 2
+SAN FRANCISCO | The Golden Gate Bridge and steep streets with cable cars. | 3
+RIO | The giant Christ statue on the mountain and the famous carnival. | 2 | RIO DE JANEIRO
+HONG KONG | A city of skyscrapers by Victoria Harbour, famous for dim sum. | 2
+MOSCOW | Russia's capital with Red Square. | 3
+BERLIN | Germany's capital, the city once split by a famous wall. | 2
+MANILA | The capital of the Philippines. | 3
+KUALA LUMPUR | Malaysia's capital, with the Petronas Twin Towers. | 3
+HO CHI MINH CITY | Formerly called Saigon, the busiest metropolis in southern Vietnam. | 3 | SAIGON
+LAS VEGAS | The city of casinos and bright lights in the desert. | 2 | VEGAS
+TORONTO | Canada's biggest city, with the CN Tower. | 3

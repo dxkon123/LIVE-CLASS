@@ -1,0 +1,35 @@
+# School
+# Each line: ANSWER | clue | difficulty (1 easy, 2 medium, 3 hard) | other accepted spellings (comma separated)
+> This is something at school.
+CHALK | The teacher writes on the blackboard with it, and the dust ends up all over her clothes. | 1
+RULER | Draws straight lines, and in the old days teachers tapped it on the desk to get attention. | 1
+ERASER | Wipes out pencil mistakes. If only life had one of these. | 1 | RUBBER
+PENCIL | Gray inside, gets shorter every time you sharpen it, just like my salary after rent. | 1
+COMPASS | Has a sharp leg, spins around to draw a perfect circle, also used to poke the kid in front. | 2
+BACKPACK | Carried to school on your back, so heavy first graders walk like turtles. | 1 | SCHOOLBAG
+NOTEBOOK | Lined pages for notes, and the last page is always covered in doodles. | 1
+BLACKBOARD | Where the teacher writes the lesson, and where you shake when your name is called. | 1 | CHALKBOARD
+SHARPENER | You twist a pencil inside it until a little pile of wood shavings appears. | 2
+GLUE STICK | Used for school projects, somehow always runs out right before the deadline. | 2
+SCISSORS | Two blades for cutting paper, never run with them. | 1
+TEXTBOOK | Heavy book for each subject, you read it the night before the exam. | 1
+HOMEWORK | Work you are supposed to do at home, the dog ate it more than once. | 1
+RECESS | The best part of the school day: snacks, games and freedom. | 1 | BREAK
+LIBRARY | Quiet room full of books where everyone whispers. | 1
+PRINCIPAL | The boss of the whole school, being sent to this office is scary. | 2 | HEADTEACHER
+CLASSMATE | Someone who studies in the same class as you, also the one copying your answers. | 2
+REPORT CARD | Paper with your grades that you hide from your parents. | 2
+LUNCHBOX | Your food travels to school inside this, the smell gives it away by noon. | 1
+UNIFORM | Everyone at school wears the same outfit, so nobody can show off. | 1
+DESK | The table you sit at in class, with old gum stuck underneath. | 1
+GLOBE | A round model of the Earth that spins on a stand in the classroom. | 2
+CRAYONS | Colorful wax sticks that little kids use to draw, and sometimes eat. | 1
+FIELD TRIP | The whole class leaves school on a bus to visit a museum or a zoo. | 2
+DETENTION | You stay after school as a punishment, staring at the clock. | 3
+GRADUATION | The ceremony where you wear a cap and gown and finally finish school. | 2
+SCHOLARSHIP | Money given to a good student to pay for school. | 3
+STAPLER | Clicks two pages together with a tiny metal piece. | 2
+HIGHLIGHTER | A bright marker that makes important words glow, students color the whole page anyway. | 2
+TIMETABLE | Shows which lesson is when during the week. | 2 | SCHEDULE
+CAFETERIA | The big room where students line up for lunch. | 2 | CANTEEN
+SEMESTER | Half of the school year. | 3 | TERM

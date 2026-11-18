@@ -1,0 +1,32 @@
+# Famous places
+> This is a famous place.
+EIFFEL TOWER | Iron landmark in Paris, sparkles with lights every hour at night. | 1
+GREAT WALL | Very long defensive barrier in China, built to keep invaders out. | 1
+PYRAMIDS | Ancient stone tombs of Egyptian pharaohs near Cairo. | 1 | PYRAMID
+TAJ MAHAL | White marble tomb in India, built by an emperor for his wife. | 2
+COLOSSEUM | Ancient arena in Rome where gladiators fought. | 2
+BIG BEN | The famous clock tower bell in London. | 1
+LADY LIBERTY | A giant green statue holding a torch in New York harbor. | 2 | STATUE OF LIBERTY
+MACHU PICCHU | Ancient Inca city high in the mountains of Peru. | 3
+STONEHENGE | A mysterious circle of huge stones in England. | 3
+MOUNT EVEREST | The highest mountain on Earth. | 1 | EVEREST
+SAHARA | The largest hot desert in the world, in Africa. | 2
+AMAZON | The largest rainforest, and also a giant river in South America. | 2
+NIAGARA FALLS | Huge waterfalls on the border of Canada and the USA. | 2
+GRAND CANYON | A giant gorge in Arizona carved by the Colorado River. | 2
+HOLLYWOOD | The home of the American movie industry, with a big sign on a hill. | 1
+DISNEYLAND | A theme park with a castle and a famous mouse. | 1
+HA LONG BAY | Thousands of limestone islands in emerald water in Vietnam. | 2
+ANGKOR WAT | A huge temple complex in Cambodia, on the country's flag. | 3
+OPERA HOUSE | The building in Sydney with a roof like white sails. | 2
+ACROPOLIS | Ancient hill in Athens with the Parthenon on top. | 3
+TIMES SQUARE | Busy place in New York full of giant screens, famous on New Year's Eve. | 2
+LOUVRE | The museum in Paris with a glass pyramid and the Mona Lisa. | 2
+VENICE | An Italian city built on water, where people get around by gondola. | 1
+SANTORINI | Greek island famous for white houses and blue domes. | 3
+MOUNT FUJI | Japan's tallest mountain, a snowy volcano. | 2 | FUJI
+SPHINX | A giant stone lion with a human head in Egypt. | 2
+PETRA | A city carved into pink rock in Jordan. | 3
+BURJ KHALIFA | The tallest building in the world, in Dubai. | 2
+GOLDEN GATE | A famous red bridge in San Francisco. | 2
+LEANING TOWER | Famous tilted building in Pisa, Italy, that never falls. | 2 | PISA

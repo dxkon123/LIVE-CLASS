@@ -1,19 +1,17 @@
 /**
- * Server chung cho mọi game live TikTok. Game riêng KHÔNG cần sửa file này,
- * trừ khi cần thêm API mới (thêm vào cuối, chỗ "API riêng của game").
+ * Shared server for the TikTok live games. A game normally does NOT need to change this file,
+ * unless it needs a new API (add it at the end, under "Game-specific API").
  *
- * - Kết nối phòng live TikTok (tiktok-live-connector 2.x, proto v3)
- * - Đẩy sự kiện xuống trình duyệt qua SSE: /api/tiktok/events
- * - Lệnh từ trang điều khiển -> trang stage: /api/control
- * - Giọng đọc tiếng Việt: /api/tts (Edge TTS, lỗi thì Google)
- * - Giả lập sự kiện để test không cần live: /api/test/emit
+ * - Connects to a TikTok live room (tiktok-live-connector 2.x, proto v3)
+ * - Pushes events to the browser over SSE: /api/tiktok/events
+ * - Commands from the control page -> stage page: /api/control
+ * - Teacher voice: /api/tts (Edge TTS, Google as backup)
+ * - Simulated events for testing without going live: /api/test/emit
  */
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
-import { spawn, type ChildProcessByStdio } from 'child_process';
-import type { Readable, Writable } from 'stream';
 import { fileURLToPath } from 'url';
 import { TikTokLiveConnection, WebcastEvent, ControlEvent } from 'tiktok-live-connector';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
@@ -22,15 +20,16 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3006; // cổng riêng của Lớp Học Chữ
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3006; // LIVE-CLASS's own port
 
-// Giọng đọc mặc định: cô Ngân giọng nữ HoaiMy cho mọi câu, kể cả câu chủ kênh gõ cho cô đọc (chủ kênh chốt 2026-11-04).
-// Muốn giọng nam thì đặt biến môi trường TTS_VOICE=vi-VN-NamMinhNeural
-const TTS_VOICE = process.env.TTS_VOICE || 'vi-VN-HoaiMyNeural';
-// Giọng cô giáo: cao hơn một chút cho tươi
-const TTS_PITCH = process.env.TTS_PITCH || '+6%';
+// Default voice: the teacher's female voice for every line, including lines the owner types for her (owner's call 2026-11-04).
+// For a male voice set the environment variable TTS_VOICE=en-US-GuyNeural
+// English edition: Microsoft Edge English voices (female Jenny, male Guy). Override with TTS_VOICE=...
+const TTS_VOICE = process.env.TTS_VOICE || 'en-US-JennyNeural';
+// Teacher voice: a touch higher so it sounds bright
+const TTS_PITCH = process.env.TTS_PITCH || '+2%';
 
-// Chặn DNS rebinding: trang web lạ trỏ tên miền của nó về 127.0.0.1 thì Host/Origin sẽ khác các tên dưới đây
+// Blocks DNS rebinding: a foreign site pointing its domain at 127.0.0.1 sends a Host/Origin that is not in this list
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', 'lvh.me']);
 const hostOk = (h?: string) => !!h && LOCAL_HOSTS.has(h.replace(/:\d+$/, '').toLowerCase());
 app.use((req, res, next) => {
@@ -65,20 +64,20 @@ const emptyStats = (): LiveStats => ({
 
 let liveStats = emptyStats();
 let sseClients: express.Response[] = [];
-// Các trang stage đang mở (theo thứ tự mở). Chỉ trang mở SAU CÙNG được phát tiếng, tránh 2 giọng đọc đè nhau
-// khi lỡ có 2 nguồn Link trong LIVE Studio hoặc mở thêm ?view=stage ở trình duyệt khác.
+// Open stage pages (in opening order). Only the LAST one opened plays sound, so two voices never talk over each other
+// when LIVE Studio has 2 link sources by mistake or ?view=stage is also open in another browser.
 let stageIds: string[] = [];
 const announceSpeaker = () => broadcast('speaker', { id: stageIds[stageIds.length - 1] ?? null, count: stageIds.length });
 let activeConn: InstanceType<typeof TikTokLiveConnection> | null = null;
 let lastRateControl: { action: string; text: string } | null = null;
 
-// Tên kênh (giọng đọc + tiêu đề) lưu ở settings.json cạnh file này, tắt server mở lại vẫn còn
-// SETTINGS_FILE: chạy thử dùng file khác (vd data-thu/settings.json) để không tự nối TikTok thật, không đụng cài đặt lớp thật
+// Channel name (voice + title) is kept in settings.json next to this file, so it survives a server restart
+// SETTINGS_FILE: test runs use another file (e.g. data-test/settings.json) so they never auto-connect to real TikTok or touch the real class settings
 const SETTINGS_FILE = process.env.SETTINGS_FILE || path.join(__dirname, 'settings.json');
 let lastNameControl: { action: string; text: string } | null = null;
-// tài khoản TikTok đang cần giữ kết nối: rớt thì tự kết nối lại, tắt server bật lại cũng tự kết nối
+// TikTok account to keep connected: reconnect after a drop, and reconnect on server restart too
 let wantUser = '';
-// cài đặt lớp ở trang điều khiển: tên + giọng cô giáo, chữ bảng đỏ, bật tắt 2 game lớn, ảnh nền riêng (thiếu mục nào thì dùng GAME.defaultRoom)
+// class settings from the control page: teacher name + voice, red banner text, the 2 big shows on/off, own background (missing fields use GAME.defaultRoom)
 type RoomSettings = {
   teacherName?: string;
   teacherVoice?: 'nu' | 'nam';
@@ -95,7 +94,7 @@ type RoomSettings = {
   birthdayText?: string;
   standWrong?: boolean;
 };
-let settings: { channelName?: string; tiktokUser?: string; vieneuVoice?: string; room?: RoomSettings } = {};
+let settings: { channelName?: string; tiktokUser?: string; room?: RoomSettings } = {};
 try {
   settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
   if (typeof settings.channelName === 'string' && settings.channelName.trim()) {
@@ -103,14 +102,14 @@ try {
   }
   if (typeof settings.tiktokUser === 'string') wantUser = settings.tiktokUser;
 } catch {
-  // chưa lưu tên nào: dùng tên mặc định trong config.ts
+  // no name saved yet: use the default name in config.ts
 }
 const saveSettings = (patch: typeof settings) => {
   settings = { ...settings, ...patch };
   try {
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
   } catch (err) {
-    console.error('Không lưu được settings.json:', err);
+    console.error('Could not save settings.json:', err);
   }
 };
 
@@ -120,7 +119,7 @@ function broadcast(eventType: string, data: unknown) {
     try {
       client.write(payload);
     } catch {
-      // trình duyệt đã đóng
+      // browser closed
     }
   }
 }
@@ -161,25 +160,25 @@ app.get('/api/tiktok/events', (req, res) => {
 
 app.get('/api/tiktok/status', (_req, res) => res.json({ success: true, data: liveStats }));
 
-// ---------- Đọc dữ liệu TikTok (proto v3) ----------
-const userOf = (data: any) => data?.user?.displayId || data?.user?.uniqueId || data?.uniqueId || 'nguoi-xem';
-const nickOf = (data: any) => data?.user?.nickname || data?.nickname || data?.uniqueId || 'Bạn';
+// ---------- Reading TikTok data (proto v3) ----------
+const userOf = (data: any) => data?.user?.displayId || data?.user?.uniqueId || data?.uniqueId || 'viewer';
+const nickOf = (data: any) => data?.user?.nickname || data?.nickname || data?.uniqueId || 'Friend';
 const avatarOf = (data: any) => data?.user?.avatarThumb?.urlList?.[0] || '';
 
-// ---------- Tự kết nối lại (treo live cả ngày) ----------
-// Rớt kết nối / hết phiên live / chưa live: thử lại sau 15 giây, rồi 30, 60, tối đa 2 phút một lần, cho tới khi được.
+// ---------- Auto reconnect (for all-day lives) ----------
+// Dropped / live ended / not live yet: retry after 15 s, then 30, 60, at most every 2 minutes, until it works.
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectTries = 0;
 function scheduleReconnect(why: string) {
   if (!wantUser || reconnectTimer) return;
   const delay = Math.min(120_000, 15_000 * 2 ** reconnectTries);
   reconnectTries++;
-  console.log(`[TikTok] ${why}. Tự kết nối lại @${wantUser} sau ${delay / 1000} giây`);
-  liveStats = { ...liveStats, isConnected: false, isConnecting: false, error: `${why}. Tự kết nối lại sau ${delay / 1000} giây` };
+  console.log(`[TikTok] ${why}. Reconnecting @${wantUser} in ${delay / 1000} s`);
+  liveStats = { ...liveStats, isConnected: false, isConnecting: false, error: `${why}. Reconnecting in ${delay / 1000} s` };
   broadcast('status', liveStats);
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null;
-    connectTikTok(wantUser).catch((err) => scheduleReconnect(`Chưa kết nối lại được (${err instanceof Error ? err.message : err})`));
+    connectTikTok(wantUser).catch((err) => scheduleReconnect(`Could not reconnect (${err instanceof Error ? err.message : err})`));
   }, delay);
 }
 const stopReconnect = () => {
@@ -190,7 +189,7 @@ const stopReconnect = () => {
 
 app.post('/api/tiktok/connect', async (req, res) => {
   const cleanUser = String(req.body?.username || '').replace(/^@/, '').trim();
-  if (!cleanUser) return res.status(400).json({ success: false, error: 'Chưa nhập username TikTok' });
+  if (!cleanUser) return res.status(400).json({ success: false, error: 'Type a TikTok username first' });
   stopReconnect();
   wantUser = cleanUser;
   saveSettings({ tiktokUser: cleanUser });
@@ -199,10 +198,10 @@ app.post('/api/tiktok/connect', async (req, res) => {
     return res.json({ success: true, roomId: state?.roomId });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    scheduleReconnect(`Không kết nối được: ${msg}`);
+    scheduleReconnect(`Could not connect: ${msg}`);
     return res.status(400).json({
       success: false,
-      error: `Không kết nối được @${cleanUser}: ${msg}. Tài khoản phải đang LIVE trên TikTok. Server sẽ tự thử lại.`,
+      error: `Could not connect to @${cleanUser}: ${msg}. The account must be LIVE on TikTok. The server will keep retrying.`,
     });
   }
 });
@@ -212,7 +211,7 @@ async function connectTikTok(cleanUser: string) {
     try {
       activeConn.disconnect();
     } catch {
-      // bỏ qua
+      // ignore
     }
     activeConn = null;
   }
@@ -222,48 +221,48 @@ async function connectTikTok(cleanUser: string) {
 
   const conn = new TikTokLiveConnection(cleanUser, {
     processInitialData: true,
-    // Lấy danh sách quà cần gói trả phí Euler Stream; sự kiện quà đã có tên và kim cương
+    // Fetching the gift list needs a paid Euler Stream plan; gift events already carry the name and diamonds
     enableExtendedGiftInfo: false,
   });
 
   conn.on(ControlEvent.CONNECTED, (state: { roomId?: string }) => {
-    console.log(`[TikTok] Đã kết nối @${cleanUser}, room ${state?.roomId}`);
+    console.log(`[TikTok] Connected to @${cleanUser}, room ${state?.roomId}`);
     liveStats = { ...liveStats, isConnected: true, isConnecting: false, roomId: state?.roomId || '', error: '' };
     newLiveRoom(state?.roomId || '');
     broadcast('status', liveStats);
     reconnectTries = 0;
   });
 
-  // kết nối cũ bị thay bằng kết nối mới thì không tự nối lại (activeConn đã khác)
+  // an old connection replaced by a new one does not reconnect (activeConn has changed)
   conn.on(ControlEvent.DISCONNECTED, () => {
-    console.log(`[TikTok] Mất kết nối @${cleanUser}`);
+    console.log(`[TikTok] Lost connection to @${cleanUser}`);
     if (activeConn !== conn) return;
     liveStats = { ...liveStats, isConnected: false, isConnecting: false };
     broadcast('status', liveStats);
-    scheduleReconnect('Mất kết nối TikTok');
+    scheduleReconnect('Lost the TikTok connection');
   });
 
   conn.on(WebcastEvent.STREAM_END, () => {
     if (activeConn !== conn) return;
-    liveStats = { ...liveStats, isConnected: false, isConnecting: false, error: 'Phiên live đã kết thúc' };
+    liveStats = { ...liveStats, isConnected: false, isConnecting: false, error: 'The live has ended' };
     broadcast('status', liveStats);
-    scheduleReconnect('Phiên live đã kết thúc');
+    scheduleReconnect('The live has ended');
   });
 
   conn.on(WebcastEvent.CHAT, (data: any) => {
     broadcast('chat', {
       username: userOf(data),
       nickname: nickOf(data),
-      comment: data?.content || data?.comment || '', // proto v3: chữ nằm ở `content`
+      comment: data?.content || data?.comment || '', // proto v3: the text is in `content`
       avatar: avatarOf(data),
       timestamp: Date.now(),
-      // giờ TikTok gắn lúc người xem gửi (ms): xếp ai trả lời nhanh nhất theo giờ này, không theo lúc bot nhận
-      // thiếu giờ TikTok thì để trống (trang stage tự dùng giờ máy, không đo độ lệch đồng hồ từ bình luận này)
+      // TikTok timestamp of when the viewer sent it (ms): the fastest answer is ranked by this, not by when the bot received it
+      // no TikTok timestamp: leave it empty (the stage page uses its own clock and does not measure clock skew from this comment)
       createTime: Number(data?.common?.createTime) || undefined,
     });
   });
 
-  // TikTok gửi lại quà combo với repeatCount cộng dồn; chỉ chuyển phần mới
+  // TikTok resends combo gifts with a growing repeatCount; only pass on the new part
   const streakCounts = new Map<string, number>();
   conn.on(WebcastEvent.GIFT, (data: any) => {
     const username = userOf(data);
@@ -279,7 +278,7 @@ async function connectTikTok(cleanUser: string) {
     broadcast('gift', {
       username,
       nickname: nickOf(data),
-      giftName: data?.gift?.name || data?.giftDetails?.giftName || data?.giftName || 'Quà',
+      giftName: data?.gift?.name || data?.giftDetails?.giftName || data?.giftName || 'Gift',
       giftId,
       diamondCount: data?.gift?.diamondCount || data?.diamondCount || data?.giftDetails?.diamondCount || 1,
       repeatCount: delta,
@@ -319,7 +318,7 @@ async function connectTikTok(cleanUser: string) {
 
   conn.on(ControlEvent.ERROR, (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[TikTok] Lỗi @${cleanUser}:`, msg);
+    console.warn(`[TikTok] Error @${cleanUser}:`, msg);
     liveStats.error = msg;
     broadcast('status', liveStats);
   });
@@ -327,12 +326,12 @@ async function connectTikTok(cleanUser: string) {
   activeConn = conn;
 
   try {
-    // Chưa LIVE thì thư viện có thể treo mãi ở "Đang kết nối": hỏi TikTok trước, báo lỗi ngay
-    const live = await conn.fetchIsLive().catch(() => true); // hỏi lỗi thì cứ thử kết nối
-    if (!live) throw new Error('TikTok báo tài khoản này CHƯA LIVE. Bấm Phát trực tiếp trong LIVE Studio trước rồi mới kết nối');
+    // Before going LIVE the library can hang on "Connecting" forever: ask TikTok first and report the error at once
+    const live = await conn.fetchIsLive().catch(() => true); // the check itself failed: just try to connect
+    if (!live) throw new Error('TikTok says this account is NOT live yet. Press Go LIVE in LIVE Studio first, then connect');
     return await Promise.race([
       conn.connect(),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('quá 30 giây không vào được phòng live')), 30_000)),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('could not enter the live room within 30 seconds')), 30_000)),
     ]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -342,7 +341,7 @@ async function connectTikTok(cleanUser: string) {
       try {
         conn.disconnect();
       } catch {
-        // bỏ qua
+        // ignore
       }
       activeConn = null;
     }
@@ -351,14 +350,14 @@ async function connectTikTok(cleanUser: string) {
 }
 
 app.post('/api/tiktok/disconnect', (_req, res) => {
-  // chủ kênh tự ngắt: thôi tự kết nối lại, bật server lại cũng không tự kết nối
+  // the owner disconnected on purpose: stop reconnecting, also after a server restart
   stopReconnect();
   wantUser = '';
   saveSettings({ tiktokUser: '' });
   try {
     activeConn?.disconnect();
   } catch {
-    // bỏ qua
+    // ignore
   }
   activeConn = null;
   liveStats = emptyStats();
@@ -366,20 +365,20 @@ app.post('/api/tiktok/disconnect', (_req, res) => {
   res.json({ success: true });
 });
 
-// ---------- Lệnh từ trang điều khiển (chỉ trang stage làm theo) ----------
+// ---------- Commands from the control page (only the stage page acts on them) ----------
 const CONTROL_ACTIONS = ['speak', 'setRate', 'reset', 'setName', 'custom'];
 app.post('/api/control', (req, res) => {
   const { action, text } = req.body || {};
-  if (!CONTROL_ACTIONS.includes(action)) return res.status(400).json({ success: false, error: 'Lệnh không hợp lệ' });
+  if (!CONTROL_ACTIONS.includes(action)) return res.status(400).json({ success: false, error: 'Invalid command' });
   if (action === 'speak' && (typeof text !== 'string' || !text.trim())) {
-    return res.status(400).json({ success: false, error: 'Chưa nhập nội dung cần đọc' });
+    return res.status(400).json({ success: false, error: 'Type something to read first' });
   }
   const payload = { action, text: typeof text === 'string' ? text.trim().slice(0, 1000) : undefined };
   if (action === 'setRate' && payload.text) lastRateControl = { action, text: payload.text };
   if (action === 'setName') {
-    // Chỉ chữ thường, tối đa 40 ký tự
+    // Plain text only, at most 40 characters
     const name = (payload.text || '').replace(/[\x00-\x1f\x7f]/g, '').trim().slice(0, 40);
-    if (!name) return res.status(400).json({ success: false, error: 'Chưa nhập tên kênh' });
+    if (!name) return res.status(400).json({ success: false, error: 'Type a class name first' });
     payload.text = name;
     lastNameControl = { action, text: name };
     saveSettings({ channelName: name });
@@ -388,11 +387,11 @@ app.post('/api/control', (req, res) => {
   res.json({ success: true, pages: sseClients.length });
 });
 
-// ---------- Giả lập sự kiện (test không cần live) ----------
+// ---------- Simulated events (testing without going live) ----------
 const TEST_EVENTS = ['chat', 'gift', 'member', 'follow', 'share', 'like'];
 app.post('/api/test/emit', (req, res) => {
   const { type, data } = req.body || {};
-  if (!TEST_EVENTS.includes(type)) return res.status(400).json({ success: false, error: 'Loại sự kiện không hợp lệ' });
+  if (!TEST_EVENTS.includes(type)) return res.status(400).json({ success: false, error: 'Invalid event type' });
   const event = { timestamp: Date.now(), avatar: '', ...(data || {}), test: true };
   if (type === 'like') {
     liveStats.totalLikes += Number(event.likeCount) || 1;
@@ -402,7 +401,7 @@ app.post('/api/test/emit', (req, res) => {
   res.json({ success: true });
 });
 
-// ---------- Giọng đọc ----------
+// ---------- Voice ----------
 const escapeXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function splitText(text: string, max = 190): string[] {
@@ -421,9 +420,9 @@ function splitText(text: string, max = 190): string[] {
   return chunks;
 }
 
-// hype = câu hô của MC ("Hoan hô!", "Ối dồi ôi!"): chỉ to hơn, giữ nguyên cao độ (đổi cao độ nghe như người khác nói)
-// Edge chặn (lỗi 429) khi mở nhiều kết nối một lúc: cho đi từng câu một, câu giống nhau đang tạo thì dùng chung,
-// bị chặn thì chờ rồi thử lại, hết cách mới sang giọng dự phòng.
+// hype = a host shout ("Hooray!", "Oh my!"): only louder, same pitch (a different pitch sounds like another person)
+// Edge blocks (error 429) many connections at once: send one line at a time, share a line that is already being made,
+// when blocked wait and retry, and only then fall back to the backup voice.
 let edgeChain: Promise<unknown> = Promise.resolve();
 const edgeInflight = new Map<string, Promise<Buffer>>();
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -464,7 +463,7 @@ async function edgeTtsOnce(text: string, rate: number, hype = false, voiceName =
     })();
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Edge TTS timeout')), 20000));
     await Promise.race([read, timeout]);
-    if (chunks.length === 0) throw new Error('Edge TTS không trả âm thanh');
+    if (chunks.length === 0) throw new Error('Edge TTS returned no audio');
     return Buffer.concat(chunks);
   } finally {
     tts.close();
@@ -481,7 +480,7 @@ async function googleTts(text: string, lang = 'vi'): Promise<Buffer> {
         Referer: 'https://translate.google.com/',
       },
     });
-    if (!r.ok) throw new Error(`Google TTS lỗi ${r.status}`);
+    if (!r.ok) throw new Error(`Google TTS error ${r.status}`);
     parts.push(Buffer.from(await r.arrayBuffer()));
   }
   return Buffer.concat(parts);
@@ -489,346 +488,44 @@ async function googleTts(text: string, lang = 'vi'): Promise<Buffer> {
 
 const ttsCache = new Map<string, Buffer>();
 
-// ---------- Giọng đọc AI VieNeu-TTS tích hợp trực tiếp (Subprocess stdio pipe, 25 giọng Nam/Nữ gồm Adam bựa) ----------
-interface VieneuVoiceInfo {
-  id: string;
-  name: string;
-  description: string;
-  gender: string;
-}
-interface VieneuJob {
-  id: number;
-  text: string;
-  voice: string;
-  res: express.Response;
-  parts: Buffer[];
-  timer: ReturnType<typeof setTimeout>;
-  resolve: (ok: boolean) => void;
-}
-
-const DEFAULT_FEMALE_VIENEU = 'Trúc Ly';
-const DEFAULT_MALE_VIENEU = 'Adam bựa';
-
-let activeVieneuVoice =
-  settings.vieneuVoice !== undefined
-    ? settings.vieneuVoice
-    : process.env.VIENEU_VOICE ??
-      (settings.room?.teacher === 'thay' || settings.room?.teacherVoice === 'nam' ? DEFAULT_MALE_VIENEU : DEFAULT_FEMALE_VIENEU);
-let vieneuState: 'loading' | 'ready' | 'unavailable' = 'loading';
-let vieneuVoices: VieneuVoiceInfo[] = [
-  { id: 'Adam bựa', name: 'Adam bựa', description: 'Nam · Bắc · Phong cách hài hước, tự nhiên', gender: 'male' },
-  { id: 'Trúc Ly', name: 'Trúc Ly', description: 'Nữ · Bắc · Phong cách tự nhiên, truyền cảm', gender: 'female' },
-  { id: 'Ngọc Huyền', name: 'Ngọc Huyền', description: 'Nữ · Bắc · Phong cách dịu dàng, trong trẻo', gender: 'female' },
-  { id: 'Bình', name: 'Bình', description: 'Nam · Bắc · Giọng ấm, rõ ràng', gender: 'male' },
-  { id: 'Tuyên', name: 'Tuyên', description: 'Nam · Bắc · Giọng dẫn chương trình', gender: 'male' },
-  { id: 'Vĩnh', name: 'Vĩnh', description: 'Nam · Nam · Phong cách miền Nam', gender: 'male' },
-  { id: 'Nguyên', name: 'Nguyên', description: 'Nam · Nam · Trẻ trung, năng động', gender: 'male' },
-  { id: 'Sơn', name: 'Sơn', description: 'Nam · Nam · Trầm ấm', gender: 'male' },
-  { id: 'Đoan', name: 'Đoan', description: 'Nữ · Nam · Dịu dàng miền Nam', gender: 'female' },
-  { id: 'Ngọc', name: 'Ngọc', description: 'Nữ · Bắc · Tự nhiên', gender: 'female' },
-  { id: 'Ly', name: 'Ly', description: 'Nữ · Bắc · Trẻ trung', gender: 'female' },
-  { id: 'Hương', name: 'Hương', description: 'Nữ · Bắc · Truyền cảm', gender: 'female' },
-];
-const vieneuCache = new Map<string, Buffer>();
-let vieneuProc: ChildProcessByStdio<Writable, Readable, null> | null = null;
-let nextJobId = 1;
-let currentJob: VieneuJob | null = null;
-const priorityJobs: VieneuJob[] = [];
-const prefetchJobs: VieneuJob[] = [];
-
-const getVieneuStatus = () => ({
-  state: vieneuState,
-  voice: activeVieneuVoice,
-  voices: vieneuVoices,
-});
-
-function resolveVieneuDir(): string {
-  const candidates = [
-    process.env.VIENEU_DIR,
-    path.join(__dirname, 'VieNeu-TTS'),
-    path.join(__dirname, '..', 'LIVE-TRANGNGUYEN', 'VieNeu-TTS'),
-  ].filter((x): x is string => !!x);
-  for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, '.venv', 'Scripts', 'python.exe'))) return dir;
-  }
-  return path.join(__dirname, 'VieNeu-TTS');
-}
-
-function pumpVieneuQueue() {
-  if (currentJob || vieneuState !== 'ready' || !vieneuProc?.stdin.writable) return;
-  while (priorityJobs.length > 0 || prefetchJobs.length > 0) {
-    const job = priorityJobs.shift() ?? prefetchJobs.shift()!;
-    if (job.res.writableEnded || job.res.destroyed) {
-      clearTimeout(job.timer);
-      job.resolve(true);
-      continue;
-    }
-    const cacheKey = `${job.voice}|${job.text}`;
-    const cached = vieneuCache.get(cacheKey);
-    if (cached) {
-      clearTimeout(job.timer);
-      job.res.setHeader('Content-Type', 'audio/wav');
-      job.res.send(cached);
-      job.resolve(true);
-      continue;
-    }
-    currentJob = job;
-    try {
-      vieneuProc.stdin.write(JSON.stringify({ id: job.id, text: job.text, voice: job.voice }) + '\n');
-      return;
-    } catch {
-      clearTimeout(job.timer);
-      currentJob = null;
-      job.resolve(false);
-    }
-  }
-}
-
-function startVieneuWorker() {
-  const vieneuDir = resolveVieneuDir();
-  const pyExe = path.join(vieneuDir, '.venv', 'Scripts', 'python.exe');
-  const workerScript = path.join(__dirname, 'tools', 'vieneu-worker.py');
-  if (!fs.existsSync(pyExe) || !fs.existsSync(workerScript)) {
-    console.log('[VieNeu] Không tìm thấy môi trường Python VieNeu-TTS, dùng giọng Microsoft Edge.');
-    vieneuState = 'unavailable';
-    broadcast('vieneu', getVieneuStatus());
-    return;
-  }
-
-  console.log(`[VieNeu] Sử dụng môi trường VieNeu-TTS tại: ${vieneuDir}`);
-  vieneuState = 'loading';
-  broadcast('vieneu', getVieneuStatus());
-
-  const proc = spawn(pyExe, ['-u', workerScript], {
-    cwd: vieneuDir,
-    stdio: ['pipe', 'pipe', 'inherit'],
-    windowsHide: true,
-    env: {
-      ...process.env,
-      PYTHONIOENCODING: 'utf-8',
-      HF_HUB_DISABLE_SYMLINKS_WARNING: '1',
-      HF_HUB_OFFLINE: '1',
-      VIENEU_PRECISION: process.env.VIENEU_PRECISION || 'int8',
-      VIENEU_WATERMARK: '0',
-    },
-  });
-  vieneuProc = proc;
-
-  let rxBuf: Buffer = Buffer.alloc(0);
-  proc.stdout.on('data', (chunk: Buffer) => {
-    rxBuf = rxBuf.length === 0 ? chunk : Buffer.concat([rxBuf, chunk]);
-    while (rxBuf.length >= 9) {
-      const frameType = rxBuf.readUInt8(0);
-      const reqId = rxBuf.readUInt32BE(1);
-      const payloadLen = rxBuf.readUInt32BE(5);
-      if (rxBuf.length < 9 + payloadLen) break;
-      const payload = rxBuf.subarray(9, 9 + payloadLen);
-      rxBuf = rxBuf.subarray(9 + payloadLen);
-
-      if (frameType === 1) {
-        try {
-          const info = JSON.parse(payload.toString('utf8'));
-          vieneuVoices = Array.isArray(info.voices) ? info.voices : [];
-        } catch {
-          vieneuVoices = [];
-        }
-        vieneuState = 'ready';
-        broadcast('vieneu', getVieneuStatus());
-        pumpVieneuQueue();
-      } else if (frameType === 2) {
-        if (currentJob && currentJob.id === reqId) {
-          if (!currentJob.res.headersSent) {
-            currentJob.res.setHeader('Content-Type', 'audio/wav');
-            currentJob.res.setHeader('Cache-Control', 'no-store');
-          }
-          currentJob.parts.push(Buffer.from(payload));
-          if (!currentJob.res.writableEnded) currentJob.res.write(payload);
-        }
-      } else if (frameType === 3) {
-        if (currentJob && currentJob.id === reqId) {
-          const job = currentJob;
-          currentJob = null;
-          clearTimeout(job.timer);
-          if (!job.res.writableEnded) job.res.end();
-          if (job.parts.length > 0) {
-            const cacheKey = `${job.voice}|${job.text}`;
-            vieneuCache.set(cacheKey, Buffer.concat(job.parts));
-            if (vieneuCache.size > 120) vieneuCache.delete(vieneuCache.keys().next().value!);
-          }
-          job.resolve(true);
-          pumpVieneuQueue();
-        }
-      } else if (frameType === 4) {
-        const errMsg = payload.toString('utf8');
-        console.warn('[VieNeu Worker lỗi]', errMsg);
-        if (currentJob && currentJob.id === reqId) {
-          const job = currentJob;
-          currentJob = null;
-          clearTimeout(job.timer);
-          if (job.res.headersSent) {
-            if (!job.res.writableEnded) job.res.end();
-            job.resolve(true);
-          } else {
-            job.resolve(false);
-          }
-          pumpVieneuQueue();
-        }
-      }
-    }
-  });
-
-  proc.on('exit', (code) => {
-    if (vieneuProc !== proc) return;
-    vieneuProc = null;
-    console.warn(`[VieNeu] Worker đã thoát (code=${code})`);
-    if (currentJob) {
-      const job = currentJob;
-      currentJob = null;
-      clearTimeout(job.timer);
-      if (job.res.headersSent) {
-        if (!job.res.writableEnded) job.res.end();
-        job.resolve(true);
-      } else {
-        job.resolve(false);
-      }
-    }
-    while (priorityJobs.length > 0) {
-      const j = priorityJobs.shift()!;
-      clearTimeout(j.timer);
-      j.resolve(false);
-    }
-    while (prefetchJobs.length > 0) {
-      const j = prefetchJobs.shift()!;
-      clearTimeout(j.timer);
-      j.resolve(false);
-    }
-    vieneuState = 'unavailable';
-    broadcast('vieneu', getVieneuStatus());
-  });
-}
-
-const cleanupWorker = () => {
-  if (vieneuProc) {
-    try {
-      vieneuProc.kill();
-    } catch {
-      // bỏ qua
-    }
-    vieneuProc = null;
-  }
-};
-process.on('exit', cleanupWorker);
-process.on('SIGINT', () => {
-  cleanupWorker();
-  process.exit(0);
-});
-process.on('SIGTERM', () => {
-  cleanupWorker();
-  process.exit(0);
-});
-
-async function vieneuTts(text: string, res: express.Response, isPrefetch: boolean, voiceOverride?: string): Promise<boolean> {
-  const voice = voiceOverride || activeVieneuVoice;
-  if (!voice) return false;
-  const cacheKey = `${voice}|${text}`;
-  const cached = vieneuCache.get(cacheKey);
-  if (cached) {
-    res.setHeader('Content-Type', 'audio/wav');
-    res.send(cached);
-    return true;
-  }
-  if (vieneuState === 'unavailable') return false;
-  if (vieneuState === 'loading' && !isPrefetch) return false; // Đang nạp mà cần đọc ngay thì dùng tạm Edge để không chờ
-
-  return new Promise<boolean>((resolve) => {
-    const id = nextJobId++;
-    const timeoutMs = isPrefetch ? 45_000 : 12_000;
-    const job: VieneuJob = {
-      id,
-      text,
-      voice,
-      res,
-      parts: [],
-      resolve,
-      timer: setTimeout(() => {
-        const idx1 = priorityJobs.indexOf(job);
-        if (idx1 !== -1) priorityJobs.splice(idx1, 1);
-        const idx2 = prefetchJobs.indexOf(job);
-        if (idx2 !== -1) prefetchJobs.splice(idx2, 1);
-        if (currentJob !== job) {
-          resolve(false);
-        }
-      }, timeoutMs),
-    };
-    if (isPrefetch) prefetchJobs.push(job);
-    else priorityJobs.push(job);
-    pumpVieneuQueue();
-  });
-}
-
-app.get('/api/tts/status', (_req, res) => res.json(getVieneuStatus()));
+// The Vietnamese edition had a local "VieNeu-TTS" voice pack here. It only speaks Vietnamese, so the
+// English edition always uses the Microsoft Edge voices (Jenny female / Guy male) with Google as backup.
+// These two routes stay so the control page can switch between the female and male voice.
+const voiceStatus = () => ({ state: 'unavailable' as const, voice: settings.room?.teacherVoice === 'nam' ? '__edge_m__' : '__edge_f__', voices: [] });
+app.get('/api/tts/status', (_req, res) => res.json(voiceStatus()));
 app.post('/api/tts/voice', (req, res) => {
-  const v = typeof req.body?.voice === 'string' ? req.body.voice.trim().slice(0, 60) : '';
-  if (v === '__edge_f__') {
-    activeVieneuVoice = '';
-    saveSettings({ vieneuVoice: '', room: { ...settings.room, teacherVoice: 'nu' } });
-    broadcast('roomCfg', settings.room);
-  } else if (v === '__edge_m__') {
-    activeVieneuVoice = '';
-    saveSettings({ vieneuVoice: '', room: { ...settings.room, teacherVoice: 'nam' } });
-    broadcast('roomCfg', settings.room);
-  } else {
-    activeVieneuVoice = v;
-    const found = vieneuVoices.find((x) => x.id === v);
-    const nextRoom: RoomSettings = { ...settings.room };
-    if (found?.gender === 'male') nextRoom.teacherVoice = 'nam';
-    else if (found?.gender === 'female') nextRoom.teacherVoice = 'nu';
-    saveSettings({ vieneuVoice: v, room: nextRoom });
-    broadcast('roomCfg', settings.room);
-  }
-  broadcast('vieneu', getVieneuStatus());
-  res.json({ success: true, ...getVieneuStatus(), room: settings.room });
+  const v = typeof req.body?.voice === 'string' ? req.body.voice.trim() : '';
+  if (v !== '__edge_f__' && v !== '__edge_m__') return res.status(400).json({ success: false, error: 'Unknown voice' });
+  saveSettings({ room: { ...settings.room, teacherVoice: v === '__edge_m__' ? 'nam' : 'nu' } });
+  broadcast('roomCfg', settings.room);
+  res.json({ success: true, ...voiceStatus(), room: settings.room });
 });
 
 app.get('/api/tts', async (req, res) => {
   try {
     const raw = String(req.query.text || '').trim().slice(0, 1500);
-    if (!raw) return res.status(400).send('Thiếu text');
+    if (!raw) return res.status(400).send('Missing text');
     const rate = Math.min(1.5, Math.max(0.5, Number(req.query.rate) || 1));
     const hype = req.query.hype === '1';
-    const isPrefetch = req.query.prefetch === '1';
-    const english = req.query.v === 'en' || req.query.v === 'enm';
-
-    // Nếu không phải từ vựng tiếng Anh và đang bật giọng AI VieNeu-TTS (Adam bựa, Trúc Ly...)
-    if (!english && activeVieneuVoice) {
-      let targetVoice = activeVieneuVoice;
-      // Nếu kịch bản ép giọng nam (M:) mà giọng đang chọn là nữ thì dùng Adam bựa
-      if (req.query.v === 'm') {
-        const curInfo = vieneuVoices.find((x) => x.id === activeVieneuVoice);
-        if (curInfo && curInfo.gender === 'female') targetVoice = DEFAULT_MALE_VIENEU;
-      }
-      if (await vieneuTts(raw, res, isPrefetch, targetVoice)) return;
-    }
-
-    // Edge / Google không hiểu thẻ cảm xúc [cười] [thở dài]...: bỏ đi để khỏi đọc thành chữ
+    // Edge / Google do not understand emotion tags [laughs] [sighs]...: strip them so they are not read out
     const text = raw.replace(/\[[^\]]*\]\s*/g, '').trim();
     if (!text) return res.status(204).end();
-    // Giọng nữ, giọng nam (chọn ở trang điều khiển), thêm giọng tiếng Anh để đọc từ tiếng Anh cho chuẩn.
-    // Chỉ nhận các giọng này, không cho truyền tên giọng tuỳ ý.
-    const voiceName = req.query.v === 'f' ? 'vi-VN-HoaiMyNeural' : req.query.v === 'm' ? 'vi-VN-NamMinhNeural' : req.query.v === 'en' ? 'en-US-AnaNeural' : req.query.v === 'enm' ? 'en-US-GuyNeural' : TTS_VOICE;
+    // Female and male voice (picked on the control page), plus an English voice for English words.
+    // Only these voices are accepted; arbitrary voice names cannot be passed in.
+    const voiceName = req.query.v === 'f' ? 'en-US-JennyNeural' : req.query.v === 'm' ? 'en-US-GuyNeural' : req.query.v === 'en' ? 'en-US-JennyNeural' : req.query.v === 'enm' ? 'en-US-GuyNeural' : TTS_VOICE;
     const key = `${voiceName}|${rate}|${hype}|${text}`;
     let audio = ttsCache.get(key);
     let fallback = false;
     if (!audio) {
       try {
-        audio = await edgeTts(text, rate, hype, voiceName); // đã tự thử lại 4 lần bên trong
+        audio = await edgeTts(text, rate, hype, voiceName); // already retried 4 times inside
       } catch (err) {
-        // giọng dự phòng phải ĐÚNG ngôn ngữ: từ tiếng Anh dùng Google tiếng Anh, Google cũng lỗi thì bỏ câu (không đọc sai)
-        console.warn(`[giọng dự phòng] Edge lỗi 4 lần (${voiceName}), đọc bằng Google ${english ? 'tiếng Anh' : 'tiếng Việt'}: "${text.slice(0, 60)}"`, err instanceof Error ? err.message : err);
-        audio = await googleTts(text, english ? 'en' : 'vi');
+        // the backup voice must speak the RIGHT language: Google English; if Google fails too the line is skipped (never read wrong)
+        console.warn(`[backup voice] Edge failed 4 times (${voiceName}), reading with Google English: "${text.slice(0, 60)}"`, err instanceof Error ? err.message : err);
+        audio = await googleTts(text, 'en');
         fallback = true;
       }
-      // giọng dự phòng không lưu: lần sau đọc lại câu này thì thử Edge trước
+      // the backup voice is not cached: next time this line tries Edge first again
       if (!fallback) ttsCache.set(key, audio);
       if (ttsCache.size > 200) ttsCache.delete(ttsCache.keys().next().value!);
     }
@@ -836,26 +533,26 @@ app.get('/api/tts', async (req, res) => {
     res.setHeader('Cache-Control', fallback ? 'no-store' : 'public, max-age=86400');
     res.send(audio);
   } catch (err) {
-    console.error('TTS lỗi:', err);
+    console.error('TTS error:', err);
     res.status(500).json({ error: 'TTS failed' });
   }
 });
 
-// ---------- API riêng của game: thêm bên dưới ----------
+// ---------- Game-specific API: add below ----------
 
-// Trang stage (nơi chạy game thật) gửi ảnh chụp trạng thái lên; trang điều khiển xem trước đúng y như vậy
+// The stage page (where the real game runs) posts state snapshots; the control page previews exactly that
 app.post('/api/game/state', (req, res) => {
   broadcast('gamestate', req.body);
   if (typeof req.body?.phase === 'string') stagePhase = req.body.phase.slice(0, 20);
   res.json({ success: true });
 });
 
-// Sổ lớp lưu ra file (tắt máy vẫn còn): câu nào hỏi lúc nào + bảng vàng tuần
-// DATA_DIR: chạy thử ở thư mục khác để khỏi lẫn tên giả vào sổ lớp thật
+// The class book is saved to a file (survives a restart): when each question was asked + the weekly honour roll
+// DATA_DIR: test runs use another folder so fake names never end up in the real class book
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 
-// Cài đặt lớp (trang điều khiển): lưu settings.json, báo ngay cho trang stage. Ảnh nền riêng lưu ở data/nen-lop/ (không lên git)
-const BG_DIR = path.join(DATA_DIR, 'nen-lop');
+// Class settings (control page): saved in settings.json and sent to the stage page at once. Custom backgrounds go to data/backgrounds/ (not in git)
+const BG_DIR = path.join(DATA_DIR, 'backgrounds');
 app.use('/room-bg', express.static(BG_DIR));
 const cleanText = (v: unknown, max: number) => String(v ?? '').replace(/[\x00-\x1f\x7f]/g, '').trim().slice(0, max);
 const saveRoom = (patch: RoomSettings) => {
@@ -872,13 +569,13 @@ app.post('/api/room-settings', (req, res) => {
   const patch: RoomSettings = {};
   if (typeof b.teacherName === 'string') {
     const name = cleanText(b.teacherName, 24);
-    if (!name) return res.status(400).json({ success: false, error: 'Chưa nhập tên cô giáo' });
+    if (!name) return res.status(400).json({ success: false, error: 'Type the teacher name first' });
     patch.teacherName = name;
   }
   if (b.teacherVoice === 'nu' || b.teacherVoice === 'nam') patch.teacherVoice = b.teacherVoice;
   if (typeof b.motto === 'string') {
     const motto = cleanText(b.motto, 40);
-    if (!motto) return res.status(400).json({ success: false, error: 'Chưa nhập chữ bảng đỏ' });
+    if (!motto) return res.status(400).json({ success: false, error: 'Type the red banner text first' });
     patch.motto = motto;
   }
   if (typeof b.everest === 'boolean') patch.everest = b.everest;
@@ -891,31 +588,18 @@ app.post('/api/room-settings', (req, res) => {
   if (b.danceSec !== undefined) patch.danceSec = Math.min(120, Math.max(10, Math.round(Number(b.danceSec)) || 30));
   if (typeof b.danceText === 'string') {
     const t = cleanText(b.danceText, 80);
-    if (!t) return res.status(400).json({ success: false, error: 'Chưa nhập thông báo nhảy múa' });
+    if (!t) return res.status(400).json({ success: false, error: 'Type the dance message first' });
     patch.danceText = t;
   }
   if (typeof b.birthdayText === 'string') {
     const t = cleanText(b.birthdayText, 60);
-    if (!t) return res.status(400).json({ success: false, error: 'Chưa nhập chữ biểu ngữ sinh nhật' });
+    if (!t) return res.status(400).json({ success: false, error: 'Type the birthday banner text first' });
     patch.birthdayText = t;
   }
   saveRoom(patch);
-  if (activeVieneuVoice && (patch.teacher || patch.teacherVoice)) {
-    const wantMale = (patch.teacher ?? settings.room?.teacher) === 'thay' || (patch.teacherVoice ?? settings.room?.teacherVoice) === 'nam';
-    const curInfo = vieneuVoices.find((x) => x.id === activeVieneuVoice);
-    if (wantMale && (!curInfo || curInfo.gender === 'female')) {
-      activeVieneuVoice = DEFAULT_MALE_VIENEU;
-      saveSettings({ vieneuVoice: activeVieneuVoice });
-      broadcast('vieneu', getVieneuStatus());
-    } else if (!wantMale && (!curInfo || curInfo.gender === 'male')) {
-      activeVieneuVoice = DEFAULT_FEMALE_VIENEU;
-      saveSettings({ vieneuVoice: activeVieneuVoice });
-      broadcast('vieneu', getVieneuStatus());
-    }
-  }
-  res.json({ success: true, room: settings.room, vieneu: getVieneuStatus() });
+  res.json({ success: true, room: settings.room });
 });
-// Tải ảnh nền lên: chỉ nhận PNG, JPG, WEBP (xét cả nội dung file), tên file do server đặt
+// Background upload: only PNG, JPG, WEBP (the file content is checked too); the server picks the file name
 const imageExt = (b: Buffer) => {
   if (b.length > 12 && b[0] === 0x89 && b.toString('latin1', 1, 4) === 'PNG') return 'png';
   if (b.length > 12 && b[0] === 0xff && b[1] === 0xd8) return 'jpg';
@@ -925,7 +609,7 @@ const imageExt = (b: Buffer) => {
 app.post('/api/room-bg', express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '12mb' }), (req, res) => {
   const body = req.body as Buffer;
   const ext = Buffer.isBuffer(body) ? imageExt(body) : '';
-  if (!ext) return res.status(400).json({ success: false, error: 'Chỉ nhận ảnh PNG, JPG, WEBP' });
+  if (!ext) return res.status(400).json({ success: false, error: 'PNG, JPG or WEBP images only' });
   try {
     fs.mkdirSync(BG_DIR, { recursive: true });
     const file = `nen-${Date.now()}.${ext}`;
@@ -934,8 +618,8 @@ app.post('/api/room-bg', express.raw({ type: ['image/png', 'image/jpeg', 'image/
     saveRoom({ bg: file });
     res.json({ success: true, room: settings.room });
   } catch (err) {
-    console.error('Không lưu được ảnh nền:', err);
-    res.status(500).json({ success: false, error: 'Không lưu được ảnh nền' });
+    console.error('Could not save the background:', err);
+    res.status(500).json({ success: false, error: 'Could not save the background' });
   }
 });
 app.delete('/api/room-bg', (_req, res) => {
@@ -943,26 +627,26 @@ app.delete('/api/room-bg', (_req, res) => {
   saveRoom({ bg: '' });
   res.json({ success: true, room: settings.room });
 });
-const SAVE_FILE = path.join(DATA_DIR, 'so-lop.json');
+const SAVE_FILE = path.join(DATA_DIR, 'class-book.json');
 interface SoLop {
-  used: Record<string, number>; // id câu -> lần hỏi gần nhất (ms)
-  week: string; // tuần đang tính, vd "2026-W45"
+  used: Record<string, number>; // question id -> last time asked (ms)
+  week: string; // current week, e.g. "2026-W45"
   scores: Record<string, { nickname: string; points: number }>;
-  // câu chủ kênh bấm "Bỏ câu này": không hỏi lại. Sửa câu trong file (đổi đáp án) là thành câu mới, tự hết bị bỏ
+  // questions the owner dropped with "Drop this question": never asked again. Editing the question (new answer) makes it a new question
   banned: Record<string, { answer: string; clue: string; at: number }>;
-  // chuyên cần: ngày gần nhất vào lớp, số ngày liền, tổng số ngày
+  // attendance: last day in class, day streak, total days
   attend: Record<string, { nickname: string; last: string; streak: number; total: number }>;
-  // điểm hôm nay (cho báo cáo buổi live) + tương tác hôm nay (bảng Top tương tác)
+  // today's points (for the session report) + today's chat activity (Top chatters board)
   today: { date: string; scores: Record<string, { nickname: string; points: number }>; talk?: Record<string, { nickname: string; points: number }>; flowers?: number; talkRoom?: string };
-  // học bạ cả đời: điểm cộng dồn mãi (lên lớp) + số câu đúng từng loại (huy hiệu)
+  // lifetime report card: points that keep adding up (grades) + right answers per kind (badges)
   life: Record<string, LifeRow>;
 }
 type LifeRow = { nickname: string; points: number; total: number; toan: number; su: number; meo: number; anh: number };
 const LIFE_KEYS = ['points', 'total', 'toan', 'su', 'meo', 'anh'] as const;
-// ngày theo giờ máy (Việt Nam), vd "2026-11-04"
+// day in the PC's local time, e.g. "2026-11-04"
 const dayKey = (d = new Date()) => d.toLocaleDateString('sv');
 const weekKey = (d = new Date()) => {
-  // tuần ISO (bắt đầu thứ hai)
+  // ISO week (starts on Monday)
   const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
   const y = t.getUTCFullYear();
@@ -973,26 +657,26 @@ let soLop: SoLop = { used: {}, week: weekKey(), scores: {}, banned: {}, attend: 
 try {
   soLop = { ...soLop, ...JSON.parse(fs.readFileSync(SAVE_FILE, 'utf8')) };
 } catch {
-  // chưa có sổ: bắt đầu mới
+  // no class book yet: start fresh
 }
 const weekTop = () => {
-  if (soLop.week !== weekKey()) soLop = { ...soLop, week: weekKey(), scores: {} }; // sang tuần mới: xoá điểm tuần cũ
+  if (soLop.week !== weekKey()) soLop = { ...soLop, week: weekKey(), scores: {} }; // new week: clear last week's points
   return Object.entries(soLop.scores)
     .map(([username, v]) => ({ username, ...v }))
     .sort((a, b) => b.points - a.points)
     .slice(0, 10);
 };
-// tên TikTok có thể là "__proto__": không cho làm khoá, tránh phá object sổ lớp
+// a TikTok name may be "__proto__": never use it as a key, it would break the class book object
 const safeKey = (k: string) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype';
 const writeSoLop = () => {
   try {
     fs.mkdirSync(path.dirname(SAVE_FILE), { recursive: true });
     fs.writeFileSync(SAVE_FILE, JSON.stringify(soLop));
   } catch (err) {
-    console.error('Không lưu được sổ lớp:', err);
+    console.error('Could not save the class book:', err);
   }
 };
-// nhiều bạn vào lớp cùng lúc: gom lại 2 giây mới ghi file 1 lần
+// many students joining at once: batch for 2 s, then write the file once
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 const saveSoon = () => {
   saveTimer ??= setTimeout(() => {
@@ -1004,19 +688,19 @@ const todayScores = () => {
   if (soLop.today.date !== dayKey()) soLop.today = { date: dayKey(), scores: {}, talk: {}, flowers: 0 };
   return soLop.today.scores;
 };
-// Top tương tác làm lại mỗi phiên live mới (chủ kênh chốt 2026-11-05): mỗi buổi live TikTok có mã phòng riêng,
-// mã phòng đổi thì xoá điểm tương tác. Rớt mạng tự nối lại vào cùng buổi live (cùng mã phòng) thì giữ nguyên.
+// Top chatters restart with every new live session (owner's call 2026-11-05): each TikTok live has its own room id,
+// a new room id clears the chat points. Reconnecting to the same live after a drop (same room id) keeps them.
 function newLiveRoom(roomId: string) {
   if (!roomId) return;
   todayScores();
   if (soLop.today.talkRoom === roomId) return;
   soLop.today.talkRoom = roomId;
   soLop.today.talk = {};
-  console.log(`[Top tương tác] phiên live mới ${roomId}: làm lại bảng`);
+  console.log(`[Top chatters] new live session ${roomId}: board reset`);
   writeSoLop();
 }
 const todayTalk = () => {
-  todayScores(); // sang ngày mới thì xoá cả tương tác
+  todayScores(); // new day: clear the chat points too
   return (soLop.today.talk ??= {});
 };
 const addScore = (book: Record<string, { nickname: string; points: number }>, key: string, nickname: unknown, points: number) => {
@@ -1026,8 +710,8 @@ const addScore = (book: Record<string, { nickname: string; points: number }>, ke
   book[key] = cur;
 };
 
-// Báo cáo buổi live: mỗi ngày 1 file data/bao-cao/<ngày>.json, ghi từng câu đã hỏi
-const REPORT_DIR = path.join(DATA_DIR, 'bao-cao');
+// Session report: one file per day, data/reports/<day>.json, with every question asked
+const REPORT_DIR = path.join(DATA_DIR, 'reports');
 type ReportRow = { id: string; answer: string; category: string; attempts: number; correct: number; at: number };
 const readReport = (day: string): ReportRow[] => {
   try {
@@ -1037,16 +721,16 @@ const readReport = (day: string): ReportRow[] => {
   }
 };
 
-// top điểm hôm nay (bảng Học sinh xuất sắc hôm nay ở góc trái stage)
+// today's top points (Top students board in the stage's top-left corner)
 const topOf = (book: Record<string, { nickname: string; points: number }>) =>
   Object.entries(book)
     .map(([username, v]) => ({ username, ...v }))
     .sort((x, y) => y.points - x.points)
     .slice(0, 10);
 const todayTop = () => topOf(todayScores());
-// top tương tác hôm nay (bảng Top tương tác bên phải stage)
+// today's top chatters (Top chatters board on the right of the stage)
 const talkTop = () => topOf(todayTalk());
-// quỹ hoa của cô hôm nay (số bông, mỗi xu quà = 1 bông)
+// the teacher's flower fund today (flowers, one per gift coin)
 const flowersToday = () => {
   todayScores();
   return soLop.today.flowers ?? 0;
@@ -1061,7 +745,7 @@ app.post('/api/game/save', (req, res) => {
     todayScores();
     soLop.today.flowers = (soLop.today.flowers ?? 0) + Math.min(1_000_000, Math.round(flowers));
   }
-  // học bạ cả đời: cộng phần mới
+  // lifetime report card: add the new part
   if (Array.isArray(life)) {
     for (const e of life.slice(0, 2000)) {
       if (!e || typeof e.username !== 'string') continue;
@@ -1073,7 +757,7 @@ app.post('/api/game/save', (req, res) => {
       soLop.life[key] = cur;
     }
   }
-  // tương tác hôm nay
+  // today's chat activity
   if (Array.isArray(talk)) {
     for (const e of talk.slice(0, 5000)) {
       if (!e || typeof e.username !== 'string' || !safeKey(e.username.slice(0, 100))) continue;
@@ -1114,14 +798,14 @@ app.post('/api/game/save', (req, res) => {
       fs.mkdirSync(REPORT_DIR, { recursive: true });
       fs.writeFileSync(path.join(REPORT_DIR, `${dayKey()}.json`), JSON.stringify([...readReport(dayKey()), ...rows]));
     } catch (err) {
-      console.error('Không lưu được báo cáo:', err);
+      console.error('Could not save the report:', err);
     }
   }
   writeSoLop();
   res.json({ weekTop: weekTop(), todayTop: todayTop(), talkTop: talkTop(), flowersToday: flowersToday() });
 });
 
-// Chuyên cần: trang stage báo mỗi bạn lần đầu bình luận trong buổi, server trả về số ngày đi học liền
+// Attendance: the stage page reports each student's first comment of the session, the server answers with the day streak
 app.post('/api/game/attend', (req, res) => {
   const { username, nickname } = req.body || {};
   if (typeof username !== 'string' || !safeKey(username.slice(0, 100))) return res.status(400).json({ days: 0 });
@@ -1137,16 +821,16 @@ app.post('/api/game/attend', (req, res) => {
   cur.nickname = String(nickname || cur.nickname).slice(0, 60);
   soLop.attend[key] = cur;
   saveSoon();
-  // kèm học bạ cả đời để game biết bạn này đang học lớp mấy
+  // includes the lifetime report card so the game knows which grade this student is in
   const { nickname: _n, ...life } = lifeOf(key);
   res.json({ days: cur.streak, total: cur.total, life });
 });
 
-// Người xem theo từng phần của game: cứ 15 giây ghi (giờ, phần đang chạy, số người xem) vào data/bao-cao/<ngày>-xem.json.
-// Trang báo cáo tính mỗi phần người xem tăng hay giảm bao nhiêu mỗi phút, để biết phần nào làm khách rời live.
+// Viewers per part of the game: every 15 s write (time, current part, viewer count) to data/reports/<day>-viewers.json.
+// The report page works out how many viewers each part gains or loses per minute, to see which part makes people leave.
 let stagePhase = '';
 type ViewSample = { at: number; phase: string; viewers: number };
-const viewFile = (day: string) => path.join(REPORT_DIR, `${day}-xem.json`);
+const viewFile = (day: string) => path.join(REPORT_DIR, `${day}-viewers.json`);
 const readViews = (day: string): ViewSample[] => {
   try {
     return JSON.parse(fs.readFileSync(viewFile(day), 'utf8'));
@@ -1164,14 +848,14 @@ setInterval(() => {
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     fs.writeFileSync(viewFile(day), JSON.stringify(viewSamples.rows));
   } catch (err) {
-    console.error('Không lưu được số người xem:', err);
+    console.error('Could not save viewer counts:', err);
   }
 }, 15_000);
 const PHASE_NAME: Record<string, string> = {
-  team: 'Chọn tổ', intro: 'Giới thiệu tiết', question: 'Đang trả lời', bonus: 'Thêm giờ (mở chữ)', reveal: 'Hiện đáp án',
-  praise: 'Điểm danh giữa tiết', results: 'Tổng kết tiết', recess: 'Ra chơi', vote: 'Bình chọn chủ đề', show: 'Game lớn',
+  team: 'Team picking', intro: 'Class intro', question: 'Answering', bonus: 'Extra time (letter revealed)', reveal: 'Answer shown',
+  praise: 'Mid-class shout-out', results: 'Class summary', recess: 'Recess', vote: 'Topic vote', show: 'Big show',
 };
-/** mỗi phần: tổng thời gian, người xem trung bình, người xem thay đổi mỗi phút (âm = khách rời đi) */
+/** per part: total time, average viewers, viewer change per minute (negative = people leaving) */
 const viewStats = (rows: ViewSample[]) => {
   const by = new Map<string, { n: number; sum: number; delta: number; ms: number }>();
   for (let i = 0; i < rows.length; i++) {
@@ -1180,7 +864,7 @@ const viewStats = (rows: ViewSample[]) => {
     b.n++;
     b.sum += r.viewers;
     const next = rows[i + 1];
-    // chỉ tính khoảng liền nhau (dưới 1 phút), tắt live rồi bật lại thì bỏ
+    // only count back-to-back samples (under 1 minute apart); a live stopped and restarted is skipped
     if (next && next.at - r.at < 60_000) {
       b.delta += next.viewers - r.viewers;
       b.ms += next.at - r.at;
@@ -1190,13 +874,13 @@ const viewStats = (rows: ViewSample[]) => {
   return [...by].map(([phase, b]) => ({ phase, minutes: b.ms / 60_000, avg: b.sum / b.n, perMin: b.ms ? (b.delta / b.ms) * 60_000 : 0 })).sort((a, b) => a.perMin - b.perMin);
 };
 
-// Trang báo cáo sau buổi live: http://localhost:3006/bao-cao (thêm ?ngay=2026-11-04 để xem ngày khác)
-app.get('/bao-cao', (req, res) => {
-  const day = typeof req.query.ngay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.query.ngay) ? req.query.ngay : dayKey();
+// Report page after the live: http://localhost:3006/report (add ?day=2026-11-04 for another day)
+app.get('/report', (req, res) => {
+  const day = typeof req.query.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.query.day) ? req.query.day : dayKey();
   const esc = (s: unknown) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
   const rows = readReport(day);
-  const words = rows.filter((r) => r.category !== 'Toán nhẩm');
-  // ít nhất 3 bạn thử mà không ai đúng (câu bị bấm qua, không ai gõ thì không tính)
+  const words = rows.filter((r) => r.category !== 'Mental math');
+  // at least 3 students tried and nobody got it (skipped questions where nobody typed do not count)
   const hard = words.filter((r) => r.correct === 0 && r.attempts >= 3).sort((a, b) => b.attempts - a.attempts);
   const easy = words.filter((r) => r.attempts >= 5 && r.correct / r.attempts >= 0.9);
   const attended = Object.entries(soLop.attend).filter(([, a]) => a.last === day);
@@ -1205,45 +889,45 @@ app.get('/bao-cao', (req, res) => {
   const banned = Object.entries(soLop.banned).sort((a, b) => b[1].at - a[1].at);
   const views = viewStats(day === viewSamples.day ? viewSamples.rows : readViews(day));
   const list = (items: string[], empty: string) => (items.length ? `<ol>${items.map((i) => `<li>${i}</li>`).join('')}</ol>` : `<p class="muted">${empty}</p>`);
-  res.type('html').send(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Báo cáo Lớp Học Chữ ${esc(day)}</title>
+  res.type('html').send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIVE-CLASS report ${esc(day)}</title>
 <style>body{font-family:system-ui,sans-serif;max-width:860px;margin:0 auto;padding:16px;background:#fdf8ec;color:#3b2a14}
 h1{margin:0 0 4px}h2{margin-top:28px;border-bottom:2px solid #e9d8a6;padding-bottom:4px}.muted{color:#8a7350}
 .stats{display:flex;gap:12px;flex-wrap:wrap}.stat{background:#fff;border-radius:12px;padding:10px 16px;box-shadow:0 1px 3px #0002}
 .stat b{display:block;font-size:28px}li{margin:4px 0}code{background:#f3e9cf;padding:1px 5px;border-radius:4px}</style></head><body>
-<h1>📊 Báo cáo buổi live</h1><div class="muted">Ngày ${esc(day)} · đổi ngày: thêm <code>?ngay=YYYY-MM-DD</code> vào link</div>
+<h1>📊 Live session report</h1><div class="muted">Date ${esc(day)} · other day: add <code>?day=YYYY-MM-DD</code> to the link</div>
 <div class="stats" style="margin-top:12px">
-<div class="stat"><b>${rows.length}</b>câu đã hỏi</div>
-<div class="stat"><b>${attended.length}</b>bạn vào lớp</div>
-<div class="stat"><b>${hard.length}</b>câu không ai đúng</div>
-<div class="stat"><b>${easy.length}</b>câu quá dễ</div></div>
-<h2>👀 Người xem theo từng phần</h2><p class="muted">Số người xem tăng (+) hay giảm (−) trung bình mỗi phút trong từng phần. Phần giảm nhiều nhất ở trên cùng: đó là chỗ khách rời live. Cứ 15 giây ghi 1 lần, chỉ lúc đã kết nối TikTok.</p>
-${views.length ? `<table style="border-collapse:collapse;width:100%;background:#fff;border-radius:12px"><tr style="text-align:left"><th style="padding:6px">Phần</th><th>Thời gian</th><th>Xem TB</th><th>Thay đổi / phút</th></tr>${views
-  .map((r) => `<tr style="border-top:1px solid #eee"><td style="padding:6px">${esc(PHASE_NAME[r.phase] ?? r.phase)}</td><td>${r.minutes.toFixed(0)} phút</td><td>${r.avg.toFixed(0)}</td><td style="color:${r.perMin < 0 ? '#b91c1c' : '#15803d'};font-weight:700">${r.perMin > 0 ? '+' : ''}${r.perMin.toFixed(1)}</td></tr>`)
-  .join('')}</table>` : '<p class="muted">Chưa có số liệu (chưa kết nối TikTok hôm nay).</p>'}
-<h2>❌ Câu không ai trả lời đúng</h2><p class="muted">Có nhiều bạn thử mà vẫn sai: có thể câu quá khó hoặc gợi ý chưa rõ, nên xem lại.</p>
-${list(hard.map((r) => `<b>${esc(r.answer)}</b> · ${esc(r.category)} · ${r.attempts} bạn thử <code>${esc(r.id)}</code>`), 'Không có câu nào.')}
-<h2>✅ Câu quá dễ (90% trở lên trả lời đúng)</h2>
-${list(easy.map((r) => `<b>${esc(r.answer)}</b> · ${esc(r.category)} · ${r.correct}/${r.attempts} đúng`), 'Không có câu nào.')}
-<h2>🏆 Điểm cao hôm nay</h2>
-${list(top.map(([, s]) => `${esc(s.nickname)} · ${s.points} điểm`), 'Chưa có điểm (hoặc không phải hôm nay).')}
-<h2>🎒 Chuyên cần (đi học nhiều ngày liền)</h2>
-${list(loyal.map(([, a]) => `${esc(a.nickname)} · ${a.streak} ngày liền · tổng ${a.total} ngày`), 'Chưa có ai.')}
-<h2>🚫 Câu đã bấm "Bỏ câu này"</h2><p class="muted">Sửa câu trong file <code>src/game/cau-hoi/</code> (đổi đáp án hoặc xoá dòng). Đổi đáp án là thành câu mới, game sẽ hỏi lại.</p>
-${list(banned.map(([id, b]) => `<b>${esc(b.answer)}</b> · ${esc(b.clue)} <code>${esc(id)}</code>`), 'Chưa bỏ câu nào.')}
+<div class="stat"><b>${rows.length}</b>questions asked</div>
+<div class="stat"><b>${attended.length}</b>students</div>
+<div class="stat"><b>${hard.length}</b>nobody got right</div>
+<div class="stat"><b>${easy.length}</b>too easy</div></div>
+<h2>👀 Viewers per segment</h2><p class="muted">Average viewers gained (+) or lost (−) per minute in each segment. The biggest loss is on top: that is where people leave the live. Sampled every 15 seconds, only while connected to TikTok.</p>
+${views.length ? `<table style="border-collapse:collapse;width:100%;background:#fff;border-radius:12px"><tr style="text-align:left"><th style="padding:6px">Segment</th><th>Time</th><th>Avg viewers</th><th>Change / min</th></tr>${views
+  .map((r) => `<tr style="border-top:1px solid #eee"><td style="padding:6px">${esc(PHASE_NAME[r.phase] ?? r.phase)}</td><td>${r.minutes.toFixed(0)} min</td><td>${r.avg.toFixed(0)}</td><td style="color:${r.perMin < 0 ? '#b91c1c' : '#15803d'};font-weight:700">${r.perMin > 0 ? '+' : ''}${r.perMin.toFixed(1)}</td></tr>`)
+  .join('')}</table>` : '<p class="muted">No data yet (not connected to TikTok today).</p>'}
+<h2>❌ Questions nobody got right</h2><p class="muted">Several people tried and still missed: the question may be too hard or the clue unclear, worth reviewing.</p>
+${list(hard.map((r) => `<b>${esc(r.answer)}</b> · ${esc(r.category)} · ${r.attempts} tries <code>${esc(r.id)}</code>`), 'None.')}
+<h2>✅ Too easy (90%+ correct)</h2>
+${list(easy.map((r) => `<b>${esc(r.answer)}</b> · ${esc(r.category)} · ${r.correct}/${r.attempts} correct`), 'None.')}
+<h2>🏆 Top scores today</h2>
+${list(top.map(([, s]) => `${esc(s.nickname)} · ${s.points} points`), 'No scores yet (or not today).')}
+<h2>🎒 Attendance streaks</h2>
+${list(loyal.map(([, a]) => `${esc(a.nickname)} · ${a.streak} days in a row · ${a.total} days total`), 'Nobody yet.')}
+<h2>🚫 Dropped questions</h2><p class="muted">Fix them in <code>src/game/word-bank/</code> (change the answer or delete the line). A changed answer counts as a new question.</p>
+${list(banned.map(([id, b]) => `<b>${esc(b.answer)}</b> · ${esc(b.clue)} <code>${esc(id)}</code>`), 'No dropped questions.')}
 </body></html>`);
 });
 
-// ---------- Khởi động ----------
+// ---------- Startup ----------
 async function start() {
   const distDir = path.join(__dirname, 'dist');
   const distIndex = path.join(distDir, 'index.html');
   if (process.env.NODE_ENV !== 'production' || !fs.existsSync(distIndex)) {
     const { createServer } = await import('vite');
     const vite = await createServer({
-      // LIVE_MODE=1 (BAT-LIVE.bat): tắt tự tải lại, sửa code không làm trang stage reset giữa live
-      // Live: tắt hẳn kênh tự tải lại (ws) để không đụng cổng 24678 của game khác đang chạy.
-      // Lúc sửa code: cổng riêng 24682 cho kênh tự tải lại (Đi Chùa 24678, Cưới Liền Tay 24680).
+      // LIVE_MODE=1 (START-LIVE.bat): no auto reload, so editing code never resets the stage page during a live
+      // Live: the reload channel (ws) is fully off so it never clashes with port 24678 of another game that is running.
+      // While editing code: own port 24682 for the reload channel (other games use 24678 and 24680).
       server:
         process.env.LIVE_MODE === '1'
           ? { middlewareMode: true, hmr: false, ws: false }
@@ -1256,16 +940,13 @@ async function start() {
     app.get('*', (_req, res) => res.sendFile(distIndex));
   }
 
-  // Khởi chạy ngầm worker giọng đọc VieNeu-TTS ngay trong tiến trình con
-  startVieneuWorker();
-
-  // Chỉ nghe trên máy này: API không có đăng nhập, người cùng Wi-Fi không được điều khiển giọng đọc
+  // Listen on this PC only: the API has no login, so people on the same Wi-Fi cannot control the voice
   app.listen(PORT, '127.0.0.1', () => {
-    console.log(`Server chạy ở http://localhost:${PORT}  |  Link LIVE Studio: http://lvh.me:${PORT}/?view=stage`);
-    // lần trước đang kết nối mà server bị tắt / bật lại: tự kết nối lại tài khoản đó
+    console.log(`Server running at http://localhost:${PORT}  |  LIVE Studio link: http://lvh.me:${PORT}/?view=stage`);
+    // server was stopped / restarted while connected: reconnect that account
     if (wantUser && !process.env.DATA_DIR) {
-      console.log(`[TikTok] Tự kết nối lại @${wantUser} (lần trước đang kết nối)`);
-      connectTikTok(wantUser).catch((err) => scheduleReconnect(`Chưa kết nối được (${err instanceof Error ? err.message : err})`));
+      console.log(`[TikTok] Reconnecting @${wantUser} (was connected last time)`);
+      connectTikTok(wantUser).catch((err) => scheduleReconnect(`Could not connect (${err instanceof Error ? err.message : err})`));
     }
   });
 }

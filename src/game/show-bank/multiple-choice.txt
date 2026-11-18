@@ -1,0 +1,181 @@
+# Multiple-choice questions for the 2 big shows: Road to Everest and Golden Bell
+# Each line: question | RIGHT answer | wrong | wrong | wrong   (the game shuffles A B C D, so always write the right answer first)
+# Groups: [de] warm-up · [vua] general · [kho] challenge / summit · [chuong] Golden Bell question · [phu] tiebreaker
+# Clearly harder than the class questions, even the warm-up. Wrong answers should look plausible.
+# Options max 28 characters, questions max 110. Check: npx tsx src/game/bank.check.ts
+
+[de]
+Which word is spelled correctly? | necessary | neccessary | necesary | neccesary
+Which word is spelled correctly? | separate | seperate | separete | seprate
+Which word is spelled correctly? | definitely | definately | definatly | defenitely
+Which word is spelled correctly? | tomorrow | tommorow | tommorrow | tomorow
+Which word is spelled correctly? | calendar | calender | calandar | calander
+Which word is spelled correctly? | beginning | begining | beggining | beginnig
+Which word is spelled correctly? | receive | recieve | receeve | resieve
+What does "a piece of cake" mean? | Very easy | Very tasty | A small gift | A short break
+What does "break the ice" mean? | Start a conversation | Make a mistake | Go skating | Cool a drink
+What does "under the weather" mean? | Feeling a bit sick | Outside in the rain | Very happy | Late for work
+Complete the saying: "The early bird catches the ..." | worm | fish | bus | sun
+Complete the saying: "Actions speak louder than ..." | words | music | money | thunder
+Which planet is known as the Red Planet? | Mars | Venus | Jupiter | Mercury
+How many legs does a spider have? | 8 | 6 | 10 | 12
+How many continents are there on Earth? | 7 | 5 | 6 | 8
+What is 9 times 13? | 117 | 107 | 127 | 119
+What is 15 percent of 200? | 30 | 15 | 20 | 35
+What is the largest ocean on Earth? | Pacific | Atlantic | Indian | Arctic
+What gas do plants take in from the air? | Carbon dioxide | Oxygen | Nitrogen | Helium
+Which animal is the tallest in the world? | Giraffe | Elephant | Camel | Ostrich
+What is the capital of Japan? | Tokyo | Kyoto | Osaka | Seoul
+What is the capital of Australia? | Canberra | Sydney | Melbourne | Perth
+Which is the smallest prime number? | 2 | 1 | 3 | 0
+How many minutes are in 3 hours? | 180 | 160 | 120 | 200
+Which color do you get by mixing blue and yellow? | Green | Purple | Orange | Brown
+How many sides does a hexagon have? | 6 | 5 | 7 | 8
+What do bees make? | Honey | Milk | Silk | Wax paper
+Which month has the fewest days? | February | April | June | November
+What is the freezing point of water in Celsius? | 0 degrees | 10 degrees | 32 degrees | 4 degrees
+Which instrument has 88 keys? | Piano | Organ | Accordion | Harp
+What is the opposite of "ancient"? | Modern | Old | Antique | Classic
+Which of these is a mammal? | Dolphin | Shark | Salmon | Octopus
+How many days are in a leap year? | 366 | 365 | 364 | 367
+Which country is shaped like a boot? | Italy | Spain | Greece | Portugal
+What is the plural of "mouse"? | mice | mouses | meese | mousen
+What is the past tense of "go"? | went | goed | gone | wented
+How many hours are in two days? | 48 | 24 | 36 | 72
+Which is the hardest natural material? | Diamond | Gold | Iron | Granite
+What is H2O better known as? | Water | Salt | Hydrogen | Oxygen
+Which shape has three sides? | Triangle | Square | Circle | Pentagon
+
+[vua]
+Who painted the Mona Lisa? | Leonardo da Vinci | Michelangelo | Van Gogh | Picasso
+Who wrote Romeo and Juliet? | William Shakespeare | Charles Dickens | Jane Austen | Mark Twain
+Which is the longest river in Africa? | Nile | Congo | Niger | Zambezi
+Which country has the largest population in the world today? | India | China | USA | Indonesia
+How many players are on a football team on the field? | 11 | 10 | 9 | 12
+In which country were the ancient Olympic Games held? | Greece | Italy | Egypt | Turkey
+What is the largest planet in our solar system? | Jupiter | Saturn | Neptune | Earth
+What is the chemical symbol for gold? | Au | Ag | Gd | Go
+How many bones are in the adult human body? | 206 | 186 | 226 | 300
+Which organ pumps blood around the body? | Heart | Lungs | Liver | Kidneys
+What is the square root of 144? | 12 | 14 | 11 | 16
+What is 25 times 4? | 100 | 90 | 125 | 104
+Which language has the most native speakers? | Mandarin Chinese | English | Spanish | Hindi
+What is the capital of Canada? | Ottawa | Toronto | Vancouver | Montreal
+What is the capital of Vietnam? | Hanoi | Ho Chi Minh City | Da Nang | Hue
+Which ocean lies between Africa and Australia? | Indian Ocean | Pacific Ocean | Atlantic Ocean | Arctic Ocean
+Who was the first person to walk on the Moon? | Neil Armstrong | Buzz Aldrin | Yuri Gagarin | John Glenn
+In which year did World War II end? | 1945 | 1944 | 1918 | 1950
+Which animal is known as the King of the Jungle? | Lion | Tiger | Elephant | Gorilla
+What is the fastest land animal? | Cheetah | Lion | Horse | Antelope
+Which planet is closest to the Sun? | Mercury | Venus | Mars | Earth
+How many strings does a standard guitar have? | 6 | 4 | 5 | 7
+Which country gave the Statue of Liberty to the USA? | France | England | Spain | Italy
+What is the main ingredient of guacamole? | Avocado | Tomato | Cucumber | Pea
+Which vitamin do we get from sunlight? | Vitamin D | Vitamin C | Vitamin A | Vitamin B12
+What do you call a baby kangaroo? | Joey | Cub | Kid | Calf
+How many sides does an octagon have? | 8 | 6 | 10 | 12
+Which country invented paper, gunpowder and the compass? | China | India | Egypt | Greece
+What is the currency of Japan? | Yen | Won | Yuan | Ringgit
+What is the smallest country in the world? | Vatican City | Monaco | Malta | San Marino
+Which metal is liquid at room temperature? | Mercury | Iron | Lead | Silver
+How many colors are in a rainbow? | 7 | 6 | 8 | 5
+Which word means "very big"? | Enormous | Tiny | Narrow | Fragile
+Which word is a synonym of "happy"? | Cheerful | Gloomy | Angry | Tired
+What is the plural of "child"? | children | childs | childes | childrens
+Which sentence is correct? | She doesn't like tea. | She don't like tea. | She not like tea. | She doesn't likes tea.
+Which is a prime number? | 13 | 15 | 21 | 27
+What is 1000 minus 357? | 643 | 653 | 743 | 657
+If a shirt costs 40 dollars with 25% off, what do you pay? | 30 dollars | 25 dollars | 35 dollars | 15 dollars
+What is the capital of Thailand? | Bangkok | Chiang Mai | Phuket | Hanoi
+Which famous scientist developed the theory of relativity? | Albert Einstein | Isaac Newton | Galileo | Nikola Tesla
+Which sea creature has three hearts? | Octopus | Shark | Starfish | Jellyfish
+What is the main language spoken in Brazil? | Portuguese | Spanish | Brazilian | French
+Which bird is a symbol of peace? | Dove | Eagle | Crow | Parrot
+Which part of the plant makes food using sunlight? | Leaf | Root | Stem | Flower
+How many seconds are in one hour? | 3600 | 6000 | 360 | 1440
+What is the opposite of "generous"? | Stingy | Kind | Rich | Polite
+Which of these is NOT a primary color of paint? | Green | Red | Blue | Yellow
+What is the largest desert in the world? | Antarctica | Sahara | Gobi | Arabian
+Which city is known as the Big Apple? | New York | Los Angeles | Chicago | Boston
+What does a thermometer measure? | Temperature | Weight | Speed | Pressure
+Which continent is Egypt in? | Africa | Asia | Europe | Middle East
+Which is the tallest mountain on Earth? | Mount Everest | K2 | Kilimanjaro | Mont Blanc
+Which famous ship sank in 1912? | Titanic | Lusitania | Mayflower | Britannic
+What is the capital of South Korea? | Seoul | Busan | Pyongyang | Incheon
+Which number is the Roman numeral X? | 10 | 5 | 50 | 100
+
+[kho]
+Which word is spelled correctly? | accommodate | accomodate | acommodate | accommadate
+Which word is spelled correctly? | embarrass | embarass | embarras | embaress
+Which word is spelled correctly? | millennium | millenium | milennium | millenniun
+Which word is spelled correctly? | conscientious | conscientous | consciencious | conscientiuos
+Who wrote the novel Pride and Prejudice? | Jane Austen | Charlotte Bronte | Emily Bronte | Mary Shelley
+In which year did the Berlin Wall fall? | 1989 | 1991 | 1987 | 1979
+What is the chemical symbol for sodium? | Na | So | Sd | Sn
+What is the hardest working muscle in the body? | Heart | Tongue | Biceps | Jaw
+Which planet has the most known moons as of 2024? | Saturn | Jupiter | Uranus | Neptune
+How many hearts does an octopus have? | 3 | 1 | 2 | 8
+What is 17 times 23? | 391 | 381 | 401 | 371
+What is the next prime number after 31? | 37 | 33 | 35 | 39
+What is 2 to the power of 10? | 1024 | 1000 | 512 | 2048
+A train travels 240 km in 3 hours. What is its speed? | 80 km/h | 70 km/h | 90 km/h | 60 km/h
+What is the capital of Turkey? | Ankara | Istanbul | Izmir | Antalya
+What is the capital of Brazil? | Brasilia | Rio de Janeiro | Sao Paulo | Salvador
+What is the capital of New Zealand? | Wellington | Auckland | Christchurch | Queenstown
+Which element has the chemical symbol K? | Potassium | Krypton | Calcium | Carbon
+Who discovered penicillin? | Alexander Fleming | Louis Pasteur | Marie Curie | Edward Jenner
+Which empire built Machu Picchu? | Inca | Aztec | Maya | Olmec
+Who was the first woman to win a Nobel Prize? | Marie Curie | Mother Teresa | Rosalind Franklin | Ada Lovelace
+In which city is the Colosseum? | Rome | Athens | Naples | Istanbul
+What is the longest bone in the human body? | Femur | Spine | Humerus | Tibia
+Which gas makes up most of Earth's air? | Nitrogen | Oxygen | Carbon dioxide | Argon
+How many players are on a basketball team on the court? | 5 | 6 | 7 | 4
+Which is the largest country in the world by area? | Russia | Canada | China | USA
+What is the speed of light, roughly? | 300,000 km per second | 30,000 km per second | 3,000 km per second | 3 million km per second
+Who painted The Starry Night? | Vincent van Gogh | Claude Monet | Salvador Dali | Rembrandt
+Which word means "to make something seem bigger than it is"? | Exaggerate | Elaborate | Illustrate | Estimate
+What is a word that sounds like another but has a different meaning? | Homophone | Synonym | Antonym | Acronym
+Which is the largest organ of the human body? | Skin | Liver | Brain | Lungs
+Which country has the shape of a long thin strip along South America's west coast? | Chile | Peru | Argentina | Ecuador
+In which year did humans first land on the Moon? | 1969 | 1967 | 1971 | 1965
+Which ancient wonder stood in Egypt and still exists today? | Great Pyramid of Giza | Lighthouse of Alexandria | Colossus of Rhodes | Hanging Gardens
+What is the main language of Argentina? | Spanish | Portuguese | Italian | English
+How many degrees are in a right angle? | 90 | 180 | 45 | 360
+If 3x + 5 = 20, what is x? | 5 | 4 | 6 | 15
+What is the average of 4, 8 and 12? | 8 | 6 | 10 | 24
+Which blood type is known as the universal donor? | O negative | AB positive | A positive | B negative
+What does DNA stand for? | Deoxyribonucleic acid | Dinitrogen acid | Double nucleic acid | Dioxide nucleic acid
+
+[chuong]
+Which country is home to the ancient city of Petra? | Jordan | Egypt | Israel | Lebanon
+What is the only letter that does not appear in any US state name? | Q | Z | J | X
+How many time zones does Russia have? | 11 | 9 | 7 | 13
+Which planet spins on its side, almost like a rolling ball? | Uranus | Neptune | Saturn | Venus
+What is the rarest blood type in humans? | AB negative | O negative | B negative | A negative
+In what year did the Titanic sink? | 1912 | 1905 | 1915 | 1920
+What is the square root of 625? | 25 | 35 | 15 | 45
+Who composed the Moonlight Sonata? | Beethoven | Mozart | Bach | Chopin
+Which animal has fingerprints almost identical to humans? | Koala | Chimpanzee | Panda | Monkey
+What is the smallest bone in the human body? | Stapes | Femur | Hammer | Rib
+Which country was the first to give women the right to vote nationally, in 1893? | New Zealand | Australia | Finland | Norway
+How many keys does a standard piano have? | 88 | 76 | 92 | 100
+What is the national animal of Scotland? | Unicorn | Lion | Stag | Golden eagle
+What is the capital of Canada's largest province by area, Quebec? | Quebec City | Montreal | Ottawa | Toronto
+What is the largest internal organ of the human body? | Liver | Lungs | Heart | Stomach
+
+[phu]
+How many days are there in four weeks? | 28 | 24 | 30 | 32
+What is 12 times 12? | 144 | 124 | 132 | 154
+How many zeros are in one million? | 6 | 5 | 7 | 9
+What is the capital of Italy? | Rome | Milan | Venice | Naples
+Which is heavier: a kilo of feathers or a kilo of iron? | They weigh the same | Iron | Feathers | It depends
+How many sides does a pentagon have? | 5 | 6 | 4 | 8
+Which planet is famous for its beautiful rings? | Saturn | Mars | Venus | Mercury
+How many weeks are in a year? | 52 | 48 | 50 | 56
+What is half of 250? | 125 | 115 | 150 | 105
+Which is the coldest continent? | Antarctica | Europe | Asia | North America
+What is 7 times 8? | 56 | 54 | 64 | 48
+How many letters are in the English alphabet? | 26 | 24 | 25 | 28
+Which animal is famous for changing its color? | Chameleon | Gecko | Iguana | Frog
+What is the boiling point of water in Celsius? | 100 degrees | 90 degrees | 212 degrees | 120 degrees
+Which is the largest mammal on Earth? | Blue whale | Elephant | Giraffe | Hippo

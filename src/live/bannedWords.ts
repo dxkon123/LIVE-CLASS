@@ -1,24 +1,22 @@
 /**
  * Words that must never be spoken or shown on the live (vulgar, sexual, drugs, gambling, violence, scams).
- * Matching uses the accented text, so ordinary words like "lớn", "các", "buổi", "đeo" are not caught.
- * shortcut: fixed list, misses creative spellings (l0n, đ.ị.t); extend BANNED_TOKENS when one slips through.
+ * Single words are compared token by token, so ordinary words that merely contain a banned word
+ * ("class", "Scunthorpe") are not caught.
+ * Shortcut: a fixed list misses creative spellings (f.u.c.k, sh1t); extend BANNED_TOKENS when one slips through.
  */
 
 // Single words, lowercase, compared token by token
 const BANNED_TOKENS = new Set([
-  // Vietnamese vulgar (accented) and unambiguous teen-code
-  'lồn', 'lìn', 'cặc', 'buồi', 'đéo', 'địt', 'đụ', 'đĩ', 'cứt', 'đm', 'đmm', 'đcm', 'đkm',
-  'dm', 'dmm', 'dcm', 'dkm', 'vcl', 'vkl', 'vcc', 'clgt', 'loz', 'dit', 'ditme', 'dume', 'cmm',
-  // English
-  'fuck', 'fck', 'fuk', 'shit', 'bitch', 'dick', 'pussy', 'sex', 'sexy', 'porn', 'nude', 'xxx', 'cave',
-  // Violence, gambling, scams
-  'giết', 'chém', 'casino', 'scam',
+  'fuck', 'fck', 'fuk', 'fucking', 'fucker', 'motherfucker', 'shit', 'bullshit', 'bitch', 'bitches', 'dick', 'cock', 'pussy', 'cunt',
+  'asshole', 'bastard', 'slut', 'whore', 'wtf', 'stfu', 'nigger', 'nigga', 'faggot', 'retard', 'sex', 'sexy', 'porn', 'nude', 'nudes',
+  'xxx', 'boobs', 'kys', 'onlyfans', 'cocaine', 'heroin', 'meth',
+  // gambling, scams
+  'casino', 'scam',
 ]);
 
 // Multi-word phrases, compared on the lowercase text with single spaces
 const BANNED_PHRASES = [
-  'địt mẹ', 'đụ má', 'đù má', 'đéo mẹ', 'con đĩ', 'dit me', 'du ma',
-  'ma túy', 'ma tuý', 'thuốc lắc', 'cần sa', 'cá độ', 'lô đề', 'cờ bạc', 'chuyển khoản', 'lừa đảo',
+  'kill yourself', 'go die', 'send money', 'bank transfer', 'free money', 'crypto giveaway', 'sports betting',
 ];
 
 const normalize = (text: string) => text.normalize('NFC').toLowerCase().replace(/\s+/g, ' ');

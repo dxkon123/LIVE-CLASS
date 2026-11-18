@@ -1,25 +1,26 @@
 import { IS_STAGE } from './page';
-import { containsBanned } from './bannedWords';
+import { STANDALONE } from './env';
+import { speak, stopSpeech } from '../standalone/speech';
 
 /**
- * Hàng đợi giọng đọc. Chỉ phát trên trang stage.
- *   voice.say('Chào bạn A')            -> xếp cuối hàng
- *   voice.say('Cảm ơn quà', true)      -> ưu tiên, chen lên đầu (dùng cho quà)
- *   voice.say('Trời ơi! | ^Hoan hô!') -> "|" tách đoạn; "^" hô to hơn một chút
- *   voice.say('M: Anh nói | F: Em nói')  -> 2 MC: "M:" giọng nam, "F:" giọng nữ (giữ tới khi đổi)
- *   voice.say('F: Đáp án là | E: cat')   -> "E:" giọng tiếng Anh, đọc từ tiếng Anh cho chuẩn
- * Câu nào chờ quá lâu (mặc định 60 giây) thì bỏ, để không đọc chuyện đã cũ.
+ * Voice queue. Only plays on the stage page.
+ * voice.say('Hi Anna')                  -> goes to the end of the queue
+ * voice.say('Thanks for the gift', true) -> priority, jumps to the front (used for gifts)
+ * voice.say('Oh wow! | ^Hooray!')        -> "|" splits parts; "^" shouts a little louder
+ * voice.say('M: He says | F: She says') -> 2 hosts: "M:" male voice, "F:" female voice (until changed)
+ * voice.say('F: The answer is | E: cat') -> "E:" English voice, for the English word itself
+ * Lines that wait too long (default 60 s) are dropped so old news is never read.
  */
 interface Line {
   text: string;
   at: number;
   done?: () => void;
-  start?: () => void; // gọi khi câu bắt đầu đọc (để camera lia tới người được nói tới)
-  valid?: () => boolean; // tới lượt đọc mà trả về false thì bỏ câu (chuyện đã cũ, vd. đã bị cướp mà vẫn "sắp trả lời")
-  keep?: boolean; // không bỏ dù chờ lâu (lời dẫn khai mạc dài)
+  start?: () => void; // called when the line starts (so the camera can pan to whoever is mentioned)
+  valid?: () => boolean; // returning false when its turn comes drops the line (old news)
+  keep?: boolean; // never dropped however long it waits (long opening speech)
 }
 
-// M nam, F nữ, E tiếng Anh (cô đọc từ tiếng Anh)
+// M male, F female, E English (the teacher reading an English word)
 type Who = 'M' | 'F' | 'E';
 
 const MAX_WAIT_MS = 60_000;
@@ -31,15 +32,15 @@ class Voice {
   private playing = false;
   private current: HTMLAudioElement | null = null;
   private lastSpokeAt = Date.now();
-  rate = readRate(); // mặc định 1.25: MC nói nhanh cho tiết tấu dồn dập (chủ kênh chốt); chỉnh ở trang điều khiển
+  rate = readRate(); // default 1.25: fast host pace (owner's choice); adjustable on the control page
   volume = 1;
   enabled = IS_STAGE;
-  /** giọng cô giáo chọn ở trang điều khiển: 'f' nữ HoaiMy, 'm' nam NamMinh */
+  /** teacher voice picked on the control page: 'f' female (Jenny), 'm' male (Guy) */
   teacher: 'f' | 'm' = 'f';
-  /** báo MC nào đang nói (để nhân vật MC trên sân khấu nhún nhảy) */
+  /** reports which host is talking (so the host character can bounce) */
   onSpeaker?: (who: 'M' | 'F' | null) => void;
 
-  /** `done`: gọi khi câu đọc xong, bị bỏ, hoặc trang này không phát tiếng */
+  /** `done`: called when the line finished, was dropped, or this page does not play sound */
   say(text: string, priority = false, done?: () => void, keep = false, start?: () => void, valid?: () => boolean) {
     if (!this.enabled || !text.trim()) {
       if (start) setTimeout(start, 0);
@@ -48,43 +49,48 @@ class Voice {
     }
     const q = priority ? this.priority : this.normal;
     q.push({ text: text.trim(), at: Date.now(), done, keep, start, valid });
-    // câu ưu tiên: tạo giọng sẵn ngay lúc xếp hàng, tới lượt là phát liền không phải chờ server
-    if (priority) for (const p of this.parts(text)) fetch(this.urlOf(p)).catch(() => {});
+    // priority line: start making the audio as soon as it is queued so it plays without waiting for the server
+    if (priority && !STANDALONE) for (const p of this.parts(text)) fetch(this.urlOf(p)).catch(() => {});
     if (q.length > MAX_QUEUE) q.shift()?.done?.();
     void this.next();
   }
 
+  private stops = 0;
   stop() {
+    this.stops++;
     for (const l of [...this.normal, ...this.priority]) l.done?.();
     this.normal = [];
     this.priority = [];
     this.current?.pause();
     this.current = null;
+    if (STANDALONE) stopSpeech();
     this.playing = false;
+    this.lastSpokeAt = Date.now();
+    this.onSpeaker?.(null);
   }
 
   get busy() {
     return this.playing || this.normal.length + this.priority.length > 0;
   }
 
-  /** Số câu thường đang chờ (không tính câu đang đọc) */
+  /** Ordinary lines waiting (not counting the one being read) */
   get waiting() {
     return this.normal.length;
   }
 
-  /** Số câu ưu tiên (quà) đang chờ */
+  /** Priority (gift) lines waiting */
   get waitingPriority() {
     return this.priority.length;
   }
 
-  /** Giọng đã im bao lâu (0 khi đang đọc hoặc còn câu chờ) */
+  /** How long the voice has been silent (0 while reading or with lines waiting) */
   quietForMs(now = Date.now()) {
     return this.busy ? 0 : now - this.lastSpokeAt;
   }
 
-  // "M: Trời ơi! | ^Hoan hô!" -> từng đoạn: ai nói (M nam, F nữ), có hô to không
+  // "M: Oh wow! | ^Hooray!" -> parts: who talks (M male, F female), shouted or not
   private parts(text: string) {
-    // Lớp Học Chữ: chỉ có cô Ngân nói, câu không ghi "M:"/"F:" (vd chủ kênh gõ cho cô đọc) cũng là giọng nữ (2026-11-04)
+    // LIVE-CLASS: only the teacher talks, so a line without "M:"/"F:" (e.g. typed by the owner) is the female voice too (2026-11-04)
     let who: Who = 'F';
     const out: { who: Who; hype: boolean; text: string }[] = [];
     for (let raw of text.split('|')) {
@@ -101,7 +107,7 @@ class Voice {
   }
 
   private urlOf(p: { who: Who; hype: boolean; text: string }) {
-    // thầy giáo / giọng nam: từ tiếng Anh cũng đọc giọng nam
+    // male teacher / male voice: English words in the male voice too
     const v = p.who === 'F' ? `&v=${this.teacher}` : p.who === 'E' ? (this.teacher === 'm' ? '&v=enm' : '&v=en') : '';
     return `/api/tts?rate=${this.rate}${p.hype ? '&hype=1' : ''}${v}&text=${encodeURIComponent(p.text)}`;
   }
@@ -121,17 +127,25 @@ class Voice {
     if (!line) return;
     this.playing = true;
     line.start?.();
+    const stopAt = this.stops;
     try {
       for (const part of this.parts(line.text)) {
-        this.onSpeaker?.(part.who === 'E' ? 'F' : part.who); // giọng tiếng Anh là cô đọc
+        this.onSpeaker?.(part.who === 'E' ? 'F' : part.who); // the English voice is the teacher reading
+        if (STANDALONE) {
+          // single-file build: the browser's own voice (no server)
+          const g = this.teacher === 'm' || part.who === 'M' ? 'm' : 'f';
+          await speak(part.text, { gender: g, rate: this.rate, volume: this.volume, hype: part.hype });
+          if (this.stops !== stopAt) break; // stop() in the middle
+          continue;
+        }
         const audio = new Audio(this.urlOf(part));
         audio.volume = this.volume;
         this.current = audio;
         await new Promise<void>((resolve) => {
-          // Tự gỡ kẹt: 1 câu treo (không tải xong, không báo lỗi) sẽ làm MC im cả buổi live.
-          // Chưa phát được sau 8 giây thì bỏ câu; đang phát thì cắt khi quá độ dài câu + 4 giây.
-          // Bỏ câu là huỷ HẲN (dừng tải, không thử phát lại): trước đây câu bị bỏ vẫn tự phát khi tải xong,
-          // đè lên câu sau thành 2 giọng cùng lúc (sửa 2026-11-05)
+          // Self-healing: one stuck line (never loads, never errors) would keep the host silent for the whole live.
+          // Not playing after 8 s: drop it; while playing: cut it after its length + 4 s.
+          // Dropping really cancels (stop loading, no retry): a dropped line used to play when it finished loading,
+          // on top of the next line, so two voices talked at once (fixed 2026-11-05)
           let over = false;
           let guard = setTimeout(finish, 8000);
           function finish() {
@@ -141,13 +155,13 @@ class Voice {
             audio.pause();
             if (!audio.ended) {
               audio.removeAttribute('src');
-              audio.load(); // dừng tải
+              audio.load(); // stop loading
             }
             resolve();
           }
           audio.onplaying = () => {
             if (over) {
-              audio.pause(); // câu đã bỏ mà vẫn kịp phát: tắt ngay
+              audio.pause(); // dropped but it still started: stop it now
               return;
             }
             clearTimeout(guard);
@@ -156,22 +170,26 @@ class Voice {
           };
           audio.onended = finish;
           audio.onerror = finish;
-          // trình duyệt chặn tự phát tiếng: thử lại vài lần thay vì bỏ câu (câu đã bỏ thì thôi)
+          // the browser blocked autoplay: retry a few times instead of dropping (unless the line was dropped)
           const tryPlay = (left: number) => {
             if (over) return;
             audio.play().catch(() => (left > 0 && !over ? setTimeout(() => tryPlay(left - 1), 1500) : finish()));
           };
           tryPlay(4);
         });
-        if (this.current !== audio) break; // stop() giữa chừng
+        if (this.current !== audio) break; // stop() in the middle
       }
     } finally {
-      this.onSpeaker?.(null);
       line.done?.();
-      this.current = null;
-      this.playing = false;
-      this.lastSpokeAt = Date.now();
-      void this.next();
+      // stop() while this line was speaking: a newer line may already be playing, leave it alone
+      // (before: the old line finishing late reset `playing` and started a 2nd voice on top)
+      if (this.stops === stopAt) {
+        this.onSpeaker?.(null);
+        this.current = null;
+        this.playing = false;
+        this.lastSpokeAt = Date.now();
+        void this.next();
+      }
     }
   }
 }
@@ -179,7 +197,7 @@ class Voice {
 function readRate() {
   try {
     const r = Number(localStorage.getItem('voice-rate'));
-    return r >= 0.5 && r <= 1.5 ? r : 1.0; // cô Ngân đọc tốc độ thường (chủ kênh 2026-11-04: 1.1 hơi nhanh); chỉnh ở trang điều khiển
+    return r >= 0.5 && r <= 1.5 ? r : 1.0; // normal reading speed (owner 2026-11-04: 1.1 was a bit fast); adjustable on the control page
   } catch {
     return 1.0;
   }

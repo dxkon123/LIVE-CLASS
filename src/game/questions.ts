@@ -1,20 +1,20 @@
-// Bộ câu hỏi nằm ở src/game/cau-hoi/*.txt (mỗi file 1 chủ đề, dòng đầu "# Tên chủ đề",
-// dòng "> Đây là một món ăn." là câu cô nói trước gợi ý, áp cho mọi câu bên dưới tới dòng ">" kế tiếp).
-// Mỗi dòng: ĐÁP ÁN | gợi ý | độ khó 1-3 | cách viết khác (cách nhau dấu phẩy)
-// Kiểm tra cả bộ: npx tsx src/game/quiz.check.ts
+// The questions live in src/game/word-bank/*.txt (one topic per file, first line "# Topic name",
+// a line "> It's a food." is what the teacher says before the clue, for every question below it until the next ">" line).
+// Each line: ANSWER | clue | difficulty 1-3 | other spellings (comma separated)
+// Check the whole bank: npx tsx src/game/quiz.check.ts
 
 export interface Question {
-  id: string; // "tên-file:đáp án", dùng để nhớ câu đã hỏi
+  id: string; // "file-name:answer", used to remember which questions were asked
   clue: string;
   answer: string;
   acceptedAnswers?: string[];
   category: string;
-  kind: string; // câu cô nói trước gợi ý, vd "Đây là một món ăn." (dòng "> ..." đầu file)
+  kind: string; // what the teacher says before the clue, e.g. "It's a food." (the "> ..." line in the file)
   difficulty: 'easy' | 'medium' | 'hard';
-  /** câu toán nhẩm (math.ts): phép tính hiện trên bảng và cách cô đọc, không có trong file câu hỏi */
+  /** mental math question (math.ts): the sum shown on the board and how the teacher reads it; not in the question files */
   math?: { show: string; say: string };
-  /** câu có chỗ riêng trong tiết, theo đuôi tên file: "-meo" câu đố mẹo, "-su" câu lịch sử.
-   *  Chỉ hỏi ở đúng vị trí đó trong GAME.roundPlan, không lẫn vào câu chữ thường */
+  /** questions with their own slot in the class, by file name suffix: "-meo" riddles, "-su" history.
+   * Only asked at that position in GAME.roundPlan, never mixed into the ordinary word questions */
   slot?: Slot;
 }
 
@@ -23,7 +23,7 @@ const LEVEL = { '1': 'easy', '2': 'medium', '3': 'hard' } as const;
 export const SLOTS = ['meo', 'su', 'anh', 'dh'] as const;
 export type Slot = (typeof SLOTS)[number];
 
-/** Đọc các file câu hỏi. `errors` gom dòng sai cú pháp để script kiểm tra báo ra */
+/** Read the question files. `errors` collects lines with bad syntax for the check script */
 export function parseBank(files: Record<string, string>, errors: string[] = []): Question[] {
   const out: Question[] = [];
   for (const [path, text] of Object.entries(files)) {
@@ -44,7 +44,7 @@ export function parseBank(files: Record<string, string>, errors: string[] = []):
       const [answer, clue, level, alts] = line.split('|').map((s) => s.trim());
       const difficulty = LEVEL[level as keyof typeof LEVEL];
       if (!answer || !clue || !difficulty) {
-        errors.push(`${file}:${i + 1} sai cú pháp: ${line}`);
+        errors.push(`${file}:${i + 1} bad syntax: ${line}`);
         return;
       }
       out.push({
